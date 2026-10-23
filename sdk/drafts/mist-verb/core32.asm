@@ -1,18 +1,118 @@
 ; Copyright 2014 Emilie Gillet; translation Copyright 2026 cscobey.
 ; MIT: see LICENSE and pinned upstream source.
 ; 32 kHz core experiment ONLY. Not a 44.1 kHz Octatrack effect.
-; X r7+00..4f own scalar state. Y first 12972 words own buffer.
+; X r7+00..77 own scalar state. Y first 12972 words own buffer.
 init:
         move #>$ffffff,m5
         move r7,r5
         clr a
-        do #80,>core_zero
+        do #120,>core_zero
         move a1,x:(r5)+
 core_zero:
         nop
         move x:>$213,r4
         move x:(r4),a
         move a1,x:(r7+$20)
+        move x:(r7+$20),a
+        add #>$0,a
+        move a1,x:(r7+$50)
+        move #>$0,a
+        move a1,x:(r7+$51)
+        move x:(r7+$20),a
+        add #>$42,a
+        move a1,x:(r7+$52)
+        move #>$1,a
+        move a1,x:(r7+$53)
+        move x:(r7+$20),a
+        add #>$4a,a
+        move a1,x:(r7+$54)
+        move #>$1,a
+        move a1,x:(r7+$55)
+        move x:(r7+$20),a
+        add #>$4c,a
+        move a1,x:(r7+$56)
+        move #>$0,a
+        move a1,x:(r7+$57)
+        move x:(r7+$20),a
+        add #>$b6,a
+        move a1,x:(r7+$58)
+        move #>$2,a
+        move a1,x:(r7+$59)
+        move x:(r7+$20),a
+        add #>$b8,a
+        move a1,x:(r7+$5a)
+        move #>$1,a
+        move a1,x:(r7+$5b)
+        move x:(r7+$20),a
+        add #>$158,a
+        move a1,x:(r7+$5c)
+        move #>$1,a
+        move a1,x:(r7+$5d)
+        move x:(r7+$20),a
+        add #>$15a,a
+        move a1,x:(r7+$5e)
+        move #>$0,a
+        move a1,x:(r7+$5f)
+        move x:(r7+$20),a
+        add #>$262,a
+        move a1,x:(r7+$60)
+        move #>$2,a
+        move a1,x:(r7+$61)
+        move x:(r7+$20),a
+        add #>$264,a
+        move a1,x:(r7+$62)
+        move #>$1,a
+        move a1,x:(r7+$63)
+        move x:(r7+$20),a
+        add #>$6b2,a
+        move a1,x:(r7+$64)
+        move #>$0,a
+        move a1,x:(r7+$65)
+        move x:(r7+$20),a
+        add #>$6b2,a
+        move a1,x:(r7+$66)
+        move #>$2,a
+        move a1,x:(r7+$67)
+        move x:(r7+$20),a
+        add #>$c00,a
+        move a1,x:(r7+$68)
+        move #>$2,a
+        move a1,x:(r7+$69)
+        move x:(r7+$20),a
+        add #>$c02,a
+        move a1,x:(r7+$6a)
+        move #>$1,a
+        move a1,x:(r7+$6b)
+        move x:(r7+$20),a
+        add #>$14e4,a
+        move a1,x:(r7+$6c)
+        move #>$0,a
+        move a1,x:(r7+$6d)
+        move x:(r7+$20),a
+        add #>$14e4,a
+        move a1,x:(r7+$6e)
+        move #>$2,a
+        move a1,x:(r7+$6f)
+        move x:(r7+$20),a
+        add #>$19e0,a
+        move a1,x:(r7+$70)
+        move #>$0,a
+        move a1,x:(r7+$71)
+        move x:(r7+$20),a
+        add #>$19e0,a
+        move a1,x:(r7+$72)
+        move #>$2,a
+        move a1,x:(r7+$73)
+        move x:(r7+$20),a
+        add #>$1e34,a
+        move a1,x:(r7+$74)
+        move #>$2,a
+        move a1,x:(r7+$75)
+        move x:(r7+$20),a
+        add #>$1e36,a
+        move a1,x:(r7+$76)
+        move #>$1,a
+        move a1,x:(r7+$77)
         move #>$0032ac,a
         move a1,x:(r7+$22)
         move #>$400000,a
@@ -447,25 +547,55 @@ core_lfo_hold:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0445
+        bpl quant_0545
         add #>$ff,a
-quant_0445:
+quant_0545:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$64,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$53),a
+        sub #>$1,a
+        bpl tap_0064_ready
+        move x:(r7+$52),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0064_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0064_saved
+tap_0064_pair:
+        move #>$2,a
+tap_0064_saved:
+        move b1,x:(r7+$52)
+tap_0064_ready:
+        move a1,x:(r7+$53)
+        move a1,x1
+        move x:(r7+$52),r5
         bsr >cell_store
         move x:(r7+$3b),a
         move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$70,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$55),a
+        sub #>$1,a
+        bpl tap_0070_ready
+        move x:(r7+$54),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0070_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0070_saved
+tap_0070_pair:
+        move #>$2,a
+tap_0070_saved:
+        move b1,x:(r7+$54)
+tap_0070_ready:
+        move a1,x:(r7+$55)
+        move a1,x1
+        move x:(r7+$54),r5
         bsr >cell_fetch
         asl #$8,a,a
         move a1,a
@@ -480,17 +610,32 @@ quant_0445:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0478
+        bpl quant_0608
         add #>$ff,a
-quant_0478:
+quant_0608:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$0,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$51),a
+        sub #>$1,a
+        bpl tap_0000_ready
+        move x:(r7+$50),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0000_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0000_saved
+tap_0000_pair:
+        move #>$2,a
+tap_0000_saved:
+        move b1,x:(r7+$50)
+tap_0000_ready:
+        move a1,x:(r7+$51)
+        move a1,x1
+        move x:(r7+$50),r5
         bsr >cell_store
         move x:(r7+$32),x0
         move x:(r7+$02),y1
@@ -498,11 +643,26 @@ quant_0478:
         move x:(r7+$33),x0
         add x0,a
         move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$113,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$59),a
+        sub #>$1,a
+        bpl tap_0113_ready
+        move x:(r7+$58),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0113_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0113_saved
+tap_0113_pair:
+        move #>$2,a
+tap_0113_saved:
+        move b1,x:(r7+$58)
+tap_0113_ready:
+        move a1,x:(r7+$59)
+        move a1,x1
+        move x:(r7+$58),r5
         bsr >cell_fetch
         asl #$8,a,a
         move a1,a
@@ -517,17 +677,32 @@ quant_0478:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0515
+        bpl quant_0675
         add #>$ff,a
-quant_0515:
+quant_0675:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$72,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$57),a
+        sub #>$1,a
+        bpl tap_0072_ready
+        move x:(r7+$56),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0072_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0072_saved
+tap_0072_pair:
+        move #>$2,a
+tap_0072_saved:
+        move b1,x:(r7+$56)
+tap_0072_ready:
+        move a1,x:(r7+$57)
+        move a1,x1
+        move x:(r7+$56),r5
         bsr >cell_store
         move x:(r7+$32),x0
         move x:(r7+$02),y1
@@ -535,11 +710,26 @@ quant_0515:
         move x:(r7+$33),x0
         add x0,a
         move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$205,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$5d),a
+        sub #>$1,a
+        bpl tap_0205_ready
+        move x:(r7+$5c),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0205_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0205_saved
+tap_0205_pair:
+        move #>$2,a
+tap_0205_saved:
+        move b1,x:(r7+$5c)
+tap_0205_ready:
+        move a1,x:(r7+$5d)
+        move a1,x1
+        move x:(r7+$5c),r5
         bsr >cell_fetch
         asl #$8,a,a
         move a1,a
@@ -554,17 +744,32 @@ quant_0515:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0552
+        bpl quant_0742
         add #>$ff,a
-quant_0552:
+quant_0742:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$115,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$5b),a
+        sub #>$1,a
+        bpl tap_0115_ready
+        move x:(r7+$5a),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0115_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0115_saved
+tap_0115_pair:
+        move #>$2,a
+tap_0115_saved:
+        move b1,x:(r7+$5a)
+tap_0115_ready:
+        move a1,x:(r7+$5b)
+        move a1,x1
+        move x:(r7+$5a),r5
         bsr >cell_store
         move x:(r7+$32),x0
         move x:(r7+$02),y1
@@ -572,11 +777,26 @@ quant_0552:
         move x:(r7+$33),x0
         add x0,a
         move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$395,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$61),a
+        sub #>$1,a
+        bpl tap_0395_ready
+        move x:(r7+$60),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0395_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0395_saved
+tap_0395_pair:
+        move #>$2,a
+tap_0395_saved:
+        move b1,x:(r7+$60)
+tap_0395_ready:
+        move a1,x:(r7+$61)
+        move a1,x1
+        move x:(r7+$60),r5
         bsr >cell_fetch
         asl #$8,a,a
         move a1,a
@@ -591,17 +811,32 @@ quant_0552:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0589
+        bpl quant_0809
         add #>$ff,a
-quant_0589:
+quant_0809:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$207,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$5f),a
+        sub #>$1,a
+        bpl tap_0207_ready
+        move x:(r7+$5e),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0207_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0207_saved
+tap_0207_pair:
+        move #>$2,a
+tap_0207_saved:
+        move b1,x:(r7+$5e)
+tap_0207_ready:
+        move a1,x:(r7+$5f)
+        move a1,x1
+        move x:(r7+$5e),r5
         bsr >cell_store
         move x:(r7+$32),x0
         move x:(r7+$02),y1
@@ -659,11 +894,26 @@ quant_0589:
         add x0,a
         move a1,x:(r7+$35)
         move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$a0b,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$65),a
+        sub #>$1,a
+        bpl tap_0a0b_ready
+        move x:(r7+$64),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0a0b_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0a0b_saved
+tap_0a0b_pair:
+        move #>$2,a
+tap_0a0b_saved:
+        move b1,x:(r7+$64)
+tap_0a0b_ready:
+        move a1,x:(r7+$65)
+        move a1,x1
+        move x:(r7+$64),r5
         bsr >cell_fetch
         asl #$8,a,a
         move a1,a
@@ -678,17 +928,32 @@ quant_0589:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0676
+        bpl quant_0926
         add #>$ff,a
-quant_0676:
+quant_0926:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$397,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$63),a
+        sub #>$1,a
+        bpl tap_0397_ready
+        move x:(r7+$62),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0397_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0397_saved
+tap_0397_pair:
+        move #>$2,a
+tap_0397_saved:
+        move b1,x:(r7+$62)
+tap_0397_ready:
+        move a1,x:(r7+$63)
+        move a1,x1
+        move x:(r7+$62),r5
         bsr >cell_store
         move x:(r7+$32),x0
         move x:(r7+$02),y1
@@ -696,11 +961,26 @@ quant_0676:
         move x:(r7+$33),x0
         add x0,a
         move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$1202,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$69),a
+        sub #>$1,a
+        bpl tap_1202_ready
+        move x:(r7+$68),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_1202_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_1202_saved
+tap_1202_pair:
+        move #>$2,a
+tap_1202_saved:
+        move b1,x:(r7+$68)
+tap_1202_ready:
+        move a1,x:(r7+$69)
+        move a1,x1
+        move x:(r7+$68),r5
         bsr >cell_fetch
         asl #$8,a,a
         move a1,a
@@ -715,17 +995,32 @@ quant_0676:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0713
+        bpl quant_0993
         add #>$ff,a
-quant_0713:
+quant_0993:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$a0d,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$67),a
+        sub #>$1,a
+        bpl tap_0a0d_ready
+        move x:(r7+$66),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_0a0d_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_0a0d_saved
+tap_0a0d_pair:
+        move #>$2,a
+tap_0a0d_saved:
+        move b1,x:(r7+$66)
+tap_0a0d_ready:
+        move a1,x:(r7+$67)
+        move a1,x1
+        move x:(r7+$66),r5
         bsr >cell_store
         move x:(r7+$32),x0
         move x:(r7+$02),y1
@@ -737,25 +1032,55 @@ quant_0713:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0735
+        bpl quant_1030
         add #>$ff,a
-quant_0735:
+quant_1030:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$1204,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$6b),a
+        sub #>$1,a
+        bpl tap_1204_ready
+        move x:(r7+$6a),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_1204_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_1204_saved
+tap_1204_pair:
+        move #>$2,a
+tap_1204_saved:
+        move b1,x:(r7+$6a)
+tap_1204_ready:
+        move a1,x:(r7+$6b)
+        move a1,x1
+        move x:(r7+$6a),r5
         bsr >cell_store
         move x:(r7+$32),a
         move a1,x:(r7+$37)
-        move x:(r7+$21),a
-        add #>$1f56,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$6d),a
+        sub #>$1,a
+        bpl tap_1f56_ready
+        move x:(r7+$6c),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_1f56_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_1f56_saved
+tap_1f56_pair:
+        move #>$2,a
+tap_1f56_saved:
+        move b1,x:(r7+$6c)
+tap_1f56_ready:
+        move a1,x:(r7+$6d)
+        move a1,x1
+        move x:(r7+$6c),r5
         bsr >cell_fetch
         asl #$8,a,a
         move a1,a
@@ -774,11 +1099,26 @@ quant_0735:
         add x0,a
         move a1,x:(r7+$36)
         move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$26d0,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$71),a
+        sub #>$1,a
+        bpl tap_26d0_ready
+        move x:(r7+$70),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_26d0_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_26d0_saved
+tap_26d0_pair:
+        move #>$2,a
+tap_26d0_saved:
+        move b1,x:(r7+$70)
+tap_26d0_ready:
+        move a1,x:(r7+$71)
+        move a1,x1
+        move x:(r7+$70),r5
         bsr >cell_fetch
         asl #$8,a,a
         move a1,a
@@ -793,17 +1133,32 @@ quant_0735:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0791
+        bpl quant_1131
         add #>$ff,a
-quant_0791:
+quant_1131:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$1f58,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$6f),a
+        sub #>$1,a
+        bpl tap_1f58_ready
+        move x:(r7+$6e),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_1f58_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_1f58_saved
+tap_1f58_pair:
+        move #>$2,a
+tap_1f58_saved:
+        move b1,x:(r7+$6e)
+tap_1f58_ready:
+        move a1,x:(r7+$6f)
+        move a1,x1
+        move x:(r7+$6e),r5
         bsr >cell_store
         move x:(r7+$32),x0
         move x:(r7+$02),y1
@@ -811,11 +1166,26 @@ quant_0791:
         move x:(r7+$33),x0
         add x0,a
         move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$2d50,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$75),a
+        sub #>$1,a
+        bpl tap_2d50_ready
+        move x:(r7+$74),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_2d50_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_2d50_saved
+tap_2d50_pair:
+        move #>$2,a
+tap_2d50_saved:
+        move b1,x:(r7+$74)
+tap_2d50_ready:
+        move a1,x:(r7+$75)
+        move a1,x1
+        move x:(r7+$74),r5
         bsr >cell_fetch
         asl #$8,a,a
         move a1,a
@@ -830,17 +1200,32 @@ quant_0791:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0828
+        bpl quant_1198
         add #>$ff,a
-quant_0828:
+quant_1198:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$26d2,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$73),a
+        sub #>$1,a
+        bpl tap_26d2_ready
+        move x:(r7+$72),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_26d2_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_26d2_saved
+tap_26d2_pair:
+        move #>$2,a
+tap_26d2_saved:
+        move b1,x:(r7+$72)
+tap_26d2_ready:
+        move a1,x:(r7+$73)
+        move a1,x1
+        move x:(r7+$72),r5
         bsr >cell_store
         move x:(r7+$32),x0
         move x:(r7+$02),y1
@@ -852,17 +1237,32 @@ quant_0828:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0850
+        bpl quant_1235
         add #>$ff,a
-quant_0850:
+quant_1235:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
-        move x:(r7+$21),a
-        add #>$2d52,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
+        move x:(r7+$77),a
+        sub #>$1,a
+        bpl tap_2d52_ready
+        move x:(r7+$76),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_2d52_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_2d52_saved
+tap_2d52_pair:
+        move #>$2,a
+tap_2d52_saved:
+        move b1,x:(r7+$76)
+tap_2d52_ready:
+        move a1,x:(r7+$77)
+        move a1,x1
+        move x:(r7+$76),r5
         bsr >cell_store
         move x:(r7+$32),a
         move a1,x:(r7+$38)

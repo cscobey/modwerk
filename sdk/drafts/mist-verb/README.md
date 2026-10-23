@@ -1,6 +1,6 @@
 # Mist Verb
 
-Unpublished port preparation, version **0.1.1-experimental**, author **cscobey**.
+Unpublished port preparation, version **0.1.2-experimental**, author **cscobey**.
 Target: Mutable Instruments Clouds reverb and the separate stereo diffuser as
 an independent Octatrack MKII FX2 insert on OS 1.40C. MKI is not tested.
 
@@ -21,8 +21,8 @@ No disting NT firmware or Elektron code is copied.
 
 Two host storage models now match that original reverb exactly across 63
 parameter cases each: a global packed ring and independent per-delay rings.
-The second design permits cached native delay heads rather than repeated
-address division. This is a storage proof; the reference still uses upstream
+The second design is a candidate for a later memory-layout optimization.
+The current native core keeps the global ring and caches its fixed tap addresses. This is a storage proof; the reference still uses upstream
 floating-point arithmetic and its original oscillators.
 
 `packed_probe.asm` separately proves the basic packed-cell access on the
@@ -36,6 +36,10 @@ modulated reads, packed delay memory and a widened final mixer.
 32 kHz**. It does not run at the Octatrack's 44.1 kHz audio rate yet.
 The native experiment has measured numerical differences and excessive cost;
 its render is not an exact reproduction or a qualified effect.
+Fixed taps now cache their packed addresses: three before/after renders are
+bit-identical while executed instruction counts fall about 15 percent. This
+uses 1,857 program words (previously 1,257), plus the same 128-word gain table,
+and 120 scalar X words (previously 80). Full placement remains unverified.
 
 ## Controls
 
@@ -91,7 +95,7 @@ from another product.
 - 44.1↔32 kHz sample-rate conversion is still required. A timing-accurate tank
   alone does not establish bandwidth, alias rejection or total processing cost.
 - Worst-case stock SPRING REV is the performance design target. Benchmark
-  expensive settings, moving controls and trigger splits on both cores. The initial unoptimized 32 kHz core peaks at 22,330 executed
+  expensive settings, moving controls and trigger splits on both cores. The optimized 32 kHz core peaks at 18,908 executed
   instructions per 16 tank frames, for one instance on each core. That is
   neither hardware timing nor a full 44.1 kHz effect budget. It requires
   substantial optimization; no supported full-effect instance count exists yet.

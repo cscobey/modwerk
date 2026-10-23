@@ -1,6 +1,6 @@
 # Mist Verb testing
 
-Date: 2026-10-23. Version: 0.1.1-experimental. Target instrument: Octatrack MKII.
+Date: 2026-10-23. Version: 0.1.2-experimental. Target instrument: Octatrack MKII.
 Fork base: `bedbb362` (current with upstream when prepared). This is unpublished
 work on `feat/mist-verb` in `cscobey/modwerk`, under `sdk/drafts/mist-verb/`.
 The user requested fork-only development. The earlier upstream draft PR is
@@ -81,7 +81,7 @@ flashes instrument firmware. Sample rate for this experiment is 32,000 Hz.
 
 PASS: both core outputs identical, exact MIX 0 dry bypass, nonzero wet tail,
 no Y guard/shared-memory/code clobber under garbage start. The 12,972-word
-buffer is progressively cleared over 102 dry calls. The final core is 1,257
+buffer is progressively cleared over 102 dry calls. The final core is 1,857
 program words plus 128 gain-table words. init preserves r1/n1/m1.
 
 Settings: TIME 110, DAMP 64, DIFF 94, SMEAR 0, GAIN 83, MIX 127/0. Five seconds
@@ -100,12 +100,12 @@ matching the original float coefficient (epsilon 25) and its initial history
 reduces that error. Diagnose remaining numerical/modulation differences and measure decay/spectrum
 and listening behavior before claiming fidelity.
 
-Peak: **22,330 executed instructions per core per 16 tank frames**, one
+Peak: **18,908 executed instructions per core per 16 tank frames**, one
 instance on each core. This prototype is substantially too costly for the
 design target and includes no sample-rate conversion. Optimization is required.
 It is not a measured hardware deadline, a stock-matched benchmark or a proven
-supported instance count. The unoptimized address primitives were kept so
-sound and memory semantics could be checked before optimization.
+supported instance count. The moving taps retain the generic packed-address primitive; fixed taps
+cache their addresses. See the matched comparisons below.
 
 ## Sound quality and remaining audio integration
 
@@ -177,3 +177,43 @@ PASS: peak delay-position errors 0.06178 samples (0.5 Hz) and 0.20376 samples
 failed at 8.26857 samples. This bound covers this five-second diagnostic only,
 not long-term oscillator drift or perceptual equivalence. The corrected native
 render separately passed both-core identity, exact dry bypass and memory guards.
+
+## Fixed-tap address optimization (0.1.2-experimental)
+
+The global 16,384-cell layout and quantized audio math are unchanged. Twenty
+fixed taps cache a physical pair pointer and its 0/1/2 cell position in
+X r7+$50..$77. Each advances exactly once per processed sample; a ring wrap
+lands on cell 16,383 (position 0 of the final partial pair), not position 2.
+Moving taps still calculate their addresses. The full owned scalar span is
+now 120 words, with the same 12,972-word Y buffer.
+
+Compared with commit `66129855628c66590bb1a534285f04616224ae4d`, both cores'
+wet and dry raw outputs are bit-identical in all three cases below. Each runs
+164,096 frames with dirty memory seed 1776, shared/buffer/code guards, a
+4,096-frame pre-roll and five seconds of signal/tail. This traverses the full
+global ring repeatedly. Program size grows by 600 words; scalar state grows
+by 40 words. This is an instruction-count optimization, not a proven chip
+cycle or deadline improvement.
+
+| TIME/DAMP/DIFF/SMEAR/GAIN | Split | Before peak | After peak |
+| --- | ---: | ---: | ---: |
+| 110/64/94/0/83 | 0 | 22,330 | 18,908 |
+| 70/100/60/127/100 | 1 | 22,394 | 18,970 |
+| 127/0/127/127/127 | 15 | 22,381 | 18,963 |
+
+Counts are executed instructions per core per 16 frames, one instance/core.
+MIX 127 and MIX 0 are rendered separately. The before/after measurements use
+identical settings and input. Source identities, raw-output hashes and source
+residuals are in `evidence/cache-optimization.json`. This does not cover all
+knob combinations, moving parameters, asymmetric stereo input, many-instance
+stress, or hardware timing. The extreme case is output preservation evidence,
+not a sound-quality qualification at extreme settings.
+
+Reproduce using `render_core32.py` with the tool/SDK/stock/output arguments
+above, adding `--controls TIME,DAMP,DIFF,SMEAR,GAIN --split N`. To compare,
+extract the baseline draft at the named commit into a private directory and
+copy the current `render_core32.py` into it (the old renderer lacks these
+options). Render that baseline first. Render the current draft with the same
+options plus `--compare-output /PRIVATE/baseline-render`. The comparison
+refuses different settings or any different input/wet/dry bytes on either core.
+Keep extracted firmware and rendered outputs private as before.

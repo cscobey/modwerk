@@ -1,16 +1,16 @@
 {
   "wet": {
     "peakInstructionsPer16Frames": [
-      22330,
-      22330
+      18908,
+      18908
     ],
     "peakSample": 394417,
     "coreOutputsIdentical": true
   },
   "dry": {
     "peakInstructionsPer16Frames": [
-      22329,
-      22329
+      18907,
+      18907
     ],
     "peakSample": 2046992,
     "coreOutputsIdentical": true
@@ -40,10 +40,10 @@
     0
   ],
   "sourceHashes": {
-    "core32.asm": "fef8aa78503f35388ea432fb7e1efff4a50258bb8c471070ca6df24e0549bc3f",
-    "generate_core.py": "c0d9d60053c76c56ba1f1cda802c14d85832a17086c3ada0a7399e8d52bda1e8",
+    "core32.asm": "98279306edcf9ddac19179367af55985ff54187d8037e0dbe5fd034fbb34e361",
+    "generate_core.py": "23d798f88f7de97376b7e005a44e51a82411bf501cfc3370e5c509c942ed1813",
     "oracle_render.cpp": "12daa1dce9b13a2df504ba9b5b1f032e64b22cb22a14a78e4b939705689e5913",
     "packed_probe.asm": "7e5b1a8bfe2ac98a3a1222cca5518e54c7d449af2f8f70dce38bf72d26801e7b"
   },
-  "sourceSha256": "fef8aa78503f35388ea432fb7e1efff4a50258bb8c471070ca6df24e0549bc3f"
+  "sourceSha256": "98279306edcf9ddac19179367af55985ff54187d8037e0dbe5fd034fbb34e361"
 }

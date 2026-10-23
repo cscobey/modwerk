@@ -24,7 +24,19 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     for name in ('sdk', 'stock', 'assembler', 'host', 'disassembler', 'output'):
         ap.add_argument('--' + name, required=True, type=Path)
+    ap.add_argument('--controls', default='110,64,94,0,83',
+                    help='TIME,DAMP,DIFF,SMEAR,GAIN, each 0..127; MIX tests 127 and 0')
+    ap.add_argument('--split', type=int, default=0, choices=range(16),
+                    help='Sub-block boundary, 0 for no split')
+    ap.add_argument('--compare-output', type=Path,
+                    help='Earlier render directory; require identical raw output on both cores')
     args = ap.parse_args()
+    try:
+        controls = [int(v) for v in args.controls.split(',')]
+        if len(controls) != 5 or any(v < 0 or v > 127 for v in controls):
+            raise ValueError
+    except ValueError:
+        ap.error('--controls requires five integers in 0..127')
     out = args.output.resolve()
     if ROOT == out or ROOT in out.parents:
         ap.error('Output must be private, outside the module')
@@ -78,11 +90,12 @@ def main():
         if sys.byteorder != 'little':data.byteswap()
         path.write_bytes(data.tobytes())
     raw(out/'input.raw',values)
-    params=[110,64,94,0,83,127]+[0]*6
+    params=controls+[127]+[0]*6
     base=[str(args.host),'-mem',str(out/'A.mem'),'-memB',str(out/'B.mem'),
           '-init',format(symbols['init'],'x'),'-proc',format(symbols['proc'],'x'),
           '-inst','2','-core','0,1','-alloc','1,1','-r7','2,2','-audioidx','0,0',
           '-frames','16','-blocks',str(count//16),'-in',str(out/'input.raw')+','+str(out/'input.raw'),
+          '-split',str(args.split),
           '-allocproc','end','-audio','0','-guard','12972','-guard-shared','-dirty','1776']
     reports={}
     for name,mix in [('wet',127),('dry',0)]:
@@ -116,9 +129,11 @@ def main():
         sdk=subprocess.check_output(['xcrun','--show-sdk-path'],text=True).strip()
         oracle[1:1]=['-isystem',sdk+'/usr/include/c++/v1']
     subprocess.run(oracle,check=True)
-    skip=102*16
+    skip=102*16 if args.split == 0 else 51*16
     (out/'oracle-input.f32').write_bytes(b''.join(struct.pack('<ff',v/8388608,v/8388608) for v in values[skip:]))
-    coefficients=[.98*110/127,.95*94/127,.9-.85*64/127,table[83]/8388608,1,0]
+    time,damp,diff,smear,gain=controls
+    coefficients=[.98*time/127,.95*diff/127,.9-.85*damp/127,table[gain]/8388608,
+                  1,1 if smear == 127 else smear/128]
     subprocess.run([str(out/'oracle'),str(out/'oracle-input.f32'),str(out/'oracle-output.f32'),
                     *map(str,coefficients)],check=True)
     reference=array.array('f');reference.frombytes((out/'oracle-output.f32').read_bytes())
@@ -130,10 +145,23 @@ def main():
     reports['referenceErrorDb']=10*math.log10(error/max(energy,1e-30)) if error else -300
     reports['scope']='32 kHz experimental core only; no SRC, smoothing, instrument image or release qualification'
     reports['params']=params
+    reports['split']=args.split
     reports['oracleCoefficients']=coefficients
     reports['sourceHashes']={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest()
                             for name in ('core32.asm','generate_core.py','oracle_render.cpp','packed_probe.asm')}
     reports['sourceSha256']=hashlib.sha256((ROOT/'core32.asm').read_bytes()).hexdigest()
+    if args.compare_output:
+        before=json.loads((args.compare_output/'core-report.json').read_text())
+        if before['params'] != params or before.get('split',0) != args.split:
+            raise RuntimeError('Baseline settings differ')
+        for name in ('input.raw','wet.raw','wet.raw.i1','dry.raw','dry.raw.i1'):
+            if (out/name).read_bytes() != (args.compare_output/name).read_bytes():
+                raise RuntimeError('Optimization changed '+name)
+        reports['baselineComparison']={
+            'sourceSha256':before['sourceSha256'],
+            'bothCoreWetAndDryBitExact':True,
+            'baselinePeakInstructionsPer16Frames':before['wet']['peakInstructionsPer16Frames'],
+        }
     (out/'core-report.json').write_text(json.dumps(reports,indent=2)+'\n')
     print(json.dumps(reports,indent=2))
 

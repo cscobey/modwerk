@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 """Generate a 32 kHz DSP56300 tank experiment, NOT a 44.1 kHz OT effect.
 
-Translated from the pinned MIT Clouds topology. The simple address routines
-are the previously verified primitives, intentionally retained before any
-optimization. Control smoothing and rate conversion are not implemented here.
+Translated from the pinned MIT Clouds topology. Fixed taps cache their packed
+addresses; moving taps retain the verified generic address routine.
+Control smoothing and rate conversion are not implemented here.
 """
 from pathlib import Path
 import argparse
 
 ROOT = Path(__file__).resolve().parent
 code = []
+INPUT_APS = ((0, 113), (114, 162), (277, 241), (519, 399))
+TANK_APS = ((919, 1653), (2573, 2038), (8024, 1913), (9938, 1663))
+# Each fixed tap is visited exactly once per processed sample. Two X words
+# cache its physical pair pointer and 0/1/2 position inside that pair.
+FIXED_TAPS = sorted({100, 4612, 8022, 11602} |
+                    {offset for base, length in INPUT_APS + TANK_APS
+                     for offset in (base, base + length - 1)})
+CACHE = {offset: 0x50 + 2 * i for i, offset in enumerate(FIXED_TAPS)}
+STATE_WORDS = 0x50 + 2 * len(FIXED_TAPS)
 
 
 def emit(text):
@@ -21,11 +30,27 @@ def q(value):
 
 
 def address(offset):
-    emit(f'''move x:(r7+$21),a
-        add #>${offset:x},a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address''')
+    slot = CACHE[offset]
+    emit(f'''move x:(r7+${slot + 1:x}),a
+        sub #>$1,a
+        bpl tap_{offset:04x}_ready
+        move x:(r7+${slot:x}),b
+        sub #>$2,b
+        move x:(r7+$20),x0
+        cmp x0,b
+        bge tap_{offset:04x}_pair
+        move x0,b
+        add #>$2aaa,b
+        clr a
+        bra tap_{offset:04x}_saved
+tap_{offset:04x}_pair:
+        move #>$2,a
+tap_{offset:04x}_saved:
+        move b1,x:(r7+${slot:x})
+tap_{offset:04x}_ready:
+        move a1,x:(r7+${slot + 1:x})
+        move a1,x1
+        move x:(r7+${slot:x}),r5''')
 
 
 def read(offset):
@@ -138,21 +163,29 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
-    emit('''; Copyright 2014 Emilie Gillet; translation Copyright 2026 cscobey.
+    emit(f'''; Copyright 2014 Emilie Gillet; translation Copyright 2026 cscobey.
         ; MIT: see LICENSE and pinned upstream source.
         ; 32 kHz core experiment ONLY. Not a 44.1 kHz Octatrack effect.
-        ; X r7+00..4f own scalar state. Y first 12972 words own buffer.
+        ; X r7+00..{STATE_WORDS - 1:02x} own scalar state. Y first 12972 words own buffer.
 init:
         move #>$ffffff,m5
         move r7,r5
         clr a
-        do #80,>core_zero
+        do #{STATE_WORDS},>core_zero
         move a1,x:(r5)+
 core_zero:
         nop
         move x:>$213,r4
         move x:(r4),a
         move a1,x:(r7+$20)
+''')
+    for offset, slot in CACHE.items():
+        emit(f'''move x:(r7+$20),a
+            add #>${2 * (offset // 3):x},a
+            move a1,x:(r7+${slot:x})
+            move #>${offset % 3:x},a
+            move a1,x:(r7+${slot + 1:x})''')
+    emit('''
         move #>$0032ac,a
         move a1,x:(r7+$22)
         move #>$400000,a
@@ -288,7 +321,7 @@ knob_{i}_hold:
     interp(0, 10, 60, 0x44)
     write(100)
     emit('move x:(r7+$3b),a\nmove a1,x:(r7+$32)')
-    for base, length in [(0,113),(114,162),(277,241),(519,399)]:
+    for base, length in INPUT_APS:
         ap(base, length)
     emit('move x:(r7+$32),a\nmove a1,x:(r7+$34)')
     for channel in range(2):
