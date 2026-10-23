@@ -3,7 +3,7 @@
   "id": "mist-verb",
   "key": "MIST VERB",
   "name": "Mist Verb",
-  "version": "0.1.4-experimental",
+  "version": "0.1.5-experimental",
   "category": "effects",
   "author": {
     "github": "cscobey",
@@ -106,7 +106,7 @@
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "Standalone native 44.1 kHz conversion, tank and dry/wet mixer match the recorded reference-chain tests on both emulated cores. Full-scale SRC, dry bypass and guards pass. Performance, smoothing, installation and hardware qualification remain unfinished.",
+    "summary": "Optimized native 44.1 kHz path preserves recorded static audio exactly. Dynamic six-control ramps match the integer timing model, produce identical audio across splits, and preserve silence. A finite matched SPRING REV benchmark is recorded. Installed performance, lifecycle and hardware qualification remain unfinished.",
     "hardwareStatus": "untested",
     "gates": [
       "Worst-case cycles under parameter modulation and maximum load",
@@ -137,6 +137,6 @@
   },
   "build": {
     "status": "pending",
-    "reason": "Unpublished draft: native 44.1 kHz experiment exists, but complete performance, smoothing, installed placement, composition, USB lifecycle and persistence remain unqualified."
+    "reason": "Unpublished draft: native conversion, tank, mixer and control ramps are tested. Processing cost remains above stock SPRING REV; installed placement, composition, control publication, USB lifecycle and persistence remain unqualified."
   }
 }

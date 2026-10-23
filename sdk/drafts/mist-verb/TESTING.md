@@ -1,6 +1,6 @@
 # Mist Verb testing
 
-Date: 2026-10-23. Version: 0.1.4-experimental. Target instrument: Octatrack MKII.
+Date: 2026-10-23. Version: 0.1.5-experimental. Target instrument: Octatrack MKII.
 Fork base: `bedbb362` (current with upstream when prepared). This is unpublished
 work on `feat/mist-verb` in `cscobey/modwerk`, under `sdk/drafts/mist-verb/`.
 The user requested fork-only development. The earlier upstream draft PR is
@@ -10,13 +10,17 @@ closed; further upstream submission requires a new user instruction.
 
 The complete standalone 44.1 kHz path now executes on the emulated DSP:
 conversion, native tank and dry/wet mixer. See [NATIVE_SRC.md](NATIVE_SRC.md)
-and `evidence/native-src/` for 0.1.4 results, exact comparisons and limitations.
+and `evidence/performance-controls/` for 0.1.5 optimization, exact static
+comparisons, retargeted control ramps and the matched SPRING REV comparison.
+The earlier 0.1.4 results remain in `evidence/native-src/`.
 The chronological sections below retain the earlier measurements; their
 memory layouts and statements of missing SRC describe those earlier stages.
 Current tank: 15,480 Y words, 1,452 code words, 16,798 nominal instructions/16
-tank frames. Joined path: 15,856 Y-word extent, 2,040 code words, 6,274 SRC
-coefficient/schedule words plus 128 gain words. No installable or hardware
-qualification is claimed.
+tank frames. Joined path: 15,856 Y-word extent, 2,547 code words, 6,274 SRC
+coefficient/schedule words plus 128 gain words. The joined X extent is 240
+words including scratch/gaps/clearing. Five controls ramp in 8 ms at tank rate;
+MIX ramps in 5.805 ms at input rate. Static audio remains identical to 0.1.4. No installable or
+hardware qualification is claimed.
 
 ## Commands and source identity
 

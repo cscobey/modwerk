@@ -61,6 +61,9 @@ src_zero_hist_3:
         move a1,x:(r7+$7b)
         rts
 proc:
+        move r3,x:(r7+$8e)
+        move m3,x:(r7+$8f)
+        move #>$ffffff,m3
         move #>$ffffff,m4
         move #>$ffffff,m5
         move #>$1,n0
@@ -133,6 +136,8 @@ src_down_skipped:
         move a1,x:(r7+$7a)
 src_frame_done:
         nop
+        move x:(r7+$8e),r3
+        move x:(r7+$8f),m3
         move #>$ffffff,m5
         rts
 src_down_push:
@@ -160,28 +165,58 @@ src_down_filter:
         move #>$19290,a
 src_down_schedule:
         move a1,x:(r7+$77)
+        move #>95,m4
         move #>95,m5
         move x:(r7+$71),r5
+        move x:(r7+$72),r4
         move (r5)-
-        move x:(r7+$82),r4
+        move (r4)-
+        move x:(r7+$82),r3
         clr a
-        do #96,>src_down_mac_0_first
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_down_mac_0_first:
+        clr b
+        move y:(r5)-,y0
+        move y:(r4)-,y1
+        do #95,>src_down_stereo_first
+        move p:(r3)+,x0
+        mac y0,x0,a  y:(r5)-,y0
+        mac x0,y1,b  y:(r4)-,y1
+src_down_stereo_first:
         nop
+        move p:(r3)+,x0
+        mac y0,x0,a
+        mac x0,y1,b
+; Save the right accumulator without losing its extension bits.
+        move b1,x:(r7+$8b)
+        move b0,x:(r7+$8c)
+        move b2,x:(r7+$8d)
         bsr >src_round_q23
         asr #$2,a,a
         move a1,x:(r7+$84)
         move a0,x:(r7+$86)
+        move x:(r7+$8b),a
+        move x:(r7+$8c),a0
+        move x:(r7+$8d),a2
+        bsr >src_round_q23
+        asr #$2,a,a
+        move a1,x:(r7+$88)
+        move a0,x:(r7+$89)
         clr a
-        do #96,>src_down_mac_0_second
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_down_mac_0_second:
+        clr b
+        move y:(r5)-,y0
+        move y:(r4)-,y1
+        do #95,>src_down_stereo_second
+        move p:(r3)+,x0
+        mac y0,x0,a  y:(r5)-,y0
+        mac x0,y1,b  y:(r4)-,y1
+src_down_stereo_second:
         nop
+        move p:(r3)+,x0
+        mac y0,x0,a
+        mac x0,y1,b
+; Save the right accumulator without losing its extension bits.
+        move b1,x:(r7+$8b)
+        move b0,x:(r7+$8c)
+        move b2,x:(r7+$8d)
         bsr >src_round_q23
         move x:(r7+$84),b
         move x:(r7+$86),b0
@@ -196,42 +231,24 @@ src_down_mac_0_second:
         asl #$2,b,b
         add b,a
         move a,x:(r7+$80)
-        move #>95,m5
-        move x:(r7+$72),r5
-        move (r5)-
-        move x:(r7+$82),r4
-        clr a
-        do #96,>src_down_mac_1_first
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_down_mac_1_first:
-        nop
+        move x:(r7+$8b),a
+        move x:(r7+$8c),a0
+        move x:(r7+$8d),a2
         bsr >src_round_q23
-        asr #$2,a,a
-        move a1,x:(r7+$84)
-        move a0,x:(r7+$86)
-        clr a
-        do #96,>src_down_mac_1_second
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_down_mac_1_second:
-        nop
-        bsr >src_round_q23
-        move x:(r7+$84),b
-        move x:(r7+$86),b0
+        move x:(r7+$88),b
+        move x:(r7+$89),b0
         asl #$2,b,b
         sub b,a
         move a1,x0
         move x:(r7+$83),y1
         mpy x0,y1,a
         bsr >src_round_q23
-        move x:(r7+$84),b
-        move x:(r7+$86),b0
+        move x:(r7+$88),b
+        move x:(r7+$89),b0
         asl #$2,b,b
         add b,a
         move a,x:(r7+$81)
+        move #>$ffffff,m4
         move #>$ffffff,m5
         rts
 src_up_push:
@@ -259,28 +276,58 @@ src_up_filter:
         move #>$19510,a
 src_up_schedule:
         move a1,x:(r7+$78)
+        move #>47,m4
         move #>47,m5
         move x:(r7+$73),r5
+        move x:(r7+$74),r4
         move (r5)-
-        move x:(r7+$82),r4
+        move (r4)-
+        move x:(r7+$82),r3
         clr a
-        do #48,>src_up_mac_0_first
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_up_mac_0_first:
+        clr b
+        move y:(r5)-,y0
+        move y:(r4)-,y1
+        do #47,>src_up_stereo_first
+        move p:(r3)+,x0
+        mac y0,x0,a  y:(r5)-,y0
+        mac x0,y1,b  y:(r4)-,y1
+src_up_stereo_first:
         nop
+        move p:(r3)+,x0
+        mac y0,x0,a
+        mac x0,y1,b
+; Save the right accumulator without losing its extension bits.
+        move b1,x:(r7+$8b)
+        move b0,x:(r7+$8c)
+        move b2,x:(r7+$8d)
         bsr >src_round_q23
         asr #$2,a,a
         move a1,x:(r7+$84)
         move a0,x:(r7+$86)
+        move x:(r7+$8b),a
+        move x:(r7+$8c),a0
+        move x:(r7+$8d),a2
+        bsr >src_round_q23
+        asr #$2,a,a
+        move a1,x:(r7+$88)
+        move a0,x:(r7+$89)
         clr a
-        do #48,>src_up_mac_0_second
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_up_mac_0_second:
+        clr b
+        move y:(r5)-,y0
+        move y:(r4)-,y1
+        do #47,>src_up_stereo_second
+        move p:(r3)+,x0
+        mac y0,x0,a  y:(r5)-,y0
+        mac x0,y1,b  y:(r4)-,y1
+src_up_stereo_second:
         nop
+        move p:(r3)+,x0
+        mac y0,x0,a
+        mac x0,y1,b
+; Save the right accumulator without losing its extension bits.
+        move b1,x:(r7+$8b)
+        move b0,x:(r7+$8c)
+        move b2,x:(r7+$8d)
         bsr >src_round_q23
         move x:(r7+$84),b
         move x:(r7+$86),b0
@@ -295,42 +342,24 @@ src_up_mac_0_second:
         asl #$2,b,b
         add b,a
         move a,x:(r7+$80)
-        move #>47,m5
-        move x:(r7+$74),r5
-        move (r5)-
-        move x:(r7+$82),r4
-        clr a
-        do #48,>src_up_mac_1_first
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_up_mac_1_first:
-        nop
+        move x:(r7+$8b),a
+        move x:(r7+$8c),a0
+        move x:(r7+$8d),a2
         bsr >src_round_q23
-        asr #$2,a,a
-        move a1,x:(r7+$84)
-        move a0,x:(r7+$86)
-        clr a
-        do #48,>src_up_mac_1_second
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_up_mac_1_second:
-        nop
-        bsr >src_round_q23
-        move x:(r7+$84),b
-        move x:(r7+$86),b0
+        move x:(r7+$88),b
+        move x:(r7+$89),b0
         asl #$2,b,b
         sub b,a
         move a1,x0
         move x:(r7+$83),y1
         mpy x0,y1,a
         bsr >src_round_q23
-        move x:(r7+$84),b
-        move x:(r7+$86),b0
+        move x:(r7+$88),b
+        move x:(r7+$89),b0
         asl #$2,b,b
         add b,a
         move a,x:(r7+$81)
+        move #>$ffffff,m4
         move #>$ffffff,m5
         rts
 ; Explicit half-away-from-zero rounding (not DSP convergent RND).

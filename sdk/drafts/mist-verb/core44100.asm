@@ -87,43 +87,7 @@ rv_core_wipe:
         nop
         rts
 rv_core_knobs:
-        move x:(r6+$0),x0
-        move #>$7e6d7f,y1
-        mpy x0,y1,a
-        move a1,x:(r7+$0)
-        move x:(r6+$2),x0
-        move #>$7a8eb7,y1
-        mpy x0,y1,a
-        move a1,x:(r7+$2)
-        move x:(r6+$1),x0
-        move #>$6da81d,y1
-        mpy x0,y1,b
-        move #>$733333,a
-        sub b,a
-        move a1,x:(r7+$01)
-        move x:(r6+$3),a
-        move #>$7f0000,x0
-        cmp x0,a
-        bne rv_knob_3_hold
-        move #>$7fffff,a
-rv_knob_3_hold:
-        move a1,x:(r7+$3)
-        move #>$7f0000,a
-        move #>$7f0000,x0
-        cmp x0,a
-        bne rv_knob_5_hold
-        move #>$7fffff,a
-rv_knob_5_hold:
-        move a1,x:(r7+$5)
-        move x:(r6+$4),a
-        and #>$7f0000,a
-        move a1,a
-        asr #$10,a,a
-        move a1,n5
-        move #>$fab1e0,r5
-        move (r5)+n5
-        move p:(r5),a
-        move a1,x:(r7+$04)
+tank_frame:
         move #>$1,n0
         do n7,>rv_core_frame_end
         move x:(r0)+,a
@@ -1130,7 +1094,7 @@ init:
         move #>$70,n4
         move (r4)+n4
         clr a
-        do #$40,>src_zero_scalar
+        do #$80,>src_zero_scalar
         move a1,x:(r4)+
 src_zero_scalar:
         nop
@@ -1190,8 +1154,13 @@ proc:
         jsr (r4)
         rts
 src_audio_active:
+        move r3,x:(r7+$8e)
+        move m3,x:(r7+$8f)
+        move #>$ffffff,m3
         move #>$ffffff,m4
         move #>$ffffff,m5
+        bsr >tank_control_targets
+        bsr >src_control_targets
         move #>$1,n0
         do n7,>src_frame_done
         move x:(r0)+,a
@@ -1200,11 +1169,13 @@ src_audio_active:
         move x:(r0)-,a
         move a1,x:(r7+$81)
         move a1,x:(r7+$b5)
+        bsr >src_mix_slew
         bsr >src_down_push
         move x:(r7+$75),a
         cmp #>32000,a
         bge src_down_skipped
         bsr >src_down_filter
+        bsr >src_tank_slew
         move r0,x:(r7+$b2)
         move n7,x:(r7+$b3)
         move x:(r7+$80),a
@@ -1215,7 +1186,7 @@ src_audio_active:
         move #>$b0,n0
         move (r0)+n0
         move #>$1,n7
-        move #>tank_run,r4
+        move #>tank_frame,r4
         jsr (r4)
         move x:(r7+$b2),r0
         move x:(r7+$b3),n7
@@ -1286,6 +1257,8 @@ src_down_skipped:
         move a1,x:(r7+$7a)
 src_frame_done:
         nop
+        move x:(r7+$8e),r3
+        move x:(r7+$8f),m3
         move #>$ffffff,m5
         rts
 src_down_push:
@@ -1313,28 +1286,58 @@ src_down_filter:
         move #>$19290,a
 src_down_schedule:
         move a1,x:(r7+$77)
+        move #>95,m4
         move #>95,m5
         move x:(r7+$71),r5
+        move x:(r7+$72),r4
         move (r5)-
-        move x:(r7+$82),r4
+        move (r4)-
+        move x:(r7+$82),r3
         clr a
-        do #96,>src_down_mac_0_first
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_down_mac_0_first:
+        clr b
+        move y:(r5)-,y0
+        move y:(r4)-,y1
+        do #95,>src_down_stereo_first
+        move p:(r3)+,x0
+        mac y0,x0,a  y:(r5)-,y0
+        mac x0,y1,b  y:(r4)-,y1
+src_down_stereo_first:
         nop
+        move p:(r3)+,x0
+        mac y0,x0,a
+        mac x0,y1,b
+; Save the right accumulator without losing its extension bits.
+        move b1,x:(r7+$8b)
+        move b0,x:(r7+$8c)
+        move b2,x:(r7+$8d)
         bsr >src_round_q23
         asr #$2,a,a
         move a1,x:(r7+$84)
         move a0,x:(r7+$86)
+        move x:(r7+$8b),a
+        move x:(r7+$8c),a0
+        move x:(r7+$8d),a2
+        bsr >src_round_q23
+        asr #$2,a,a
+        move a1,x:(r7+$88)
+        move a0,x:(r7+$89)
         clr a
-        do #96,>src_down_mac_0_second
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_down_mac_0_second:
+        clr b
+        move y:(r5)-,y0
+        move y:(r4)-,y1
+        do #95,>src_down_stereo_second
+        move p:(r3)+,x0
+        mac y0,x0,a  y:(r5)-,y0
+        mac x0,y1,b  y:(r4)-,y1
+src_down_stereo_second:
         nop
+        move p:(r3)+,x0
+        mac y0,x0,a
+        mac x0,y1,b
+; Save the right accumulator without losing its extension bits.
+        move b1,x:(r7+$8b)
+        move b0,x:(r7+$8c)
+        move b2,x:(r7+$8d)
         bsr >src_round_q23
         move x:(r7+$84),b
         move x:(r7+$86),b0
@@ -1349,42 +1352,24 @@ src_down_mac_0_second:
         asl #$2,b,b
         add b,a
         move a,x:(r7+$80)
-        move #>95,m5
-        move x:(r7+$72),r5
-        move (r5)-
-        move x:(r7+$82),r4
-        clr a
-        do #96,>src_down_mac_1_first
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_down_mac_1_first:
-        nop
+        move x:(r7+$8b),a
+        move x:(r7+$8c),a0
+        move x:(r7+$8d),a2
         bsr >src_round_q23
-        asr #$2,a,a
-        move a1,x:(r7+$84)
-        move a0,x:(r7+$86)
-        clr a
-        do #96,>src_down_mac_1_second
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_down_mac_1_second:
-        nop
-        bsr >src_round_q23
-        move x:(r7+$84),b
-        move x:(r7+$86),b0
+        move x:(r7+$88),b
+        move x:(r7+$89),b0
         asl #$2,b,b
         sub b,a
         move a1,x0
         move x:(r7+$83),y1
         mpy x0,y1,a
         bsr >src_round_q23
-        move x:(r7+$84),b
-        move x:(r7+$86),b0
+        move x:(r7+$88),b
+        move x:(r7+$89),b0
         asl #$2,b,b
         add b,a
         move a,x:(r7+$81)
+        move #>$ffffff,m4
         move #>$ffffff,m5
         rts
 src_up_push:
@@ -1412,28 +1397,58 @@ src_up_filter:
         move #>$19510,a
 src_up_schedule:
         move a1,x:(r7+$78)
+        move #>47,m4
         move #>47,m5
         move x:(r7+$73),r5
+        move x:(r7+$74),r4
         move (r5)-
-        move x:(r7+$82),r4
+        move (r4)-
+        move x:(r7+$82),r3
         clr a
-        do #48,>src_up_mac_0_first
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_up_mac_0_first:
+        clr b
+        move y:(r5)-,y0
+        move y:(r4)-,y1
+        do #47,>src_up_stereo_first
+        move p:(r3)+,x0
+        mac y0,x0,a  y:(r5)-,y0
+        mac x0,y1,b  y:(r4)-,y1
+src_up_stereo_first:
         nop
+        move p:(r3)+,x0
+        mac y0,x0,a
+        mac x0,y1,b
+; Save the right accumulator without losing its extension bits.
+        move b1,x:(r7+$8b)
+        move b0,x:(r7+$8c)
+        move b2,x:(r7+$8d)
         bsr >src_round_q23
         asr #$2,a,a
         move a1,x:(r7+$84)
         move a0,x:(r7+$86)
+        move x:(r7+$8b),a
+        move x:(r7+$8c),a0
+        move x:(r7+$8d),a2
+        bsr >src_round_q23
+        asr #$2,a,a
+        move a1,x:(r7+$88)
+        move a0,x:(r7+$89)
         clr a
-        do #48,>src_up_mac_0_second
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_up_mac_0_second:
+        clr b
+        move y:(r5)-,y0
+        move y:(r4)-,y1
+        do #47,>src_up_stereo_second
+        move p:(r3)+,x0
+        mac y0,x0,a  y:(r5)-,y0
+        mac x0,y1,b  y:(r4)-,y1
+src_up_stereo_second:
         nop
+        move p:(r3)+,x0
+        mac y0,x0,a
+        mac x0,y1,b
+; Save the right accumulator without losing its extension bits.
+        move b1,x:(r7+$8b)
+        move b0,x:(r7+$8c)
+        move b2,x:(r7+$8d)
         bsr >src_round_q23
         move x:(r7+$84),b
         move x:(r7+$86),b0
@@ -1448,42 +1463,24 @@ src_up_mac_0_second:
         asl #$2,b,b
         add b,a
         move a,x:(r7+$80)
-        move #>47,m5
-        move x:(r7+$74),r5
-        move (r5)-
-        move x:(r7+$82),r4
-        clr a
-        do #48,>src_up_mac_1_first
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_up_mac_1_first:
-        nop
+        move x:(r7+$8b),a
+        move x:(r7+$8c),a0
+        move x:(r7+$8d),a2
         bsr >src_round_q23
-        asr #$2,a,a
-        move a1,x:(r7+$84)
-        move a0,x:(r7+$86)
-        clr a
-        do #48,>src_up_mac_1_second
-        move y:(r5)-,x0
-        move p:(r4)+,y1
-        mac x0,y1,a
-src_up_mac_1_second:
-        nop
-        bsr >src_round_q23
-        move x:(r7+$84),b
-        move x:(r7+$86),b0
+        move x:(r7+$88),b
+        move x:(r7+$89),b0
         asl #$2,b,b
         sub b,a
         move a1,x0
         move x:(r7+$83),y1
         mpy x0,y1,a
         bsr >src_round_q23
-        move x:(r7+$84),b
-        move x:(r7+$86),b0
+        move x:(r7+$88),b
+        move x:(r7+$89),b0
         asl #$2,b,b
         add b,a
         move a,x:(r7+$81)
+        move #>$ffffff,m4
         move #>$ffffff,m5
         rts
 ; Explicit half-away-from-zero rounding (not DSP convergent RND).
@@ -1513,15 +1510,13 @@ src_round_inrange:
         rts
 
 src_mix_output:
-        move x:(r6+$5),b
-        and #>$7f0000,b
-        move b1,b
+        move x:(r7+$bf),b
         tst b
         bne src_mix_nonzero
         move y0,a
         rts
 src_mix_nonzero:
-        cmp #>$7f0000,b
+        cmp #>$7fffff,b
         beq src_mix_done
         move b1,y1
         move a1,x0
@@ -1531,3 +1526,340 @@ src_mix_nonzero:
         add x0,a
 src_mix_done:
         rts
+tank_control_targets:
+        move x:(r6+$0),x0
+        move #>$7e6d7f,y1
+        mpy x0,y1,a
+        move a1,x:(r7+$c0)
+        move x:(r6+$2),x0
+        move #>$7a8eb7,y1
+        mpy x0,y1,a
+        move a1,x:(r7+$c2)
+        move x:(r6+$1),x0
+        move #>$6da81d,y1
+        mpy x0,y1,b
+        move #>$733333,a
+        sub b,a
+        move a1,x:(r7+$c1)
+        move x:(r6+$3),a
+        move #>$7f0000,x0
+        cmp x0,a
+        bne rv_knob_3_hold
+        move #>$7fffff,a
+rv_knob_3_hold:
+        move a1,x:(r7+$c3)
+        move #>$7f0000,a
+        move #>$7f0000,x0
+        cmp x0,a
+        bne rv_knob_5_hold
+        move #>$7fffff,a
+rv_knob_5_hold:
+        move a1,x:(r7+$c5)
+        move x:(r6+$4),a
+        and #>$7f0000,a
+        move a1,a
+        asr #$10,a,a
+        move a1,n5
+        move #>$fab1e0,r5
+        move (r5)+n5
+        move p:(r5),a
+        move a1,x:(r7+$c4)
+        rts
+src_control_targets:
+move #>$7fffff,a
+move a1,x:(r7+$05)
+move x:(r6+$5),a
+and #>$7f0000,a
+cmp #>$7f0000,a
+bne src_mix_goal_ready
+move #>$7fffff,a
+src_mix_goal_ready:
+move a1,x:(r7+$c5)
+move x:(r7+$b6),a
+tst a
+bne src_controls_live
+move x:(r7+$c0),a
+move a1,x:(r7+$0)
+move a1,x:(r7+$e8)
+clr a
+move a1,x:(r7+$c8)
+move a1,x:(r7+$e0)
+move x:(r7+$c1),a
+move a1,x:(r7+$1)
+move a1,x:(r7+$e9)
+clr a
+move a1,x:(r7+$c9)
+move a1,x:(r7+$e1)
+move x:(r7+$c2),a
+move a1,x:(r7+$2)
+move a1,x:(r7+$ea)
+clr a
+move a1,x:(r7+$ca)
+move a1,x:(r7+$e2)
+move x:(r7+$c3),a
+move a1,x:(r7+$3)
+move a1,x:(r7+$eb)
+clr a
+move a1,x:(r7+$cb)
+move a1,x:(r7+$e3)
+move x:(r7+$c4),a
+move a1,x:(r7+$4)
+move a1,x:(r7+$ec)
+clr a
+move a1,x:(r7+$cc)
+move a1,x:(r7+$e4)
+move x:(r7+$c5),a
+move a1,x:(r7+$bf)
+move a1,x:(r7+$ed)
+clr a
+move a1,x:(r7+$cd)
+move a1,x:(r7+$e5)
+move #>$1,a
+move a1,x:(r7+$b6)
+rts
+src_controls_live:
+move x:(r7+$c0),a
+move x:(r7+$e8),x0
+cmp x0,a
+beq src_target_0_done
+move a1,x:(r7+$e8)
+move x:(r7+$0),b
+move x:(r7+$c8),b0
+sub b,a
+bpl src_target_0_divide
+; Truncate a negative slope toward zero at Q47 precision.
+clr b
+move #>$ff,b0
+add b,a
+src_target_0_divide:
+asr #$8,a,a
+move a1,x:(r7+$d0)
+move a0,x:(r7+$d8)
+move #>$100,a
+move a1,x:(r7+$e0)
+src_target_0_done:
+move x:(r7+$c1),a
+move x:(r7+$e9),x0
+cmp x0,a
+beq src_target_1_done
+move a1,x:(r7+$e9)
+move x:(r7+$1),b
+move x:(r7+$c9),b0
+sub b,a
+bpl src_target_1_divide
+; Truncate a negative slope toward zero at Q47 precision.
+clr b
+move #>$ff,b0
+add b,a
+src_target_1_divide:
+asr #$8,a,a
+move a1,x:(r7+$d1)
+move a0,x:(r7+$d9)
+move #>$100,a
+move a1,x:(r7+$e1)
+src_target_1_done:
+move x:(r7+$c2),a
+move x:(r7+$ea),x0
+cmp x0,a
+beq src_target_2_done
+move a1,x:(r7+$ea)
+move x:(r7+$2),b
+move x:(r7+$ca),b0
+sub b,a
+bpl src_target_2_divide
+; Truncate a negative slope toward zero at Q47 precision.
+clr b
+move #>$ff,b0
+add b,a
+src_target_2_divide:
+asr #$8,a,a
+move a1,x:(r7+$d2)
+move a0,x:(r7+$da)
+move #>$100,a
+move a1,x:(r7+$e2)
+src_target_2_done:
+move x:(r7+$c3),a
+move x:(r7+$eb),x0
+cmp x0,a
+beq src_target_3_done
+move a1,x:(r7+$eb)
+move x:(r7+$3),b
+move x:(r7+$cb),b0
+sub b,a
+bpl src_target_3_divide
+; Truncate a negative slope toward zero at Q47 precision.
+clr b
+move #>$ff,b0
+add b,a
+src_target_3_divide:
+asr #$8,a,a
+move a1,x:(r7+$d3)
+move a0,x:(r7+$db)
+move #>$100,a
+move a1,x:(r7+$e3)
+src_target_3_done:
+move x:(r7+$c4),a
+move x:(r7+$ec),x0
+cmp x0,a
+beq src_target_4_done
+move a1,x:(r7+$ec)
+move x:(r7+$4),b
+move x:(r7+$cc),b0
+sub b,a
+bpl src_target_4_divide
+; Truncate a negative slope toward zero at Q47 precision.
+clr b
+move #>$ff,b0
+add b,a
+src_target_4_divide:
+asr #$8,a,a
+move a1,x:(r7+$d4)
+move a0,x:(r7+$dc)
+move #>$100,a
+move a1,x:(r7+$e4)
+src_target_4_done:
+move x:(r7+$c5),a
+move x:(r7+$ed),x0
+cmp x0,a
+beq src_target_5_done
+move a1,x:(r7+$ed)
+move x:(r7+$bf),b
+move x:(r7+$cd),b0
+sub b,a
+bpl src_target_5_divide
+; Truncate a negative slope toward zero at Q47 precision.
+clr b
+move #>$ff,b0
+add b,a
+src_target_5_divide:
+asr #$8,a,a
+move a1,x:(r7+$d5)
+move a0,x:(r7+$dd)
+move #>$100,a
+move a1,x:(r7+$e5)
+src_target_5_done:
+rts
+src_tank_slew:
+move x:(r7+$e0),a
+tst a
+beq src_slew_0_done
+sub #>$1,a
+move a1,x:(r7+$e0)
+beq src_slew_0_snap
+move x:(r7+$0),a
+move x:(r7+$c8),a0
+move x:(r7+$d0),b
+move x:(r7+$d8),b0
+add b,a
+move a1,x:(r7+$0)
+move a0,x:(r7+$c8)
+bra src_slew_0_done
+src_slew_0_snap:
+move x:(r7+$e8),a
+move a1,x:(r7+$0)
+clr a
+move a1,x:(r7+$c8)
+src_slew_0_done:
+move x:(r7+$e1),a
+tst a
+beq src_slew_1_done
+sub #>$1,a
+move a1,x:(r7+$e1)
+beq src_slew_1_snap
+move x:(r7+$1),a
+move x:(r7+$c9),a0
+move x:(r7+$d1),b
+move x:(r7+$d9),b0
+add b,a
+move a1,x:(r7+$1)
+move a0,x:(r7+$c9)
+bra src_slew_1_done
+src_slew_1_snap:
+move x:(r7+$e9),a
+move a1,x:(r7+$1)
+clr a
+move a1,x:(r7+$c9)
+src_slew_1_done:
+move x:(r7+$e2),a
+tst a
+beq src_slew_2_done
+sub #>$1,a
+move a1,x:(r7+$e2)
+beq src_slew_2_snap
+move x:(r7+$2),a
+move x:(r7+$ca),a0
+move x:(r7+$d2),b
+move x:(r7+$da),b0
+add b,a
+move a1,x:(r7+$2)
+move a0,x:(r7+$ca)
+bra src_slew_2_done
+src_slew_2_snap:
+move x:(r7+$ea),a
+move a1,x:(r7+$2)
+clr a
+move a1,x:(r7+$ca)
+src_slew_2_done:
+move x:(r7+$e3),a
+tst a
+beq src_slew_3_done
+sub #>$1,a
+move a1,x:(r7+$e3)
+beq src_slew_3_snap
+move x:(r7+$3),a
+move x:(r7+$cb),a0
+move x:(r7+$d3),b
+move x:(r7+$db),b0
+add b,a
+move a1,x:(r7+$3)
+move a0,x:(r7+$cb)
+bra src_slew_3_done
+src_slew_3_snap:
+move x:(r7+$eb),a
+move a1,x:(r7+$3)
+clr a
+move a1,x:(r7+$cb)
+src_slew_3_done:
+move x:(r7+$e4),a
+tst a
+beq src_slew_4_done
+sub #>$1,a
+move a1,x:(r7+$e4)
+beq src_slew_4_snap
+move x:(r7+$4),a
+move x:(r7+$cc),a0
+move x:(r7+$d4),b
+move x:(r7+$dc),b0
+add b,a
+move a1,x:(r7+$4)
+move a0,x:(r7+$cc)
+bra src_slew_4_done
+src_slew_4_snap:
+move x:(r7+$ec),a
+move a1,x:(r7+$4)
+clr a
+move a1,x:(r7+$cc)
+src_slew_4_done:
+rts
+src_mix_slew:
+move x:(r7+$e5),a
+tst a
+beq src_slew_5_done
+sub #>$1,a
+move a1,x:(r7+$e5)
+beq src_slew_5_snap
+move x:(r7+$bf),a
+move x:(r7+$cd),a0
+move x:(r7+$d5),b
+move x:(r7+$dd),b0
+add b,a
+move a1,x:(r7+$bf)
+move a0,x:(r7+$cd)
+bra src_slew_5_done
+src_slew_5_snap:
+move x:(r7+$ed),a
+move a1,x:(r7+$bf)
+clr a
+move a1,x:(r7+$cd)
+src_slew_5_done:
+rts

@@ -4,6 +4,7 @@
 import argparse, array, hashlib, importlib.util, json, math, struct, subprocess, sys
 from pathlib import Path
 from verify_src import compile_source
+from control_reference import TRACE, events, verify_trace
 ROOT = Path(__file__).resolve().parent
 
 def main():
@@ -15,6 +16,7 @@ def main():
     p.add_argument('--signal', choices=('noise', 'silence', 'dc', 'impulse'), default='noise')
     p.add_argument('--mix', type=int, default=127, choices=range(128))
     p.add_argument('--reverb', action='store_true')
+    p.add_argument('--control-events', action='store_true')
     p.add_argument('--full-scale', action='store_true')
     p.add_argument('--split', type=int, default=0, choices=range(16))
     args = p.parse_args()
@@ -27,6 +29,8 @@ def main():
         p.error('Use a private output directory')
     if args.frames <= 0 or args.frames % 7056:
         p.error('Frames must be a multiple of 7056')
+    if args.control_events and (not args.reverb or args.frames < 7056):
+        p.error('Control events require the joined reverb path and at least 7056 frames')
     out.mkdir(parents=True, exist_ok=True)
     subprocess.run([sys.executable, '-B', str(ROOT / 'generate_native_src.py'), '--check'], check=True)
     sys.path.insert(0, str(args.sdk / 'tools/build'))
@@ -95,40 +99,56 @@ def main():
         values[args.frames:] = [0] * args.frames
     write(out / 'conversion-input.raw', values)
     write(out / 'input.raw', [0] * (prefix * 2) + values)
-    compile_source('src_convert.cpp', out / 'convert')
-    subprocess.run([str(out / 'convert'), 'down', str(out / 'conversion-input.raw'), str(out / 'down.raw')], check=True)
-    up_input = out / 'down.raw'
-    if args.reverb:
-        write(out / 'tank-input.raw', [0] * 3264 + read(out / 'down.raw'))
-        command = [sys.executable, '-B', str(ROOT / 'render_core32.py')]
-        for name in ('sdk', 'stock', 'assembler', 'host', 'disassembler'):
-            command += ['--' + name, str(getattr(args, name))]
-        command += ['--controls', args.controls, '--input-stereo', str(out / 'tank-input.raw'), '--output', str(out / 'tank')]
-        subprocess.run(command, check=True)
-        up_input = out / 'tank-wet.raw'
-        write(up_input, read(out / 'tank/wet.raw')[3264:])
-    subprocess.run([str(out / 'convert'), 'up', str(up_input), str(out / 'reference.raw')], check=True)
+    if not args.control_events:
+        compile_source('src_convert.cpp', out / 'convert')
+        subprocess.run([str(out / 'convert'), 'down', str(out / 'conversion-input.raw'), str(out / 'down.raw')], check=True)
+        up_input = out / 'down.raw'
+        if args.reverb:
+            write(out / 'tank-input.raw', [0] * 3264 + read(out / 'down.raw'))
+            command = [sys.executable, '-B', str(ROOT / 'render_core32.py')]
+            for name in ('sdk', 'stock', 'assembler', 'host', 'disassembler'):
+                command += ['--' + name, str(getattr(args, name))]
+            command += ['--controls', args.controls, '--input-stereo', str(out / 'tank-input.raw'), '--output', str(out / 'tank')]
+            subprocess.run(command, check=True)
+            up_input = out / 'tank-wet.raw'
+            write(up_input, read(out / 'tank/wet.raw')[3264:])
+        subprocess.run([str(out / 'convert'), 'up', str(up_input), str(out / 'reference.raw')], check=True)
     cmd = [str(args.host), '-mem', str(out / 'A.mem'), '-memB', str(out / 'B.mem'), '-init', format(sym['init'], 'x'), '-proc', format(sym['proc'], 'x'), '-inst', '2', '-core', '0,1', '-alloc', '1,1', '-r7', '2,2', '-audioidx', '0,0', '-frames', '16', '-blocks', str((args.frames + prefix) // 16), '-in', str(out / 'input.raw') + ',' + str(out / 'input.raw'), '-stereo', '-split', str(args.split), '-allocproc', 'end', '-audio', '0', '-guard', '15856', '-guard-shared', '-dirty', '1776', '-out', str(out / 'native.raw'), '-meter', str(out / 'native.meter'), '-trackout', str(out / 'track.txt'), '-track', '79,85', '-params', params, '-params', params]
+    timeline = None
+    if args.control_events:
+        timeline = events(controls + [args.mix] + [0] * 6, prefix // 16)
+        automation = out / 'parameters.csv'
+        automation.write_text(''.join(','.join(map(str, [block] + values)) + '\n'
+                                      for block, values in sorted(timeline.items())))
+        cmd += ['-paramfile', str(automation), '-paramfile', str(automation)]
+        cmd[cmd.index('-track') + 1] += ',' + ','.join(format(v, 'x') for v in TRACE)
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
     (out / 'native.log').write_text(result.stdout + result.stderr)
     if result.returncode:
         raise RuntimeError((result.stdout + result.stderr)[-3000:])
     actual = read(out / 'native.raw')
     other = read(out / 'native.raw.i1')
-    reference = [0] * (prefix * 2 + 4) + read(out / 'reference.raw')[:-4]
-    if args.reverb and args.mix != 127:
-        dry = [0] * (prefix * 2) + values
-        reference = dry if args.mix == 0 else [max(-8388608, min(8388607, d + (w - d) * (args.mix << 16) // (1 << 23))) for (d, w) in zip(dry, reference)]
     if actual != other:
         raise RuntimeError('Cores differ')
-    if len(actual) != len(reference):
-        raise RuntimeError('Frame count mismatch')
-    errors = [a - b for (a, b) in zip(actual, reference)]
+    if args.control_events:
+        reference = None
+        if args.signal == 'silence' and any(actual):
+            raise RuntimeError('Control changes produce nonzero output from silence')
+    else:
+        reference = [0] * (prefix * 2 + 4) + read(out / 'reference.raw')[:-4]
+        if args.reverb and args.mix != 127:
+            dry = [0] * (prefix * 2) + values
+            reference = dry if args.mix == 0 else [max(-8388608, min(8388607, d + (w - d) * (args.mix << 16) // (1 << 23))) for (d, w) in zip(dry, reference)]
+        if len(actual) != len(reference):
+            raise RuntimeError('Frame count mismatch')
+        errors = [a - b for (a, b) in zip(actual, reference)]
     meters = [[int(v) for v in row.split()] for row in (out / 'native.meter').read_text().splitlines()]
     track = [[int(v) for v in row.split()] for row in (out / 'track.txt').read_text().splitlines()]
     if any((not 0 <= row[1] <= 4 for row in track)):
         raise RuntimeError('FIFO occupancy out of range')
-    report = {'peakInstructionsPer16Frames': [max((row[k] for row in meters)) for k in (1, 2)], 'fifoOccupancyRange': [min((row[1] for row in track)), max((row[1] for row in track))], 'yExtentWords': 15856, 'scope': 'Native 44.1 kHz experiment; no installed effect or hardware qualification' if args.reverb else 'Standalone native SRC round trip; no reverb or hardware qualification', 'controls': controls, 'signal': args.signal, 'mix': args.mix, 'fullScaleInput': args.full_scale, 'reverb': args.reverb, 'frames': args.frames + prefix, 'split': args.split, 'programWords': len(words), 'tableWords': len(table['words']), 'startupFifoFrames': 2, 'coreOutputsIdentical': True, 'exactHostParity': not any(errors), 'maxErrorLsb': max(map(abs, errors)), 'firstMismatch': next(((i, a, b) for (i, (a, b)) in enumerate(zip(actual, reference)) if a != b), None), 'sourceHashes': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in ('generate_native_src.py', 'native_src.asm', 'native_src_tables.json', 'rational_src.h', 'core44100.asm', 'core32.asm')}}
+    trace_result = verify_trace(track, prefix, timeline) if args.control_events else None
+    errors = [] if args.control_events else errors
+    report = {'controlTrace': trace_result, 'peakInstructionsPer16Frames': [max((row[k] for row in meters)) for k in (1, 2)], 'fifoOccupancyRange': [min((row[1] for row in track)), max((row[1] for row in track))], 'yExtentWords': 15856, 'scope': 'Native 44.1 kHz experiment; no installed effect or hardware qualification' if args.reverb else 'Standalone native SRC round trip; no reverb or hardware qualification', 'controls': controls, 'signal': args.signal, 'mix': args.mix, 'fullScaleInput': args.full_scale, 'reverb': args.reverb, 'frames': args.frames + prefix, 'split': args.split, 'programWords': len(words), 'tableWords': len(table['words']), 'startupFifoFrames': 2, 'coreOutputsIdentical': True, 'exactHostParity': None if args.control_events else not any(errors), 'maxErrorLsb': max(map(abs, errors), default=0), 'firstMismatch': None if args.control_events else next(((i, a, b) for (i, (a, b)) in enumerate(zip(actual, reference)) if a != b), None), 'sourceHashes': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in ('generate_native_src.py', 'native_src.asm', 'native_src_tables.json', 'rational_src.h', 'core44100.asm', 'core32.asm', 'control_reference.py')}}
     (out / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
     if any(errors):

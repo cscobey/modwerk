@@ -72,4 +72,4 @@ The stock-free report is in `evidence/pipeline-44100.json`.
 The native converter and joined 44.1 kHz reverb experiment are now tested.
 See [NATIVE_SRC.md](NATIVE_SRC.md) for exact output comparisons, aligned
 histories, coefficient/schedule placement and instruction counts. Installation,
-control smoothing, full-load timing and hardware qualification remain pending.
+installed control behavior, full-load timing and hardware qualification remain pending.

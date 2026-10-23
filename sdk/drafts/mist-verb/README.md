@@ -1,6 +1,6 @@
 # Mist Verb
 
-Unpublished port preparation, version **0.1.4-experimental**, author **cscobey**.
+Unpublished port preparation, version **0.1.5-experimental**, author **cscobey**.
 Target: Mutable Instruments Clouds reverb and the separate stereo diffuser as
 an independent Octatrack MKII FX2 insert on OS 1.40C. MKI is not tested.
 
@@ -39,8 +39,9 @@ modulated reads, packed delay memory and a widened final mixer.
 with both converters and the final mixer, all running on the emulated DSP.
 Its tested output matches the earlier host-conversion/native-tank chain
 exactly, including full-scale converter saturation and exact dry bypass.
-The tank still has measured differences from the original floating-point
-source. The complete path remains expensive and unqualified for installation.
+Stereo FIR scheduling now reduces joined processing work about 27%, and
+short sample-timed ramps smooth control targets. The tank still has measured
+differences from the original floating-point source. The complete path remains expensive and unqualified for installation.
 
 [SRC.md](SRC.md) describes the computer reference and filter design.
 [NATIVE_SRC.md](NATIVE_SRC.md) records the DSP arithmetic, streaming behavior,
@@ -48,8 +49,8 @@ aligned storage, placement, costs, test commands and remaining work.
 
 ## Controls
 
-These are the target instrument controls. The standalone core has initial
-unsmoothed mappings; no firmware parameter page is implemented. All are
+These are the target instrument controls. The joined experiment has 8 ms
+tank-control ramps and 5.8 ms MIX ramps; no firmware parameter page is implemented. All are
 continuous 0–127 main-page controls. The six SETUP parameter slots are unused.
 
 | Encoder | Name | Proposed default | Purpose |
@@ -59,7 +60,7 @@ continuous 0–127 main-page controls. The six SETUP parameter slots are unused.
 | C | DIFF | 94 | Tank diffusion; nominal 70% starting point |
 | D | SMEAR | 0 | Separate stereo input diffuser amount |
 | E | GAIN | 83 | Tank input gain; planned −40 to 0 dB range, about −14 dB default |
-| F | MIX | 40 | Dry/wet; 0 exact dry, 127 fully wet |
+| F | MIX | 40 | Dry/wet; 0 exact dry after the ramp, 127 fully wet |
 
 The final coefficient curves must be documented and tested before promotion.
 The tank LFOs run freely in seconds, as on Clouds; they are not pattern
@@ -95,13 +96,14 @@ from another product.
 - Independent per-delay rings matched the original across the recorded test
   cases; that is not a proof of every possible input or future implementation.
 - Native conversion and mixing pass the recorded exact-chain comparisons.
-  Control smoothing and startup behavior still need work; this is not a
-  sound-quality or full-instrument qualification.
+  Control-ramp timing, retargeting and partition consistency are tested.
+  Startup behavior, audible results and installed controls still need qualification.
 - Worst-case stock SPRING REV remains the performance design target. The
-  joined path measures roughly 42,800–43,000 executed instructions per core
+  joined path measures roughly 31,100–32,300 executed instructions per core
   per 16 input frames, one instance/core. These are not chip cycles or a
-  stock-matched benchmark. Further optimization is required; no supported
-  full-effect instance count exists yet.
+  hardware benchmark. The finite matched SPRING REV comparison in NATIVE_SRC.md
+  measures a peak about 6.35× stock in that workload. Further optimization is
+  required; no supported full-effect instance count exists yet.
 - Card/browser composition with stock effects, Analog BD and common custom
   companions is not tested. No new conflict flags or companion approvals have
   been added. Contiguous program/table placement remains to be measured.

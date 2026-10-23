@@ -1,5 +1,14 @@
 [
   {
+    "version": "0.1.5-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Reduce prototype processing work about 27 percent while preserving tested static audio.",
+      "Add short, sample-timed ramps for decay, damping, diffusion, smear, gain and dry/wet changes.",
+      "Record a matched stock reverb comparison; further optimization and installation work remain necessary."
+    ]
+  },
+  {
     "version": "0.1.4-experimental",
     "date": "2026-10-23",
     "changes": [

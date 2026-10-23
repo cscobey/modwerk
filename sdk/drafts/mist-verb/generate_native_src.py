@@ -64,6 +64,9 @@ src_zero_hist_{i}:
         emit(f'move #>${value:x},a\nmove a1,x:(r7+${slot:x})')
     emit('''rts
 proc:
+        move r3,x:(r7+$8e)
+        move m3,x:(r7+$8f)
+        move #>$ffffff,m3
         move #>$ffffff,m4
         move #>$ffffff,m5
         move #>$1,n0
@@ -136,6 +139,8 @@ src_down_skipped:
         move a1,x:(r7+$7a)
 src_frame_done:
         nop
+        move x:(r7+$8e),r3
+        move x:(r7+$8f),m3
         move #>$ffffff,m5
         rts''')
     # FIFO write index starts at two (the first two entries are silent).
@@ -162,44 +167,58 @@ src_frame_done:
             move #>${schedule:x},a
 src_{direction}_schedule:
             move a1,x:(r7+${slot:x})''')
-        for c,head in enumerate(slots):
-            emit(f'''move #>{taps-1},m5
-            move x:(r7+${head:x}),r5
+        # Reuse each coefficient for both channels. Parallel Y reads load
+        # the next sample while the current sample is accumulated.
+        emit(f"""move #>{taps-1},m4
+            move #>{taps-1},m5
+            move x:(r7+${slots[0]:x}),r5
+            move x:(r7+${slots[1]:x}),r4
             move (r5)-
-            move x:(r7+$82),r4
-            clr a
-            do #{taps},>src_{direction}_mac_{c}_first
-            move y:(r5)-,x0
-            move p:(r4)+,y1
-            mac x0,y1,a
-src_{direction}_mac_{c}_first:
+            move (r4)-
+            move x:(r7+$82),r3""")
+        for phase in ('first','second'):
+            emit(f"""clr a
+            clr b
+            move y:(r5)-,y0
+            move y:(r4)-,y1
+            do #{taps-1},>src_{direction}_stereo_{phase}
+            move p:(r3)+,x0
+            mac y0,x0,a  y:(r5)-,y0
+            mac x0,y1,b  y:(r4)-,y1
+src_{direction}_stereo_{phase}:
             nop
-            bsr >src_round_q23
-            asr #$2,a,a
-            move a1,x:(r7+$84)
-            move a0,x:(r7+$86)
-            clr a
-            do #{taps},>src_{direction}_mac_{c}_second
-            move y:(r5)-,x0
-            move p:(r4)+,y1
-            mac x0,y1,a
-src_{direction}_mac_{c}_second:
-            nop
-            bsr >src_round_q23
-            move x:(r7+$84),b
-            move x:(r7+$86),b0
-            asl #$2,b,b
-            sub b,a
-            move a1,x0
-            move x:(r7+$83),y1
-            mpy x0,y1,a
-            bsr >src_round_q23
-            move x:(r7+$84),b
-            move x:(r7+$86),b0
-            asl #$2,b,b
-            add b,a
-            move a,x:(r7+${0x80+c:x})''')
-        emit('move #>$ffffff,m5\nrts')
+            move p:(r3)+,x0
+            mac y0,x0,a
+            mac x0,y1,b
+            ; Save the right accumulator without losing its extension bits.
+            move b1,x:(r7+$8b)
+            move b0,x:(r7+$8c)
+            move b2,x:(r7+$8d)""")
+            for channel,high,low in ((0,0x84,0x86),(1,0x88,0x89)):
+                if channel:
+                    emit("""move x:(r7+$8b),a
+                        move x:(r7+$8c),a0
+                        move x:(r7+$8d),a2""")
+                emit('bsr >src_round_q23')
+                if phase=='first':
+                    emit(f"""asr #$2,a,a
+                        move a1,x:(r7+${high:x})
+                        move a0,x:(r7+${low:x})""")
+                else:
+                    emit(f"""move x:(r7+${high:x}),b
+                        move x:(r7+${low:x}),b0
+                        asl #$2,b,b
+                        sub b,a
+                        move a1,x0
+                        move x:(r7+$83),y1
+                        mpy x0,y1,a
+                        bsr >src_round_q23
+                        move x:(r7+${high:x}),b
+                        move x:(r7+${low:x}),b0
+                        asl #$2,b,b
+                        add b,a
+                        move a,x:(r7+${0x80+channel:x})""")
+        emit('move #>$ffffff,m4\nmove #>$ffffff,m5\nrts')
     emit('''; Explicit half-away-from-zero rounding (not DSP convergent RND).
 ; Preserve wide rounded endpoints; saturation happens only after blending.
 src_round_q23:
@@ -226,6 +245,88 @@ src_round_inrange:
         move #>$0,a0
         rts''')
     return '\n'.join(('' if s.endswith(':') or s.startswith(';') else '        ')+s for s in code)+'\n',tables
+def replace_one(source,before,after,count=1):
+    if count!=1 or source.count(before)!=1:
+        raise RuntimeError(f'Expected one wrapper splice: {before!r}')
+    return source.replace(before,after,1)
+
+def control_smoothing():
+    """Generate six retargetable 256-sample ramps with 24 fractional bits."""
+    lines=[]
+    def add(text):lines.extend(line.strip() for line in text.strip().splitlines())
+    current=(0,1,2,3,4,0xbf)
+    add("""src_control_targets:
+        move #>$7fffff,a
+        move a1,x:(r7+$05)
+        move x:(r6+$5),a
+        and #>$7f0000,a
+        cmp #>$7f0000,a
+        bne src_mix_goal_ready
+        move #>$7fffff,a
+src_mix_goal_ready:
+        move a1,x:(r7+$c5)
+        move x:(r7+$b6),a
+        tst a
+        bne src_controls_live""")
+    for i,slot in enumerate(current):
+        add(f"""move x:(r7+${0xc0+i:x}),a
+            move a1,x:(r7+${slot:x})
+            move a1,x:(r7+${0xe8+i:x})
+            clr a
+            move a1,x:(r7+${0xc8+i:x})
+            move a1,x:(r7+${0xe0+i:x})""")
+    add("""move #>$1,a
+        move a1,x:(r7+$b6)
+        rts
+src_controls_live:""")
+    for i,slot in enumerate(current):
+        add(f"""move x:(r7+${0xc0+i:x}),a
+            move x:(r7+${0xe8+i:x}),x0
+            cmp x0,a
+            beq src_target_{i}_done
+            move a1,x:(r7+${0xe8+i:x})
+            move x:(r7+${slot:x}),b
+            move x:(r7+${0xc8+i:x}),b0
+            sub b,a
+            bpl src_target_{i}_divide
+            ; Truncate a negative slope toward zero at Q47 precision.
+            clr b
+            move #>$ff,b0
+            add b,a
+src_target_{i}_divide:
+            asr #$8,a,a
+            move a1,x:(r7+${0xd0+i:x})
+            move a0,x:(r7+${0xd8+i:x})
+            move #>$100,a
+            move a1,x:(r7+${0xe0+i:x})
+src_target_{i}_done:""")
+    add('rts')
+    for name,indices in (('src_tank_slew',range(5)),('src_mix_slew',(5,))):
+        add(name+':')
+        for i in indices:
+            add(f"""move x:(r7+${0xe0+i:x}),a
+                tst a
+                beq src_slew_{i}_done
+                sub #>$1,a
+                move a1,x:(r7+${0xe0+i:x})
+                beq src_slew_{i}_snap
+                move x:(r7+${current[i]:x}),a
+                move x:(r7+${0xc8+i:x}),a0
+                move x:(r7+${0xd0+i:x}),b
+                move x:(r7+${0xd8+i:x}),b0
+                add b,a
+                move a1,x:(r7+${current[i]:x})
+                move a0,x:(r7+${0xc8+i:x})
+                bra src_slew_{i}_done
+src_slew_{i}_snap:
+                move x:(r7+${0xe8+i:x}),a
+                move a1,x:(r7+${current[i]:x})
+                clr a
+                move a1,x:(r7+${0xc8+i:x})
+src_slew_{i}_done:""")
+        add('rts')
+    return '\n'.join(lines)+'\n'
+
 def combined(assembly):
     core=(ROOT/'core32.asm').read_text()
     labels=re.findall(r'^([A-Za-z_][A-Za-z_0-9]*):',core,re.M)
@@ -234,8 +335,20 @@ def combined(assembly):
     # The conversion wrapper owns dry/wet mixing; the tank returns wet audio.
     core=core.replace('rv_init','tank_start').replace('rv_proc','tank_run')
     core=core.replace('move x:(r6+$5),a','move #>$7f0000,a')
-    assembly=assembly.replace('init:\n','init:\n        move #>tank_start,r4\n        jsr (r4)\n',1)
-    assembly=assembly.replace('proc:\n',"""proc:
+    # Calculate targets once per external call; render only one tank frame
+    # per downsampled sample without recalculating knob mappings.
+    start=core.index('rv_core_knobs:\n')+len('rv_core_knobs:\n')
+    end=core.index('        move #>$1,n0',start)
+    targets=core[start:end]
+    targets=re.sub(r'x:\(r7\+\$0?([0-5])\)',
+                   lambda m:f'x:(r7+${0xc0+int(m[1]):x})',targets)
+    core=core[:start]+'tank_frame:\n'+core[end:]
+    targets='tank_control_targets:\n'+targets+'        rts\n'
+    assembly=replace_one(assembly,'do #$40,>src_zero_scalar','do #$80,>src_zero_scalar',1)
+    assembly=replace_one(assembly,'move #>$1,n0','bsr >tank_control_targets\n        bsr >src_control_targets\n        move #>$1,n0',1)
+    assembly=replace_one(assembly,'bsr >src_down_push','bsr >src_mix_slew\n        bsr >src_down_push',1)
+    assembly=replace_one(assembly,'init:\n','init:\n        move #>tank_start,r4\n        jsr (r4)\n',1)
+    assembly=replace_one(assembly,'proc:\n',"""proc:
         move x:(r7+$22),a
         tst a
         beq src_audio_active
@@ -244,7 +357,8 @@ def combined(assembly):
         rts
 src_audio_active:
 """,1)
-    assembly=assembly.replace('bsr >src_up_push',"""move r0,x:(r7+$b2)
+    assembly=replace_one(assembly,'bsr >src_up_push',"""bsr >src_tank_slew
+        move r0,x:(r7+$b2)
         move n7,x:(r7+$b3)
         move x:(r7+$80),a
         move a1,x:(r7+$b0)
@@ -254,7 +368,7 @@ src_audio_active:
         move #>$b0,n0
         move (r0)+n0
         move #>$1,n7
-        move #>tank_run,r4
+        move #>tank_frame,r4
         jsr (r4)
         move x:(r7+$b2),r0
         move x:(r7+$b3),n7
@@ -263,21 +377,19 @@ src_audio_active:
         move x:(r7+$b1),a
         move a1,x:(r7+$81)
         bsr >src_up_push""",1)
-    assembly=assembly.replace('move a1,x:(r7+$80)\n        move x:(r0)-,a','move a1,x:(r7+$80)\n        move a1,x:(r7+$b4)\n        move x:(r0)-,a',1)
-    assembly=assembly.replace('move a1,x:(r7+$81)\n        bsr >src_down_push','move a1,x:(r7+$81)\n        move a1,x:(r7+$b5)\n        bsr >src_down_push',1)
-    assembly=assembly.replace('move x:(r4)+,a\n        move a1,x:(r0)+','move x:(r4)+,a\n        move x:(r7+$b4),y0\n        bsr >src_mix_output\n        move a,x:(r0)+',1)
-    assembly=assembly.replace('move x:(r4),a\n        move a1,x:(r0)+','move x:(r4),a\n        move x:(r7+$b5),y0\n        bsr >src_mix_output\n        move a,x:(r0)+',1)
+    assembly=replace_one(assembly,'move a1,x:(r7+$80)\n        move x:(r0)-,a','move a1,x:(r7+$80)\n        move a1,x:(r7+$b4)\n        move x:(r0)-,a',1)
+    assembly=replace_one(assembly,'move a1,x:(r7+$81)\n        bsr >src_mix_slew','move a1,x:(r7+$81)\n        move a1,x:(r7+$b5)\n        bsr >src_mix_slew',1)
+    assembly=replace_one(assembly,'move x:(r4)+,a\n        move a1,x:(r0)+','move x:(r4)+,a\n        move x:(r7+$b4),y0\n        bsr >src_mix_output\n        move a,x:(r0)+',1)
+    assembly=replace_one(assembly,'move x:(r4),a\n        move a1,x:(r0)+','move x:(r4),a\n        move x:(r7+$b5),y0\n        bsr >src_mix_output\n        move a,x:(r0)+',1)
     assembly+="""
 src_mix_output:
-        move x:(r6+$5),b
-        and #>$7f0000,b
-        move b1,b
+        move x:(r7+$bf),b
         tst b
         bne src_mix_nonzero
         move y0,a
         rts
 src_mix_nonzero:
-        cmp #>$7f0000,b
+        cmp #>$7fffff,b
         beq src_mix_done
         move b1,y1
         move a1,x0
@@ -288,7 +400,7 @@ src_mix_nonzero:
 src_mix_done:
         rts
 """
-    return '; Native 44.1 kHz experiment: SRC, reverb and mixer on DSP.\n'+core+'\n'+assembly.replace('; Native SRC round-trip experiment. No reverb, stock effect or firmware.','; Streaming wrapper; no installed effect or hardware qualification.')
+    return '; Native 44.1 kHz experiment: SRC, reverb and mixer on DSP.\n'+core+'\n'+assembly.replace('; Native SRC round-trip experiment. No reverb, stock effect or firmware.','; Streaming wrapper; no installed effect or hardware qualification.')+targets+control_smoothing()
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--check',action='store_true');args=p.parse_args()

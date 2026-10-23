@@ -25,7 +25,7 @@ MODULE = Module(
         Param(b'GAIN', 83, active=True, formatter=Formatter.PLAIN,
               doc='Tank input gain, planned -40 to 0 dB range; about -14 dB by default.'),
         Param(b'MIX', 40, active=True, formatter=Formatter.PLAIN,
-              doc='Dry/wet blend; exact dry at 0 and fully wet at 127.'),
+              doc='Dry/wet blend; settles to exact dry at 0 and fully wet at 127.'),
         *(Param(b"", 0, active=False) for _ in range(6)),
     ),
     dsp=DspSection(asm="modules/mist-verb/engine.asm", priority=17,
