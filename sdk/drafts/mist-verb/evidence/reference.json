@@ -1,0 +1,30 @@
+{
+  "scope": "Host reference and lossless buffer packing only; no native DSP executed",
+  "eurorackRevision": "f4cfa7697095a28d292bff758beb51deb49b5a86",
+  "stmlibRevision": "e3bd7c9cc00e4364166f9905c0509b6ffd0535ec",
+  "sampleRate": 32000,
+  "referenceCases": 63,
+  "storageCandidates": 2,
+  "tank": {
+    "logical16BitCells": 16384,
+    "physical24BitWords": 10924
+  },
+  "diffuser": {
+    "proposed24BitWords": 2048,
+    "nativePrecision": "not tested"
+  },
+  "proposedBufferWords": 12972,
+  "availableBeforeKeyWindow": 15870,
+  "remainingWords": 2898,
+  "results": [
+    "PASS: lossless packing, neighbours, boundaries, clear, 24-bit words",
+    "PASS: 63 cases, two storage candidates exactly match upstream at 32000 Hz",
+    "PASS: initial silence, dry bypass; reference WAV inputs written"
+  ],
+  "sourceHashes": {
+    "reference_test.cpp": "7de762382654047b3637db3e11b8fb927e09b910c72c8ab21f09fdca096c1037",
+    "packed16.h": "6072ee2b6cefe1c960569d48a5460ef13a7a73af77197dd822a595c520d0a43a",
+    "verify_reference.py": "8ef26bce5aad02c0d6a2e8a21a3551c4fde64ba953968dd5d5930682e91468c1"
+  },
+  "date": "2026-10-23"
+}

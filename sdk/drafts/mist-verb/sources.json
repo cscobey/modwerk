@@ -1,0 +1,36 @@
+{
+  "eurorack": "f4cfa7697095a28d292bff758beb51deb49b5a86",
+  "stmlib": "e3bd7c9cc00e4364166f9905c0509b6ffd0535ec",
+  "files": [
+    {
+      "path": "upstream/clouds/dsp/fx/reverb.h",
+      "source": "https://raw.githubusercontent.com/pichenettes/eurorack/f4cfa7697095a28d292bff758beb51deb49b5a86/clouds/dsp/fx/reverb.h",
+      "sha256": "0073b0535623a008d0619f508e4e813ac6087ebd9a02f22d856f49ac2ce458be"
+    },
+    {
+      "path": "upstream/clouds/dsp/fx/fx_engine.h",
+      "source": "https://raw.githubusercontent.com/pichenettes/eurorack/f4cfa7697095a28d292bff758beb51deb49b5a86/clouds/dsp/fx/fx_engine.h",
+      "sha256": "8bd367622b97247a371f70871446971b63191df51b7d2a4e06163c86f3408641"
+    },
+    {
+      "path": "upstream/clouds/dsp/fx/diffuser.h",
+      "source": "https://raw.githubusercontent.com/pichenettes/eurorack/f4cfa7697095a28d292bff758beb51deb49b5a86/clouds/dsp/fx/diffuser.h",
+      "sha256": "e411e3fd0df62d556942286b3c957ab594c5d45e1b16ec416cd6b21e09d650c9"
+    },
+    {
+      "path": "upstream/stmlib/stmlib.h",
+      "source": "https://raw.githubusercontent.com/pichenettes/stmlib/e3bd7c9cc00e4364166f9905c0509b6ffd0535ec/stmlib.h",
+      "sha256": "3afc8589a951e882d9eea16b3eda8623dd6fb0079dd11dfbce817e65be6cfba9"
+    },
+    {
+      "path": "upstream/stmlib/dsp/dsp.h",
+      "source": "https://raw.githubusercontent.com/pichenettes/stmlib/e3bd7c9cc00e4364166f9905c0509b6ffd0535ec/dsp/dsp.h",
+      "sha256": "98b42900c4accbe9fbb2cfe2ec6fada024b57ec9a1becff008b0f35bd4fd8ddb"
+    },
+    {
+      "path": "upstream/stmlib/dsp/cosine_oscillator.h",
+      "source": "https://raw.githubusercontent.com/pichenettes/stmlib/e3bd7c9cc00e4364166f9905c0509b6ffd0535ec/dsp/cosine_oscillator.h",
+      "sha256": "a7f6429e8bca85aa19ce91e3f1908fd7fb1fdf378a61fe2c87717a94d6f30a97"
+    }
+  ]
+}

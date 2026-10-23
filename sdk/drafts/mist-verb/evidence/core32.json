@@ -1,0 +1,43 @@
+{
+  "wet": {
+    "peakInstructionsPer16Frames": [
+      22327,
+      22327
+    ],
+    "peakSample": 405808,
+    "coreOutputsIdentical": true
+  },
+  "dry": {
+    "peakInstructionsPer16Frames": [
+      22326,
+      22326
+    ],
+    "peakSample": 2046992,
+    "coreOutputsIdentical": true
+  },
+  "referenceErrorDb": -10.14734618828156,
+  "scope": "32 kHz experimental core only; no SRC, smoothing, instrument image or release qualification",
+  "params": [
+    110,
+    64,
+    94,
+    0,
+    83,
+    127,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "sourceSha256": "e76bec9eb345c7f67b61a1ae48e7ec0ec4d2b960dc914f8d460ed545c0a936c8",
+  "sourceHashes": {
+    "core32.asm": "e76bec9eb345c7f67b61a1ae48e7ec0ec4d2b960dc914f8d460ed545c0a936c8",
+    "generate_core.py": "50d5a58418301286e6ef6f654163bbca6338ef08455f917498d86cc2362128ac",
+    "oracle_render.cpp": "12daa1dce9b13a2df504ba9b5b1f032e64b22cb22a14a78e4b939705689e5913",
+    "packed_probe.asm": "7e5b1a8bfe2ac98a3a1222cca5518e54c7d449af2f8f70dce38bf72d26801e7b"
+  },
+  "date": "2026-10-23",
+  "runtime": "Local patched DSP emulator from Modwerk f99681ec170884593079b514da8b2f706d07e7d6; no instrument image or hardware used."
+}

@@ -1,0 +1,11 @@
+[
+  {
+    "version": "0.1.0-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Begin an unpublished Clouds reverb port for Octatrack FX2.",
+      "Pin the licensed original source and prove a lossless compact buffer model.",
+      "Render an initial 32 kHz reverb core on both emulated cores; it remains too costly and numerically different from the reference, and is not an installable effect."
+    ]
+  }
+]
