@@ -22,8 +22,10 @@ core_zero:
         move a1,x:(r7+$41)
         move #>$400000,a
         move a1,x:(r7+$4b)
-        move #>$3ffffa,a
+        move #>$3ffff9,a
         move a1,x:(r7+$43)
+        move #>$c00000,a
+        move a1,x:(r7+$4d)
         move #>$7fffef,a
         move a1,x:(r7+$44)
         move #>$7ffffa,a
@@ -128,7 +130,7 @@ knob_5_hold:
         add #>$400000,a
         move a,x:(r7+$44)
         move x:(r7+$42),x0
-        move #>$18,y1
+        move #>$19,y1
         mpy x0,y1,a
         move x0,b
         move x:(r7+$4c),b0
@@ -445,9 +447,9 @@ core_lfo_hold:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0443
+        bpl quant_0445
         add #>$ff,a
-quant_0443:
+quant_0445:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -478,9 +480,9 @@ quant_0443:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0476
+        bpl quant_0478
         add #>$ff,a
-quant_0476:
+quant_0478:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -515,9 +517,9 @@ quant_0476:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0513
+        bpl quant_0515
         add #>$ff,a
-quant_0513:
+quant_0515:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -552,9 +554,9 @@ quant_0513:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0550
+        bpl quant_0552
         add #>$ff,a
-quant_0550:
+quant_0552:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -589,9 +591,9 @@ quant_0550:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0587
+        bpl quant_0589
         add #>$ff,a
-quant_0587:
+quant_0589:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -676,9 +678,9 @@ quant_0587:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0674
+        bpl quant_0676
         add #>$ff,a
-quant_0674:
+quant_0676:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -713,9 +715,9 @@ quant_0674:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0711
+        bpl quant_0713
         add #>$ff,a
-quant_0711:
+quant_0713:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -735,9 +737,9 @@ quant_0711:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0733
+        bpl quant_0735
         add #>$ff,a
-quant_0733:
+quant_0735:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -791,9 +793,9 @@ quant_0733:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0789
+        bpl quant_0791
         add #>$ff,a
-quant_0789:
+quant_0791:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -828,9 +830,9 @@ quant_0789:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0826
+        bpl quant_0828
         add #>$ff,a
-quant_0826:
+quant_0828:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -850,9 +852,9 @@ quant_0826:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0848
+        bpl quant_0850
         add #>$ff,a
-quant_0848:
+quant_0850:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)

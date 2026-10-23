@@ -1,6 +1,6 @@
 # Mist Verb
 
-Unpublished port preparation, version **0.1.0-experimental**, author **cscobey**.
+Unpublished port preparation, version **0.1.1-experimental**, author **cscobey**.
 Target: Mutable Instruments Clouds reverb and the separate stereo diffuser as
 an independent Octatrack MKII FX2 insert on OS 1.40C. MKI is not tested.
 
@@ -91,7 +91,7 @@ from another product.
 - 44.1↔32 kHz sample-rate conversion is still required. A timing-accurate tank
   alone does not establish bandwidth, alias rejection or total processing cost.
 - Worst-case stock SPRING REV is the performance design target. Benchmark
-  expensive settings, moving controls and trigger splits on both cores. The initial unoptimized 32 kHz core peaks at 22,327 executed
+  expensive settings, moving controls and trigger splits on both cores. The initial unoptimized 32 kHz core peaks at 22,330 executed
   instructions per 16 tank frames, for one instance on each core. That is
   neither hardware timing nor a full 44.1 kHz effect budget. It requires
   substantial optimization; no supported full-effect instance count exists yet.

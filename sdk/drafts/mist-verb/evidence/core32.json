@@ -1,21 +1,21 @@
 {
   "wet": {
     "peakInstructionsPer16Frames": [
-      22327,
-      22327
+      22330,
+      22330
     ],
-    "peakSample": 405808,
+    "peakSample": 394417,
     "coreOutputsIdentical": true
   },
   "dry": {
     "peakInstructionsPer16Frames": [
-      22326,
-      22326
+      22329,
+      22329
     ],
     "peakSample": 2046992,
     "coreOutputsIdentical": true
   },
-  "referenceErrorDb": -10.14734618828156,
+  "referenceErrorDb": -29.00736495339924,
   "scope": "32 kHz experimental core only; no SRC, smoothing, instrument image or release qualification",
   "params": [
     110,
@@ -31,13 +31,19 @@
     0,
     0
   ],
-  "sourceSha256": "e76bec9eb345c7f67b61a1ae48e7ec0ec4d2b960dc914f8d460ed545c0a936c8",
+  "oracleCoefficients": [
+    0.8488188976377953,
+    0.7031496062992125,
+    0.47165354330708664,
+    0.20280873775482178,
+    1,
+    0
+  ],
   "sourceHashes": {
-    "core32.asm": "e76bec9eb345c7f67b61a1ae48e7ec0ec4d2b960dc914f8d460ed545c0a936c8",
-    "generate_core.py": "50d5a58418301286e6ef6f654163bbca6338ef08455f917498d86cc2362128ac",
+    "core32.asm": "fef8aa78503f35388ea432fb7e1efff4a50258bb8c471070ca6df24e0549bc3f",
+    "generate_core.py": "c0d9d60053c76c56ba1f1cda802c14d85832a17086c3ada0a7399e8d52bda1e8",
     "oracle_render.cpp": "12daa1dce9b13a2df504ba9b5b1f032e64b22cb22a14a78e4b939705689e5913",
     "packed_probe.asm": "7e5b1a8bfe2ac98a3a1222cca5518e54c7d449af2f8f70dce38bf72d26801e7b"
   },
-  "date": "2026-10-23",
-  "runtime": "Local patched DSP emulator from Modwerk f99681ec170884593079b514da8b2f706d07e7d6; no instrument image or hardware used."
+  "sourceSha256": "fef8aa78503f35388ea432fb7e1efff4a50258bb8c471070ca6df24e0549bc3f"
 }

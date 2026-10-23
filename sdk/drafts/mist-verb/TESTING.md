@@ -1,8 +1,10 @@
 # Mist Verb testing
 
-Date: 2026-10-23. Version: 0.1.0-experimental. Target instrument: Octatrack MKII.
+Date: 2026-10-23. Version: 0.1.1-experimental. Target instrument: Octatrack MKII.
 Fork base: `bedbb362` (current with upstream when prepared). This is unpublished
-work on `feat/mist-verb`, under `sdk/drafts/mist-verb/`.
+work on `feat/mist-verb` in `cscobey/modwerk`, under `sdk/drafts/mist-verb/`.
+The user requested fork-only development. The earlier upstream draft PR is
+closed; further upstream submission requires a new user instruction.
 
 ## Commands and source identity
 
@@ -79,7 +81,7 @@ flashes instrument firmware. Sample rate for this experiment is 32,000 Hz.
 
 PASS: both core outputs identical, exact MIX 0 dry bypass, nonzero wet tail,
 no Y guard/shared-memory/code clobber under garbage start. The 12,972-word
-buffer is progressively cleared over 102 dry calls. The final core is 1,253
+buffer is progressively cleared over 102 dry calls. The final core is 1,257
 program words plus 128 gain-table words. init preserves r1/n1/m1.
 
 Settings: TIME 110, DAMP 64, DIFF 94, SMEAR 0, GAIN 83, MIX 127/0. Five seconds
@@ -91,12 +93,14 @@ The initial 24-bit oscillator recurrence showed substantial drift; the current
 experiment retains 48-bit oscillator histories. It approximates the upstream
 coefficient recurrence and omits the tiny low-history × epsilon product.
 It is not IEEE-float emulation. It also quantizes scalar arithmetic to fixed
-point. The native/reference waveform residual is **−10.15 dB relative to the
+point. The native/reference waveform residual is **−29.01 dB relative to the
 reference energy** on this test: a measured discrepancy, not a source-parity
-pass. Diagnose numerical/modulation differences and measure decay/spectrum
+pass. The earlier coefficient 24 for the slower oscillator produced −10.15 dB;
+matching the original float coefficient (epsilon 25) and its initial history
+reduces that error. Diagnose remaining numerical/modulation differences and measure decay/spectrum
 and listening behavior before claiming fidelity.
 
-Peak: **22,327 executed instructions per core per 16 tank frames**, one
+Peak: **22,330 executed instructions per core per 16 tank frames**, one
 instance on each core. This prototype is substantially too costly for the
 design target and includes no sample-rate conversion. Optimization is required.
 It is not a measured hardware deadline, a stock-matched benchmark or a proven
@@ -148,8 +152,9 @@ explicit scoped waiver can complete the applicable release requirements.
 5. Build native/browser/USB packages through the shared builders, verify
    placement/compositions and capture the real emulator UI. Qualify lifecycle
    and persistence, retaining physical hardware gaps explicitly.
-6. Promote only after qualification, run module:doctor and pr:ready, then
-   submit for first owner review and verify the published download after merge.
+6. Promote only after qualification, run module:doctor and pr:ready. Keep work
+   on the fork branch; any future upstream submission and publication remain
+   separate decisions, with first owner review required by that release path.
 
 ## Project checks
 
@@ -158,3 +163,17 @@ The complete project check passed with Node 24 and Python 3.14: 323 test files,
 also passed. The sandboxed attempt had local-socket EPERM failures; the same
 checks passed with local-socket access. These are project regression results,
 not qualification of the draft or its unfinished audio path.
+
+## Modulation regression (2026-10-23)
+
+`verify_modulation.cpp` compares the 48-bit native recurrence model against
+the unchanged upstream cosine oscillator for 5,000 updates (five seconds).
+Compile as C++17 with `-O2 -DTEST -ffp-contract=off -I<draft>/upstream`,
+then run the executable; on macOS use the SDK C++ include path as in the
+reference harness. This is a host arithmetic model, not native DSP evidence.
+
+PASS: peak delay-position errors 0.06178 samples (0.5 Hz) and 0.20376 samples
+(0.3 Hz), below the diagnostic's quarter-sample bound. The old epsilon 24
+failed at 8.26857 samples. This bound covers this five-second diagnostic only,
+not long-term oscillator drift or perceptual equivalence. The corrected native
+render separately passed both-core identity, exact dry bypass and memory guards.

@@ -162,8 +162,10 @@ core_zero:
         move a1,x:(r7+$41)
         move #>$400000,a
         move a1,x:(r7+$4b)
-        move #>$3ffffa,a
+        move #>$3ffff9,a
         move a1,x:(r7+$43)
+        move #>$c00000,a
+        move a1,x:(r7+$4d)
         move #>$7fffef,a
         move a1,x:(r7+$44)
         move #>$7ffffa,a
@@ -241,7 +243,7 @@ knob_{i}_hold:
         tst a
         bne core_lfo_hold''')
     for first, second, value, epsilon, low_first, low_second in [
-            (0x40, 0x41, 0x44, 67, 0x4a, 0x4b), (0x42, 0x43, 0x45, 24, 0x4c, 0x4d)]:
+            (0x40, 0x41, 0x44, 67, 0x4a, 0x4b), (0x42, 0x43, 0x45, 25, 0x4c, 0x4d)]:
         emit(f'''move x:(r7+${first:x}),x0
             move #>${epsilon:x},y1
             mpy x0,y1,a

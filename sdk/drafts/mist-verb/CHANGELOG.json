@@ -1,5 +1,13 @@
 [
   {
+    "version": "0.1.1-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Correct the slower modulation oscillator to follow the original Clouds coefficient more closely.",
+      "The prototype remains experimental and is not an installable Octatrack effect."
+    ]
+  },
+  {
     "version": "0.1.0-experimental",
     "date": "2026-10-23",
     "changes": [
