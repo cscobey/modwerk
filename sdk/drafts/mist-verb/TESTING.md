@@ -1,6 +1,6 @@
 # Mist Verb testing
 
-Date: 2026-10-23. Version: 0.1.2-experimental. Target instrument: Octatrack MKII.
+Date: 2026-10-23. Version: 0.1.3-experimental. Target instrument: Octatrack MKII.
 Fork base: `bedbb362` (current with upstream when prepared). This is unpublished
 work on `feat/mist-verb` in `cscobey/modwerk`, under `sdk/drafts/mist-verb/`.
 The user requested fork-only development. The earlier upstream draft PR is
@@ -80,8 +80,9 @@ private stock memory dump and runs one instance per core. It never builds or
 flashes instrument firmware. Sample rate for this experiment is 32,000 Hz.
 
 PASS: both core outputs identical, exact MIX 0 dry bypass, nonzero wet tail,
-no Y guard/shared-memory/code clobber under garbage start. The 12,972-word
-buffer is progressively cleared over 102 dry calls. The final core is 1,857
+no Y guard/shared-memory/code clobber under garbage start. The 15,692-word
+buffer is progressively cleared over 102 dry calls (154 words per full call).
+The final core is 1,446
 program words plus 128 gain-table words. init preserves r1/n1/m1.
 
 Settings: TIME 110, DAMP 64, DIFF 94, SMEAR 0, GAIN 83, MIX 127/0. Five seconds
@@ -100,16 +101,18 @@ matching the original float coefficient (epsilon 25) and its initial history
 reduces that error. Diagnose remaining numerical/modulation differences and measure decay/spectrum
 and listening behavior before claiming fidelity.
 
-Peak: **18,908 executed instructions per core per 16 tank frames**, one
+Peak: **15,084 executed instructions per core per 16 tank frames**, one
 instance on each core. This prototype is substantially too costly for the
 design target and includes no sample-rate conversion. Optimization is required.
 It is not a measured hardware deadline, a stock-matched benchmark or a proven
-supported instance count. The moving taps retain the generic packed-address primitive; fixed taps
-cache their addresses. See the matched comparisons below.
+supported instance count. Independent rings now use direct cells for the allpasses and packed cells
+for the two long delays. See the matched comparisons below.
 
 ## Sound quality and remaining audio integration
 
-Not tested: the full 44.1↔32 kHz conversion and instrument audio engine.
+A host integer conversion reference and an offline 44.1 kHz signal chain
+are tested in SRC.md. Not tested: native DSP conversion or the instrument
+audio engine.
 Alias rejection, clipping, DC, idle tails, oscillator drift and knob smoothing
 must be measured on the actual assembled effect. Reference playback is not a
 native audio test. No full-effect fx:audit or SPRING REV benchmark has run.
@@ -217,3 +220,45 @@ options). Render that baseline first. Render the current draft with the same
 options plus `--compare-output /PRIVATE/baseline-render`. The comparison
 refuses different settings or any different input/wet/dry bytes on either core.
 Keep extracted firmware and rendered outputs private as before.
+
+## Mixed ring storage (0.1.3-experimental)
+
+The ten independent ring lengths match the host-proven per-line layout. The
+eight all-pass rings use one 24-bit Y word per quantized 16-bit cell; the two
+long delays still pack three cells into two words. No audio arithmetic or
+source delay length changes. Heads occupy X r7+$50..$59; their physical bases
+occupy +$60..$69; init clears through +$6f. The diffuser starts at Y+13644.
+The bounded clear chunk grows from 128 to 154 words so initialization still
+takes 102 calls despite the larger buffer.
+
+Compared with `6c6048571568ebefaf6d3c37a8aa9f9f4d1f152e`, both cores' wet/dry
+raw outputs remain bit-identical in the same three 164,096-frame cases:
+
+| TIME/DAMP/DIFF/SMEAR/GAIN | Split | Before peak | After peak |
+| --- | ---: | ---: | ---: |
+| 110/64/94/0/83 | 0 | 18,908 | 15,084 |
+| 70/100/60/127/100 | 1 | 18,970 | 15,145 |
+| 127/0/127/127/127 | 15 | 18,963 | 15,140 |
+
+Counts are executed instructions/core/16 frames for one instance/core, not
+chip cycles. This is another approximately 20% reduction, or approximately
+32% relative to the 22,330-instruction 0.1.1 baseline. Program words fall
+1,857 → 1,446, scalar words 120 → 112, while Y words grow 12,972 → 15,692.
+Clean buffer/shared/code guards and exact dry bypass pass at dirty seed 1776.
+Source identities and identical-output hashes: `evidence/mixed-storage.json`.
+The earlier global-ring/cache results above are historical, not the current
+memory layout. Full-load and moving-control qualification remain untested.
+
+## Host SRC and offline 44.1 kHz path
+
+See SRC.md for the complete design, commands, acceptance thresholds and
+resource gap. `verify_src.py --sanitize` passes the integer host reference
+under UndefinedBehaviorSanitizer. The offline 44.1 kHz demonstration maps
+227,556 original asymmetric stereo frames to 165,120 tank frames and back
+to 227,556 frames, with zero SRC-clipped samples on that signal. The native
+core still passes both-core identity, dry bypass and access guards. Its
+reference residual is −25.90 dB on this different stereo signal, not parity.
+
+This does not execute a native 44.1 kHz effect. The unchanged input WAV is
+only a dry listening reference. Native SRC, complete mixing/smoothing, total
+processing budget, placement and firmware/USB integration are still pending.

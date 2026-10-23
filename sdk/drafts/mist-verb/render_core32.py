@@ -11,6 +11,7 @@ import importlib.util
 import json
 import math
 import os
+import re
 from pathlib import Path
 import struct
 import subprocess
@@ -30,6 +31,8 @@ def main():
                     help='Sub-block boundary, 0 for no split')
     ap.add_argument('--compare-output', type=Path,
                     help='Earlier render directory; require identical raw output on both cores')
+    ap.add_argument('--input-stereo', type=Path,
+                    help='Private 32 kHz signed-24-in-int32 stereo raw; whole 16-frame blocks')
     args = ap.parse_args()
     try:
         controls = [int(v) for v in args.controls.split(',')]
@@ -42,6 +45,7 @@ def main():
         ap.error('Output must be private, outside the module')
     out.mkdir(parents=True, exist_ok=True)
     subprocess.run([sys.executable, '-B', str(ROOT/'generate_core.py'), '--check'], check=True)
+    buffer_words = int(re.search(r'Y first (\d+) words', (ROOT/'core32.asm').read_text())[1])
     sys.path.insert(0, str(args.sdk/'tools/build'))
     from nolabelprefix import refuse_label_prefix
     refuse_label_prefix((ROOT/'core32.asm').read_text())
@@ -85,6 +89,16 @@ def main():
         t = n-4096
         v = 0 if t < 0 or t >= 32000 else (seed/4294967296-.5)*.5*math.exp(-(t%8000)/350)
         values.append(round(v*8388608))
+    stereo = [v for value in values for v in (value, value)]
+    if args.input_stereo:
+        data = array.array('i')
+        data.frombytes(args.input_stereo.read_bytes())
+        if sys.byteorder != 'little':
+            data.byteswap()
+        if not data or len(data) % 32 or any(v < -8388608 or v > 8388607 for v in data):
+            ap.error('--input-stereo requires signed 24-bit stereo in whole 16-frame blocks')
+        values = stereo = data
+        count = len(stereo) // 2
     def raw(path, samples):
         data=array.array('i',samples)
         if sys.byteorder != 'little':data.byteswap()
@@ -96,7 +110,9 @@ def main():
           '-inst','2','-core','0,1','-alloc','1,1','-r7','2,2','-audioidx','0,0',
           '-frames','16','-blocks',str(count//16),'-in',str(out/'input.raw')+','+str(out/'input.raw'),
           '-split',str(args.split),
-          '-allocproc','end','-audio','0','-guard','12972','-guard-shared','-dirty','1776']
+          '-allocproc','end','-audio','0','-guard',str(buffer_words),'-guard-shared','-dirty','1776']
+    if args.input_stereo:
+        base.append('-stereo')
     reports={}
     for name,mix in [('wet',127),('dry',0)]:
         p=params.copy();p[5]=mix
@@ -112,7 +128,7 @@ def main():
             if len(data)!=count*2:raise RuntimeError('Truncated render')
             channels.append(data)
         if channels[0]!=channels[1]:raise RuntimeError('Core outputs differ')
-        if name=='dry' and any(channels[0][n*2+c]!=v for n,v in enumerate(values) for c in (0,1)):
+        if name=='dry' and list(channels[0]) != list(stereo):
             raise RuntimeError('Dry bypass is not exact')
         if name=='wet' and not any(channels[0][8192:]):raise RuntimeError('Wet core is silent')
         with wave.open(str(out/(name+'.wav')),'wb') as wav:
@@ -130,7 +146,7 @@ def main():
         oracle[1:1]=['-isystem',sdk+'/usr/include/c++/v1']
     subprocess.run(oracle,check=True)
     skip=102*16 if args.split == 0 else 51*16
-    (out/'oracle-input.f32').write_bytes(b''.join(struct.pack('<ff',v/8388608,v/8388608) for v in values[skip:]))
+    (out/'oracle-input.f32').write_bytes(b''.join(struct.pack('<f',v/8388608) for v in stereo[skip*2:]))
     time,damp,diff,smear,gain=controls
     coefficients=[.98*time/127,.95*diff/127,.9-.85*damp/127,table[gain]/8388608,
                   1,1 if smear == 127 else smear/128]
@@ -145,6 +161,8 @@ def main():
     reports['referenceErrorDb']=10*math.log10(error/max(energy,1e-30)) if error else -300
     reports['scope']='32 kHz experimental core only; no SRC, smoothing, instrument image or release qualification'
     reports['params']=params
+    reports['bufferWords']=buffer_words
+    reports['inputStereo']=bool(args.input_stereo)
     reports['split']=args.split
     reports['oracleCoefficients']=coefficients
     reports['sourceHashes']={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest()

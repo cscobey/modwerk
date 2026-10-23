@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Generate a 32 kHz DSP56300 tank experiment, NOT a 44.1 kHz OT effect.
 
-Translated from the pinned MIT Clouds topology. Fixed taps cache their packed
-addresses; moving taps retain the verified generic address routine.
+Translated from the pinned MIT Clouds topology. Independent delay rings store
+all-pass cells directly and pack only the two long delays.
 Control smoothing and rate conversion are not implemented here.
 """
 from pathlib import Path
@@ -12,13 +12,18 @@ ROOT = Path(__file__).resolve().parent
 code = []
 INPUT_APS = ((0, 113), (114, 162), (277, 241), (519, 399))
 TANK_APS = ((919, 1653), (2573, 2038), (8024, 1913), (9938, 1663))
-# Each fixed tap is visited exactly once per processed sample. Two X words
-# cache its physical pair pointer and 0/1/2 position inside that pair.
-FIXED_TAPS = sorted({100, 4612, 8022, 11602} |
-                    {offset for base, length in INPUT_APS + TANK_APS
-                     for offset in (base, base + length - 1)})
-CACHE = {offset: 0x50 + 2 * i for i, offset in enumerate(FIXED_TAPS)}
-STATE_WORDS = 0x50 + 2 * len(FIXED_TAPS)
+# Independent rings match the host-proven line layout. Only the two long
+# delays need packing; all-pass cells retain the same 16-bit quantization.
+LINES = {}
+physical = 0
+for i, (base, length) in enumerate(sorted(INPUT_APS + TANK_APS + ((4612, 3411), (11602, 4782)))):
+    packed = base in (4612, 11602)
+    LINES[base] = (length, physical, 0x50 + i, 0x60 + i, packed)
+    physical += ((length + 2) // 3) * 2 if packed else length
+DIFFUSER_BASE = physical
+BUFFER_WORDS = DIFFUSER_BASE + 2048
+STATE_WORDS = 0x70
+assert BUFFER_WORDS == 15692 and BUFFER_WORDS <= 15870
 
 
 def emit(text):
@@ -29,35 +34,51 @@ def q(value):
     return f'$%06x' % (max(-8388608, min(8388607, round(value * 8388608))) & 0xffffff)
 
 
+def line_for(offset):
+    return next(base for base, (length, *_rest) in LINES.items()
+                if base <= offset < base + length)
+
+
+def indexed_address(base):
+    length, physical, head, start, packed = LINES[base]
+    if packed:
+        emit(f'''bsr >cell_address
+            move #>${physical:x},n5
+            move (r5)+n5''')
+    else:
+        emit(f'''move a1,n5
+            move x:(r7+${start:x}),r5
+            move (r5)+n5''')
+
+
 def address(offset):
-    slot = CACHE[offset]
-    emit(f'''move x:(r7+${slot + 1:x}),a
-        sub #>$1,a
-        bpl tap_{offset:04x}_ready
-        move x:(r7+${slot:x}),b
-        sub #>$2,b
-        move x:(r7+$20),x0
-        cmp x0,b
-        bge tap_{offset:04x}_pair
-        move x0,b
-        add #>$2aaa,b
-        clr a
-        bra tap_{offset:04x}_saved
-tap_{offset:04x}_pair:
-        move #>$2,a
-tap_{offset:04x}_saved:
-        move b1,x:(r7+${slot:x})
-tap_{offset:04x}_ready:
-        move a1,x:(r7+${slot + 1:x})
-        move a1,x1
-        move x:(r7+${slot:x}),r5''')
+    base = line_for(offset)
+    length, physical, head, start, packed = LINES[base]
+    tap = offset - base
+    emit(f'move x:(r7+${head:x}),a')
+    if tap == length - 1:
+        emit(f'''sub #>$1,a
+            bpl tap_{offset:04x}_ready
+            move #>${length - 1:x},a
+tap_{offset:04x}_ready:''')
+    elif tap:
+        emit(f'''add #>${tap:x},a
+            cmp #>${length:x},a
+            blt tap_{offset:04x}_ready
+            sub #>${length:x},a
+tap_{offset:04x}_ready:''')
+    indexed_address(base)
+
+
+def fetch(base):
+    emit('bsr >cell_fetch' if LINES[base][4] else 'move y:(r5),a')
+    emit('''asl #$8,a,a
+        move a1,a''')
 
 
 def read(offset):
     address(offset)
-    emit('''bsr >cell_fetch
-        asl #$8,a,a
-        move a1,a''')
+    fetch(line_for(offset))
 
 
 def write(offset):
@@ -73,7 +94,8 @@ core_quant_pos:
         and #>$00ffff,a
         move a1,x:(r7+$30)'''.replace('core_quant_pos', f'quant_{len(code):04d}'))
     address(offset)
-    emit('bsr >cell_store')
+    emit('bsr >cell_store' if LINES[line_for(offset)][4] else
+         'move x:(r7+$30),a\nmove a1,y:(r5)')
 
 
 def ap(base, length, read_sign=1):
@@ -95,6 +117,7 @@ def ap(base, length, read_sign=1):
 
 
 def interp(base, center, depth, lfo_slot):
+    length, physical, head, start, packed = LINES[base]
     emit(f'''move x:(r7+${lfo_slot:x}),x0
         move #>${depth:x},y1
         mpy x0,y1,a
@@ -103,25 +126,26 @@ def interp(base, center, depth, lfo_slot):
         lsr b
         move b1,x:(r7+$46)
         move a1,a
-        add #>${base + center:x},a
-        move x:(r7+$21),x0
+        add #>${center:x},a
+        move x:(r7+${head:x}),x0
         add x0,a
-        and #>$003fff,a
-        move a1,x:(r7+$49)
-        move a1,a
-        bsr >cell_address
-        bsr >cell_fetch
-        asl #$8,a,a
-        move a1,x:(r7+$47)
+        cmp #>${length:x},a
+        blt interpol_{base:04x}_first
+        sub #>${length:x},a
+interpol_{base:04x}_first:
+        move a1,x:(r7+$49)''')
+    indexed_address(base)
+    fetch(base)
+    emit(f'''move a1,x:(r7+$47)
         move x:(r7+$49),a
         add #>$1,a
-        and #>$003fff,a
-        move a1,a
-        bsr >cell_address
-        bsr >cell_fetch
-        asl #$8,a,a
-        move a1,a
-        move x:(r7+$47),x0
+        cmp #>${length:x},a
+        blt interpol_{base:04x}_second
+        clr a
+interpol_{base:04x}_second:''')
+    indexed_address(base)
+    fetch(base)
+    emit('''move x:(r7+$47),x0
         sub x0,a
         move a1,x0
         move x:(r7+$46),y1
@@ -136,7 +160,7 @@ def diffuser(base, length):
         emit(f'''move x:(r7+$21),a
             add #>${offset:x},a
             and #>$0007ff,a
-            add #>$002aac,a
+            add #>${DIFFUSER_BASE:x},a
             move a1,n5
             move x:(r7+$20),r5
             move (r5)+n5''')
@@ -166,7 +190,7 @@ def main():
     emit(f'''; Copyright 2014 Emilie Gillet; translation Copyright 2026 cscobey.
         ; MIT: see LICENSE and pinned upstream source.
         ; 32 kHz core experiment ONLY. Not a 44.1 kHz Octatrack effect.
-        ; X r7+00..{STATE_WORDS - 1:02x} own scalar state. Y first 12972 words own buffer.
+        ; X r7+00..{STATE_WORDS - 1:02x} own scalar state. Y first {BUFFER_WORDS} words own buffer.
 init:
         move #>$ffffff,m5
         move r7,r5
@@ -179,14 +203,12 @@ core_zero:
         move x:(r4),a
         move a1,x:(r7+$20)
 ''')
-    for offset, slot in CACHE.items():
+    for length, physical, head, start, packed in LINES.values():
         emit(f'''move x:(r7+$20),a
-            add #>${2 * (offset // 3):x},a
-            move a1,x:(r7+${slot:x})
-            move #>${offset % 3:x},a
-            move a1,x:(r7+${slot + 1:x})''')
-    emit('''
-        move #>$0032ac,a
+            add #>${physical:x},a
+            move a1,x:(r7+${start:x})''')
+    emit(f'''
+        move #>${BUFFER_WORDS:x},a
         move a1,x:(r7+$22)
         move #>$400000,a
         move a1,x:(r7+$40)
@@ -210,7 +232,7 @@ proc:
         move x:(r7+$22),a
         tst a
         beq core_knobs
-        move #>$80,x0
+        move #>$9a,x0
         cmp x0,a
         blt core_short_clear
         move x0,a
@@ -267,7 +289,15 @@ knob_{i}_hold:
         move a1,x:(r7+$3a)
         asr #$3,a,a
         move a1,x:(r7+$29)
-        move x:(r7+$21),a
+''')
+    for length, physical, head, start, packed in LINES.values():
+        emit(f'''move x:(r7+${head:x}),a
+            sub #>$1,a
+            bpl head_{head:02x}_ready
+            move #>${length - 1:x},a
+head_{head:02x}_ready:
+            move a1,x:(r7+${head:x})''')
+    emit('''move x:(r7+$21),a
         sub #>$1,a
         and #>$003fff,a
         move a1,x:(r7+$21)

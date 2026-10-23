@@ -3,7 +3,7 @@
   "id": "mist-verb",
   "key": "MIST VERB",
   "name": "Mist Verb",
-  "version": "0.1.2-experimental",
+  "version": "0.1.3-experimental",
   "category": "effects",
   "author": {
     "github": "cscobey",
@@ -91,7 +91,7 @@
       "value": null,
       "unit": "unknown",
       "method": "unmeasured",
-      "conditions": "No measurements exist yet. Add exact conditions and source evidence when available.",
+      "conditions": "Standalone experiments are measured in TESTING.md; complete installed-effect resource use has not been qualified.",
       "source": "TESTING.md"
     },
     "processing": {
@@ -100,13 +100,13 @@
       "value": null,
       "unit": "unknown",
       "method": "unmeasured",
-      "conditions": "No measurements exist yet. Add exact conditions and source evidence when available.",
+      "conditions": "Standalone experiments are measured in TESTING.md; complete installed-effect resource use has not been qualified.",
       "source": "TESTING.md"
     }
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "Reference/packing parity and native storage proofs passed. A standalone 32 kHz core renders on both emulated cores with clean guards and exact dry bypass; it has measured source discrepancy and excessive cost. No firmware candidate is qualified.",
+    "summary": "Native mixed-storage core preserves audio in three before/after cases, with clean guards and exact dry bypass on both cores. Host integer SRC and an offline 44.1 kHz stereo path are tested. Native SRC, full audio integration and hardware qualification remain unfinished.",
     "hardwareStatus": "untested",
     "gates": [
       "Worst-case cycles under parameter modulation and maximum load",
@@ -137,6 +137,6 @@
   },
   "build": {
     "status": "pending",
-    "reason": "Unpublished draft: reference, packed storage and a standalone 32 kHz native core. The 44.1 kHz audio engine, sample-rate conversion, optimization, composition, USB lifecycle and persistence remain unverified."
+    "reason": "Unpublished draft: optimized standalone 32 kHz native core plus a host SRC reference. Native 44.1 kHz conversion/mixing, complete performance and placement, composition, USB lifecycle and persistence remain unverified."
   }
 }

@@ -1,6 +1,6 @@
 # Mist Verb
 
-Unpublished port preparation, version **0.1.2-experimental**, author **cscobey**.
+Unpublished port preparation, version **0.1.3-experimental**, author **cscobey**.
 Target: Mutable Instruments Clouds reverb and the separate stereo diffuser as
 an independent Octatrack MKII FX2 insert on OS 1.40C. MKI is not tested.
 
@@ -21,9 +21,10 @@ No disting NT firmware or Elektron code is copied.
 
 Two host storage models now match that original reverb exactly across 63
 parameter cases each: a global packed ring and independent per-delay rings.
-The second design is a candidate for a later memory-layout optimization.
-The current native core keeps the global ring and caches its fixed tap addresses. This is a storage proof; the reference still uses upstream
-floating-point arithmetic and its original oscillators.
+The native core now uses independent per-delay rings: eight all-pass rings
+retain 16-bit quantization in direct 24-bit words, while only the two long
+delays use packed storage. The host oracle still uses upstream floating-point
+arithmetic and its original oscillators.
 
 `packed_probe.asm` separately proves the basic packed-cell access on the
 emulated DSP56300, with eight distinct instances on both cores. It processes
@@ -36,10 +37,15 @@ modulated reads, packed delay memory and a widened final mixer.
 32 kHz**. It does not run at the Octatrack's 44.1 kHz audio rate yet.
 The native experiment has measured numerical differences and excessive cost;
 its render is not an exact reproduction or a qualified effect.
-Fixed taps now cache their packed addresses: three before/after renders are
-bit-identical while executed instruction counts fall about 15 percent. This
-uses 1,857 program words (previously 1,257), plus the same 128-word gain table,
-and 120 scalar X words (previously 80). Full placement remains unverified.
+The mixed storage layout preserves every wet/dry sample in three native
+before/after cases while reducing nominal instruction count by another 20
+percent. It uses 1,446 program words plus the 128-word gain table, 112 scalar
+X words and 15,692 Y words. Full placement remains unverified.
+
+[The conversion reference](SRC.md) now supports streaming 44.1↔32 kHz stereo
+and an offline 44.1 kHz demonstration around the emulated core. Conversion
+runs on the computer; the native DSP conversion and 44.1 kHz effect wrapper
+remain to be implemented and qualified.
 
 ## Controls
 
@@ -81,21 +87,20 @@ from another product.
   bus, other module dependency or stock behavior hook is planned.
 - Proposed non-stock effect ID: `0x07`, unused among the fork's declarations
   at base `bedbb362`. USB IDs are assigned through the base's module lifecycle.
-- Planned ownership per FX2 instance: Y offsets 0–10923 for 16,384 packed
-  16-bit cells; 10924–12971 for 2,048 24-bit diffuser cells. Total 12,972
-  physical 24-bit words, equivalent to 38,916 bytes on the DSP. This leaves
-  2,898 words before the reserved key window, and never needs offsets
-  15870–16383. The core render has clean access guards; integrated 44.1 kHz engine bounds
-  remain unverified.
+- Current standalone core ownership per FX2 instance: Y offsets 0–13643
+  for ten independent rings; 13644–15691 for the 2,048-word diffuser. Total
+  15,692 physical 24-bit words (47,076 bytes), leaving 178 words before the
+  reserved key window at 15870–16383. The new layout passes native access
+  guards. SRC histories do not fit this remaining space yet; see SRC.md.
 - The host class uses 32-bit containers for each modeled 24-bit word. Its C++
   object size is not the DSP allocation. Diffuser fixed-point precision is
   not yet proven against its floating-point source.
 - Independent per-delay rings matched the original across the recorded test
   cases; that is not a proof of every possible input or future implementation.
-- 44.1↔32 kHz sample-rate conversion is still required. A timing-accurate tank
+- Native DSP 44.1↔32 kHz sample-rate conversion is still required. A timing-accurate tank
   alone does not establish bandwidth, alias rejection or total processing cost.
 - Worst-case stock SPRING REV is the performance design target. Benchmark
-  expensive settings, moving controls and trigger splits on both cores. The optimized 32 kHz core peaks at 18,908 executed
+  expensive settings, moving controls and trigger splits on both cores. The optimized 32 kHz core peaks at 15,084 executed
   instructions per 16 tank frames, for one instance on each core. That is
   neither hardware timing nor a full 44.1 kHz effect budget. It requires
   substantial optimization; no supported full-effect instance count exists yet.
