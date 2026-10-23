@@ -1,5 +1,14 @@
 [
   {
+    "version": "0.1.4-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Run stereo rate conversion and reverb together on the emulated DSP at 44.1 kHz.",
+      "Preserve dry audio outside the conversion path and verify the dry/wet mixer.",
+      "The prototype still needs optimization, smoothing and installation work; it is not ready for an Octatrack."
+    ]
+  },
+  {
     "version": "0.1.3-experimental",
     "date": "2026-10-23",
     "changes": [

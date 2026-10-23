@@ -1,7 +1,8 @@
 # Sample-rate-conversion reference
 
 This is an original, MIT-licensed host reference for the eventual 44.1↔32 kHz
-DSP path. It is not yet DSP56300 code and is not part of an installable module.
+DSP path. This file describes the host reference; the tested DSP translation
+and remaining qualification limits are in [NATIVE_SRC.md](NATIVE_SRC.md).
 `render_44100.py` can process an original stereo demonstration through host
 conversion, the actual emulated 32 kHz core, then host conversion back to 44.1 kHz.
 
@@ -66,22 +67,9 @@ an unchanged input listening reference, not a test of a native 44.1 kHz mixer.
 Private WAVs, firmware-derived memory files and binaries must not be committed.
 The stock-free report is in `evidence/pipeline-44100.json`.
 
-## Remaining native work
+## Native implementation
 
-The banks occupy 4,752 coefficient words. Active stereo histories require
-288 words (192 down + 96 up); the host implementation allocates 384 words
-because each direction has a 96-frame maximum-size array. Neither number is
-a qualified instrument allocation. The current native tank uses 15,692 Y
-words and leaves only 178 before the reserved key window at offset 15,870,
-so its current layout cannot simply absorb both histories.
-
-One candidate is packing an additional 399-cell all-pass ring: this saves
-133 words, enough for the histories with 23 Y words left before the window.
-That layout has not been implemented or verified. Hardware modulo addressing
-may require extra alignment space, so do not infer that this total proves fit.
-The native implementation must establish exact buffer alignment, contiguous
-program/table placement, register preservation, bounded clearing, timing,
-streaming FIFO behavior and mixer/control smoothing before integration.
-Repeat the analytic and reference comparisons on the assembled DSP code, then
-benchmark the complete 44.1 kHz path against stock SPRING REV. Host timings
-and the standalone tank's instruction counts do not qualify that path.
+The native converter and joined 44.1 kHz reverb experiment are now tested.
+See [NATIVE_SRC.md](NATIVE_SRC.md) for exact output comparisons, aligned
+histories, coefficient/schedule placement and instruction counts. Installation,
+control smoothing, full-load timing and hardware qualification remain pending.

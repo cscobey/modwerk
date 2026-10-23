@@ -1,10 +1,22 @@
 # Mist Verb testing
 
-Date: 2026-10-23. Version: 0.1.3-experimental. Target instrument: Octatrack MKII.
+Date: 2026-10-23. Version: 0.1.4-experimental. Target instrument: Octatrack MKII.
 Fork base: `bedbb362` (current with upstream when prepared). This is unpublished
 work on `feat/mist-verb` in `cscobey/modwerk`, under `sdk/drafts/mist-verb/`.
 The user requested fork-only development. The earlier upstream draft PR is
 closed; further upstream submission requires a new user instruction.
+
+## Current native milestone
+
+The complete standalone 44.1 kHz path now executes on the emulated DSP:
+conversion, native tank and dry/wet mixer. See [NATIVE_SRC.md](NATIVE_SRC.md)
+and `evidence/native-src/` for 0.1.4 results, exact comparisons and limitations.
+The chronological sections below retain the earlier measurements; their
+memory layouts and statements of missing SRC describe those earlier stages.
+Current tank: 15,480 Y words, 1,452 code words, 16,798 nominal instructions/16
+tank frames. Joined path: 15,856 Y-word extent, 2,040 code words, 6,274 SRC
+coefficient/schedule words plus 128 gain words. No installable or hardware
+qualification is claimed.
 
 ## Commands and source identity
 
@@ -80,9 +92,9 @@ private stock memory dump and runs one instance per core. It never builds or
 flashes instrument firmware. Sample rate for this experiment is 32,000 Hz.
 
 PASS: both core outputs identical, exact MIX 0 dry bypass, nonzero wet tail,
-no Y guard/shared-memory/code clobber under garbage start. The 15,692-word
-buffer is progressively cleared over 102 dry calls (154 words per full call).
-The final core is 1,446
+no Y guard/shared-memory/code clobber under garbage start. The 15,480-word
+buffer is progressively cleared over 102 dry calls (152 words per full call).
+The final core is 1,452
 program words plus 128 gain-table words. init preserves r1/n1/m1.
 
 Settings: TIME 110, DAMP 64, DIFF 94, SMEAR 0, GAIN 83, MIX 127/0. Five seconds
@@ -101,12 +113,12 @@ matching the original float coefficient (epsilon 25) and its initial history
 reduces that error. Diagnose remaining numerical/modulation differences and measure decay/spectrum
 and listening behavior before claiming fidelity.
 
-Peak: **15,084 executed instructions per core per 16 tank frames**, one
+Peak: **16,798 executed instructions per core per 16 tank frames**, one
 instance on each core. This prototype is substantially too costly for the
 design target and includes no sample-rate conversion. Optimization is required.
 It is not a measured hardware deadline, a stock-matched benchmark or a proven
-supported instance count. Independent rings now use direct cells for the allpasses and packed cells
-for the two long delays. See the matched comparisons below.
+supported instance count. Independent rings now use direct cells for six allpasses and packed cells
+for two input allpasses and the two long delays. See the matched comparisons below.
 
 ## Sound quality and remaining audio integration
 

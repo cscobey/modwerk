@@ -1,12 +1,13 @@
 # Mist Verb
 
-Unpublished port preparation, version **0.1.3-experimental**, author **cscobey**.
+Unpublished port preparation, version **0.1.4-experimental**, author **cscobey**.
 Target: Mutable Instruments Clouds reverb and the separate stereo diffuser as
 an independent Octatrack MKII FX2 insert on OS 1.40C. MKI is not tested.
 
-**A standalone 32 kHz reverb core now renders on both emulated DSP cores,
-but there is no installable 44.1 kHz firmware effect yet.**
-`core32.asm` is the experiment; `engine.asm` remains the integration scaffold.
+**A native 44.1 kHz experiment now runs conversion, reverb and dry/wet mixing
+on both emulated DSP cores. There is no installable firmware effect yet.**
+`core44100.asm` is the joined experiment; `core32.asm` remains the tank test.
+`engine.asm` remains the integration scaffold.
 `verify.py` deliberately refuses qualification.
 This draft is absent from the live catalogue and all release/USB packages.
 
@@ -21,9 +22,9 @@ No disting NT firmware or Elektron code is copied.
 
 Two host storage models now match that original reverb exactly across 63
 parameter cases each: a global packed ring and independent per-delay rings.
-The native core now uses independent per-delay rings: eight all-pass rings
-retain 16-bit quantization in direct 24-bit words, while only the two long
-delays use packed storage. The host oracle still uses upstream floating-point
+The native core now uses independent per-delay rings: six all-pass rings
+retain 16-bit quantization in direct 24-bit words; two input allpasses and
+the two long delays use packed storage. The host oracle still uses upstream floating-point
 arithmetic and its original oscillators.
 
 `packed_probe.asm` separately proves the basic packed-cell access on the
@@ -34,18 +35,16 @@ test integers, not audio. Its performance is not the cost of a reverb.
 `core32.asm`: the diffuser, eight reverb allpasses, two damping poles,
 modulated reads, packed delay memory and a widened final mixer.
 `render_core32.py` executes it on both emulated cores at a **test rate of
-32 kHz**. It does not run at the Octatrack's 44.1 kHz audio rate yet.
-The native experiment has measured numerical differences and excessive cost;
-its render is not an exact reproduction or a qualified effect.
-The mixed storage layout preserves every wet/dry sample in three native
-before/after cases while reducing nominal instruction count by another 20
-percent. It uses 1,446 program words plus the 128-word gain table, 112 scalar
-X words and 15,692 Y words. Full placement remains unverified.
+32 kHz**. The new [native 44.1 kHz experiment](NATIVE_SRC.md) wraps this tank
+with both converters and the final mixer, all running on the emulated DSP.
+Its tested output matches the earlier host-conversion/native-tank chain
+exactly, including full-scale converter saturation and exact dry bypass.
+The tank still has measured differences from the original floating-point
+source. The complete path remains expensive and unqualified for installation.
 
-[The conversion reference](SRC.md) now supports streaming 44.1↔32 kHz stereo
-and an offline 44.1 kHz demonstration around the emulated core. Conversion
-runs on the computer; the native DSP conversion and 44.1 kHz effect wrapper
-remain to be implemented and qualified.
+[SRC.md](SRC.md) describes the computer reference and filter design.
+[NATIVE_SRC.md](NATIVE_SRC.md) records the DSP arithmetic, streaming behavior,
+aligned storage, placement, costs, test commands and remaining work.
 
 ## Controls
 
@@ -87,23 +86,22 @@ from another product.
   bus, other module dependency or stock behavior hook is planned.
 - Proposed non-stock effect ID: `0x07`, unused among the fork's declarations
   at base `bedbb362`. USB IDs are assigned through the base's module lifecycle.
-- Current standalone core ownership per FX2 instance: Y offsets 0–13643
-  for ten independent rings; 13644–15691 for the 2,048-word diffuser. Total
-  15,692 physical 24-bit words (47,076 bytes), leaving 178 words before the
-  reserved key window at 15870–16383. The new layout passes native access
-  guards. SRC histories do not fit this remaining space yet; see SRC.md.
+- The tank occupies Y offsets 0–15479. Aligned stereo conversion histories
+  extend ownership through 15855, leaving 14 words before the reserved key
+  window at 15870. See NATIVE_SRC.md for active storage and padding.
 - The host class uses 32-bit containers for each modeled 24-bit word. Its C++
   object size is not the DSP allocation. Diffuser fixed-point precision is
   not yet proven against its floating-point source.
 - Independent per-delay rings matched the original across the recorded test
   cases; that is not a proof of every possible input or future implementation.
-- Native DSP 44.1↔32 kHz sample-rate conversion is still required. A timing-accurate tank
-  alone does not establish bandwidth, alias rejection or total processing cost.
-- Worst-case stock SPRING REV is the performance design target. Benchmark
-  expensive settings, moving controls and trigger splits on both cores. The optimized 32 kHz core peaks at 15,084 executed
-  instructions per 16 tank frames, for one instance on each core. That is
-  neither hardware timing nor a full 44.1 kHz effect budget. It requires
-  substantial optimization; no supported full-effect instance count exists yet.
+- Native conversion and mixing pass the recorded exact-chain comparisons.
+  Control smoothing and startup behavior still need work; this is not a
+  sound-quality or full-instrument qualification.
+- Worst-case stock SPRING REV remains the performance design target. The
+  joined path measures roughly 42,800–43,000 executed instructions per core
+  per 16 input frames, one instance/core. These are not chip cycles or a
+  stock-matched benchmark. Further optimization is required; no supported
+  full-effect instance count exists yet.
 - Card/browser composition with stock effects, Analog BD and common custom
   companions is not tested. No new conflict flags or companion approvals have
   been added. Contiguous program/table placement remains to be measured.

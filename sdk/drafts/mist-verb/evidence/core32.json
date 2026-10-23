@@ -1,16 +1,16 @@
 {
   "wet": {
     "peakInstructionsPer16Frames": [
-      15084,
-      15084
+      16798,
+      16798
     ],
     "peakSample": 394417,
     "coreOutputsIdentical": true
   },
   "dry": {
     "peakInstructionsPer16Frames": [
-      15083,
-      15083
+      16797,
+      16797
     ],
     "peakSample": 2046992,
     "coreOutputsIdentical": true
@@ -31,7 +31,8 @@
     0,
     0
   ],
-  "bufferWords": 15692,
+  "bufferWords": 15480,
+  "inputStereo": false,
   "split": 0,
   "oracleCoefficients": [
     0.8488188976377953,
@@ -42,18 +43,18 @@
     0.0
   ],
   "sourceHashes": {
-    "core32.asm": "3631ac8d7e8c0090e50b74e8ca0ea38fa0afa9e74b8349b0ae0e11c98bf4cd3a",
-    "generate_core.py": "53709cc00d78bfee1cc88161dff6d50291a4b059f9923ae8c5162a7265c467e4",
+    "core32.asm": "e5c266e68c170f39638c3ff2d4c5688b5d05d81d45e1d271220100da9e90638c",
+    "generate_core.py": "a22c8f7ed12bb5617d71ac29ed2d8ed760d1d1760c69074b9d000d25fc3010ab",
     "oracle_render.cpp": "12daa1dce9b13a2df504ba9b5b1f032e64b22cb22a14a78e4b939705689e5913",
     "packed_probe.asm": "7e5b1a8bfe2ac98a3a1222cca5518e54c7d449af2f8f70dce38bf72d26801e7b"
   },
-  "sourceSha256": "3631ac8d7e8c0090e50b74e8ca0ea38fa0afa9e74b8349b0ae0e11c98bf4cd3a",
+  "sourceSha256": "e5c266e68c170f39638c3ff2d4c5688b5d05d81d45e1d271220100da9e90638c",
   "baselineComparison": {
-    "sourceSha256": "98279306edcf9ddac19179367af55985ff54187d8037e0dbe5fd034fbb34e361",
+    "sourceSha256": "3631ac8d7e8c0090e50b74e8ca0ea38fa0afa9e74b8349b0ae0e11c98bf4cd3a",
     "bothCoreWetAndDryBitExact": true,
     "baselinePeakInstructionsPer16Frames": [
-      18908,
-      18908
+      15084,
+      15084
     ]
   }
 }

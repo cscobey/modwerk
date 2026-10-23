@@ -1,4 +1,4 @@
-"""Mist Verb: unpublished Clouds reverb insert. A standalone native 32 kHz core exists; integration remains pending.
+"""Mist Verb: unpublished Clouds reverb insert. A standalone native 44.1 kHz path exists; installation remains pending.
 
 Keep in sdk/drafts until the complete native engine and lifecycle are verified.
 The paths below are the intended module paths after promotion, not a build.
@@ -9,7 +9,7 @@ MODULE = Module(
     name="mist-verb", key="MIST VERB", kind=Kind.DSP_EFFECT,
     category=Category.TRACK, author="cscobey", author_url="https://github.com/cscobey",
     proof=Proof.UNTESTED,
-    proof_note="Reference and packing tests only; standalone 32 kHz core only; no 44.1 kHz effect.",
+    proof_note="Standalone native 44.1 kHz path tested; no installed effect or hardware qualification.",
     doc="Unpublished Clouds stereo reverb insert, targeting its original 32 kHz tank.",
     menu=MenuEntry(fx2_id=0x07, donor_desc=0x400d58b8,
                    abbr=b"MIST", fullname=b"Mist Verb", build_tag=False),
@@ -31,7 +31,7 @@ MODULE = Module(
     dsp=DspSection(asm="modules/mist-verb/engine.asm", priority=17,
                    bus_role=BusRole.NONE, ybase=YBase.NEVER,
                    r7_latch_slot=None, gate_label=None),
-    claims=Claims(stock_instance_buffer=True, buffer_words=15692),
+    claims=Claims(stock_instance_buffer=True, buffer_words=15856),
     harness=Harness(layout_char=None, is_server=False),
     gates=(Gate("modules/mist-verb/verify.py", remix_arg=False),),
     dear={"TIME":127,"DAMP":0,"DIFF":127,"SMEAR":127,"GAIN":127,"MIX":127},

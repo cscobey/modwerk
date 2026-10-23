@@ -2,7 +2,7 @@
 """Generate a 32 kHz DSP56300 tank experiment, NOT a 44.1 kHz OT effect.
 
 Translated from the pinned MIT Clouds topology. Independent delay rings store
-all-pass cells directly and pack only the two long delays.
+most all-pass cells directly; two input allpasses and the long delays are packed.
 Control smoothing and rate conversion are not implemented here.
 """
 from pathlib import Path
@@ -12,18 +12,18 @@ ROOT = Path(__file__).resolve().parent
 code = []
 INPUT_APS = ((0, 113), (114, 162), (277, 241), (519, 399))
 TANK_APS = ((919, 1653), (2573, 2038), (8024, 1913), (9938, 1663))
-# Independent rings match the host-proven line layout. Only the two long
-# delays need packing; all-pass cells retain the same 16-bit quantization.
+# Pack two additional input allpasses to reserve aligned SRC histories.
+# Every all-pass cell retains the same 16-bit quantization.
 LINES = {}
 physical = 0
 for i, (base, length) in enumerate(sorted(INPUT_APS + TANK_APS + ((4612, 3411), (11602, 4782)))):
-    packed = base in (4612, 11602)
+    packed = base in (277, 519, 4612, 11602)
     LINES[base] = (length, physical, 0x50 + i, 0x60 + i, packed)
     physical += ((length + 2) // 3) * 2 if packed else length
 DIFFUSER_BASE = physical
 BUFFER_WORDS = DIFFUSER_BASE + 2048
 STATE_WORDS = 0x70
-assert BUFFER_WORDS == 15692 and BUFFER_WORDS <= 15870
+assert BUFFER_WORDS == 15480 and BUFFER_WORDS <= 15870
 
 
 def emit(text):
@@ -232,7 +232,7 @@ proc:
         move x:(r7+$22),a
         tst a
         beq core_knobs
-        move #>$9a,x0
+        move #>$98,x0
         cmp x0,a
         blt core_short_clear
         move x0,a

@@ -1,2 +1,2 @@
-"""Deliberately refuse qualification until the complete native effect exists."""
-raise SystemExit("[FAIL] Draft: reference/packing tests only. Native audio, SRC, performance, composition, USB lifecycle and persistence are unverified. See TESTING.md.")
+"""Deliberately refuse release qualification for the experimental native path."""
+raise SystemExit("[FAIL] Draft: standalone native 44.1 kHz tests pass, but full performance, smoothing, composition, firmware/USB lifecycle and persistence remain unverified. See NATIVE_SRC.md and TESTING.md.")
