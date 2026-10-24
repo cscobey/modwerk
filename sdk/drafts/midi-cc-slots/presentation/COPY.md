@@ -48,15 +48,15 @@ Both MIDI CONTROL pages show the assigned controller numbers above their CC knob
 
 Entering CC mode starts at CC0; the previous CC assignment is not remembered after returning to PB or AT. The feature’s installation can survive restart through Keep. Saving CC assignments is a separate Part/project operation; assignment save/reload and broader compatibility testing remain outstanding.
 
-## Screenshot walkthrough — captions prepared, images pending
+## Screenshot walkthrough — captured in the emulator
 
-These are proposed captions. Verify the actual labels and values against each captured image before using them in a listing. The artwork is an illustration, not an Octatrack screen capture.
+Five actual LCD captures and their reviewed captions are in the [emulator gallery](../media/README.md). These are emulator images of the current native UI; the routing artwork is a separate illustration.
 
-1. **Open the assignment page — CONTROL 1 SETUP.** Select a MIDI track and double-tap FX1. Encoder A belongs to pitch bend and B to aftertouch; click either encoder to switch that position into CC mode.
-2. **Choose two controllers — CONTROL 1 SETUP.** Turn A or B in CC mode to choose a number from 0 to 127, then press YES. Choose controller numbers supported by the receiving instrument; the two positions are independent.
-3. **Send a value — CONTROL 1.** Press FX1 to return to the main page. Enable the position with FUNC + encoder press, then turn it; the number above the knob identifies the outgoing CC, while the value below is what you send.
-4. **Read the other assignments — CONTROL 2.** Press FX2 to view the second MIDI CONTROL page. Its CC knobs also show their assigned controller numbers instead of slot names.
-5. **Return to native control — CONTROL 1 SETUP.** Double-tap FX1 and click a mapped encoder again. PB or AT returns for that position; entering CC mode again starts at CC0.
+1. **Open the assignment page.** Select a MIDI track and double-tap FX1 to open CONTROL 1 SETUP. PB and AT show STK here; click encoder A or B to switch that position into CC mode.
+2. **Choose two controllers.** Click A and B in SETUP to switch both positions into CC mode. Each starts at CC0; this example leaves A at CC0 and turns B to CC127, then confirms with YES. Use controller numbers supported by your receiving instrument.
+3. **Send a value.** Press FX1 to return to CONTROL 1 and enable A or B with FUNC + encoder press. The headers identify CC0 and CC127; their enabled values are 64 and 32 here. Turn the encoder to send a value on the MIDI track’s output channel.
+4. **Read the other assignments.** Press FX2 to view CONTROL 2. Its headers show the assigned CC numbers, here 71–76, instead of slot names. All six values are OFF in this capture; enable a value before sending it.
+5. **Restore pitch bend.** Double-tap FX1 and click A again to restore native pitch bend. PB returns to STK while B keeps CC127, so the modes remain independent. Switching A back to CC later starts at CC0.
 
 ## Presentation status
 

@@ -1,0 +1,1 @@
+The Midi Mode 2 draft now includes five actual emulator LCD screenshots, reviewed walkthrough captions and source/package provenance. The images show setup, extra CC assignments, both CONTROL pages and native-mode restoration. No native package or catalogue selection changed.

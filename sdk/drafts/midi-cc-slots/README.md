@@ -26,7 +26,7 @@ The presentation name is **Midi Mode 2**. The installed development identity
 remains `midi-cc-slots`; no native code or package hash changes for the name.
 The [proposed module copy](presentation/COPY.md),
 [original CC Map-style artwork](presentation/thumbnail.svg) and
-[screenshot capture plan](presentation/README.md) are ready for review.
+[reviewed emulator screenshot gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
 ## Controls and usage
@@ -158,5 +158,7 @@ verified image; they must never be copied into the repository or uploaded.
 
 ## Screens and audio
 
-Stock MKII screen inspection performed locally. Private firmware-derived
-captures are retained outside Git. No receiver audio or hardware capture.
+Five actual MKII emulator LCD captures and reviewed captions are in
+[media/README.md](media/README.md), with sanitized source/image/package provenance.
+Firmware, raw LCD/RAM planes and capture working files stay private.
+No receiver audio or physical-device capture.

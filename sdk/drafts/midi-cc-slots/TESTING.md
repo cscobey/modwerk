@@ -189,5 +189,25 @@ in `presentation/`. The thumbnail follows CC Map’s dark grid and lilac routing
 style and was rendered locally and visually inspected. It is a conceptual
 illustration, not device UI evidence. No native source, installed module ID,
 package bytes, catalogue entry or generated publication metadata changed.
-The actual screenshots remain pending; the capture plan distinguishes physical
-LCD photographs, supported development-base exports and emulator captures.
+The initial capture plan distinguished physical LCD photographs, supported
+development-base exports and emulator captures; the user then chose emulator images.
+
+
+## Midi Mode 2 emulator screenshot walkthrough — 24 October 2026
+
+- Five actual LCD images captured with the shared capture script and the
+  existing reviewed ot_emu, MKII panel, stopped transport, disposable empty
+  card and real key/encoder input. No memory injection or reconstructed labels.
+- Source slots.s SHA-256 matches the candidate build receipt. The captured
+  image SHA-256 matches the previously verified runtime reconstruction of the
+  unchanged pinned 0.0.4 package. Full bindings and capture plan are in
+  media/capture.json; firmware and raw planes remain private.
+- All five 768×384 PNGs visually reviewed. SETUP starts at native PB/AT/STK;
+  CC assignment capture shows A=0/B=127; CONTROL 1 shows enabled values 64/32
+  on channel 01; CONTROL 2 shows headers 71–76, all values OFF; restoration
+  shows native PB with B still assigned CC127. Captions match visible states.
+- Palette uses only grayscale 24/240 at integer scale 6, preserving every
+  rendered LCD/popup pixel. No error popups or private project names appear.
+- This is UI illustration evidence from an emulator. It does not add physical
+  USB, receiver MIDI, project-persistence or release-qualification evidence.
+  Catalogue registration remains outstanding.
