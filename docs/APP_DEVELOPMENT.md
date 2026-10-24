@@ -121,6 +121,13 @@ npm run dev:community
 
 In a second terminal, run `npm run dev` and open http://127.0.0.1:5173. Vite proxies /api to the local Cloudflare runtime on port 8788, with D1 emulated locally. `.dev.vars` (ignored) sets the local `APP_URL` and overrides the production values in `wrangler.worker.jsonc`. Without the API, local configuration and firmware storage still work; community actions explain their unavailable state.
 
+For the private MIDI CC Slots development draft, use
+`http://127.0.0.1:5173/?preview=midi-cc-slots` with Python and `m68k-elf`
+binutils on the development server's PATH. Its local-only compiler makes a
+stock-free trial package; the page reviews the connected base and installed
+set before an explicit temporary USB trial, with Undo and no Keep or flash.
+It is outside the public catalogue. See [the draft's instructions and limits](../sdk/drafts/midi-cc-slots/README.md#local-app-and-temporary-usb-trial).
+
 ## Search indexing
 
 The production build includes HTML summaries: the homepage links to available modules on all three supported machines, module pages use their current catalogue documentation, and `/submit/` describes the shared developer workflow. Public forum pages include their existing public excerpt. A small same-origin, parser-blocking script in the head hides these summaries before the body can paint, preventing a text flash while React loads. React replaces them with the interactive app. With JavaScript disabled, or if the app script fails to load or execute before mounting, the summaries remain readable. Firmware and private account/report data are never prerender inputs.

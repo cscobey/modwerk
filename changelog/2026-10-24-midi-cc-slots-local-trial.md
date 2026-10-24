@@ -1,0 +1,1 @@
+Adds a local development page to compile and review the MIDI CC Slots draft for a temporary USB trial, with Undo. Hardware and project persistence remain unqualified; no public module release is added.

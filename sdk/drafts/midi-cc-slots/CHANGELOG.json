@@ -1,10 +1,19 @@
 [
   {
+    "version": "0.0.3-experimental",
+    "date": "2026-10-24",
+    "changes": [
+      "Adds a local development page for compiling and reviewing a temporary USB trial.",
+      "Preserves the installed set and offers Undo without Keep or firmware flashing.",
+      "Hardware and saved-project behavior remain unqualified."
+    ]
+  },
+  {
     "version": "0.0.2-experimental",
     "date": "2026-10-24",
     "changes": [
       "Double-tap FX1 on MIDI CONTROL 1, then click A or B to switch its PB/AT position to CC mode.",
-      "Turn the encoder to choose CC0–127; click again to restore PB or AT.",
+      "Turn the encoder to choose CC0\u2013127; click again to restore PB or AT.",
       "Turning alone preserves the selected mode, including stock fast editing while an encoder is held.",
       "Emulator research draft; saved projects, USB integration and hardware remain unqualified."
     ]

@@ -96,3 +96,26 @@ base coexistence; bounded wire-rate flood; runtime install/removal; hardware.
 
 Never describe an injected-memory or borrowed-call probe as a front-panel,
 sequencer, persistence or physical reboot test.
+
+## Local USB draft 0.0.3 — 24 October 2026
+
+- `build_runtime.py`: deterministic ABI 7, 1,470 bytes, 14 guarded sites,
+  seven hash-backed copies, 420-byte image; no ColdFire self-reference words.
+- `verify_runtime.py`: every site and copy guard passed against stock MAIN and
+  a user-supplied Modwerk ELEKLOADER card image (SHA-256 in evidence/runtime.json).
+  No direct current-base patch overlap. Literal stock-overlap scan passed at
+  the existing 16-byte floor, without exemptions.
+- Package reconstruction at 0x400d6b20 reproduces the 382-check candidate
+  byte for byte. Reconstruction at 0x400d7000 passed all 382 panel/sequencer
+  checks again. This proves the adapter can move; it does not test USB loading.
+- `verify_loader.py`: exact package prepare, publish, Undo, repeated install,
+  removal and full memory reclamation passed against the user's MAIN using
+  the real C loader with host glue. ColdFire code is not executed by this test.
+- Local HTTP endpoint returned the same package digest as the direct build.
+  Capability/stale-inventory/package-identity and DOM trial tests cover that
+  preparation sends nothing, an explicit trial adds only the draft, and the
+  real link's self-test callback is supplied. No Keep action exists.
+- Hardware USB, actual loader coexistence, saved Part/project persistence,
+  LFO/shared-channel behavior, Keep/restart and physical reboot: **not tested**.
+  The 14 unchanged sites in a supplied file do not prove the connected unit's
+  identity or its currently installed runtime set; the page reviews both.
