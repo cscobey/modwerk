@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import selectors
+import shutil
 import subprocess
 import time
 
@@ -81,6 +82,75 @@ def encoder(name, delta):
     command(f'knob {48+"ABCDEF".index(name)} {delta}')
     advance(200)
 
+def control1_setup():
+    advance(500)
+    press('FX1')
+    advance(500)
+    press('FX1')
+    press('FX1')
+    window = bytes.fromhex(command('peek 0x46c7d36c 12').split()[1])
+    assert int.from_bytes(window[:4], 'big') & 0x20 and tuple(
+        int.from_bytes(window[i:i+4], 'big') for i in [4, 8]) == (115, 64), 'CTRL 1 SETUP did not open'
+
+def assignments(expected, label):
+    raw = bytes.fromhex(command('peek 0x460d5ce0 8').split()[1])
+    actual = tuple(int.from_bytes(raw[i:i+4], 'big') for i in [0, 4])
+    assert actual == expected, f'{label}: expected {expected}, got {actual}'
+    checks.append(label)
+
+def committed_mode(slot, expected):
+    live = bytes.fromhex(command('peek 0x46c76df2 2').split()[1])
+    bank = int(command('peek 0x46c82456 4').split()[1], 16)
+    part = int(command('peek 0x100b14cf 1').split()[1], 16)
+    track = int(command('peek 0x100b14cc 1').split()[1], 16)
+    address = bank+0x8f274+part*6322+track*36+slot
+    stored = int(command(f'peek {hex(address)} 1').split()[1], 16)
+    assert live[slot] == stored == expected, f'click did not commit slot {slot} to live and in-memory Part state'
+    checks.append(f'slot {slot} mode {expected} commits on click without YES')
+
+def menu_modes():
+    control1_setup()
+    assignments((0, 0), 'double-tap opens CTRL 1 SETUP with native defaults')
+    shutil.copy(out/'lcd.private.bin', out/'menu-native.private.bin')
+    encoder('A', 127)
+    encoder('B', 127)
+    assignments((0, 0), 'rotation does not enable CC mode')
+    press('PUSH A')
+    assignments((1, 0), 'click A enables only the PB position as CC0')
+    committed_mode(0, 1)
+    encoder('A', -127)
+    assignments((1, 0), 'CC0 lower bound does not switch mode')
+    encoder('A', 127)
+    assignments((128, 0), 'rotation reaches CC127')
+    press('PUSH B')
+    assignments((128, 1), 'click B independently enables the AT position as CC0')
+    committed_mode(1, 1)
+    shutil.copy(out/'lcd.private.bin', out/'menu-cc.private.bin')
+    encoder('C', 1)
+    press('PUSH C')
+    assert command('peek 0x46c76df4 1').endswith('08'), 'stock CC1 click did not confirm its assignment'
+    assignments((128, 1), 'stock CC1 click confirms its number without changing A/B modes')
+    encoder('C', -1)
+    press('PUSH C')
+    assert command('peek 0x46c76df4 1').endswith('07'), 'stock CC1 assignment did not restore'
+    checks.append('stock CC1 click restores its assignment')
+    key('PUSH A', True)
+    encoder('A', -10)
+    key('PUSH A', False)
+    assignments((58, 1), 'stock held-encoder acceleration is preserved without toggling mode')
+    press('PUSH A')
+    assignments((0, 1), 'second A click restores PB and keeps B mapped')
+    committed_mode(0, 0)
+    press('PUSH B')
+    assignments((0, 0), 'second B click restores AT')
+    committed_mode(1, 0)
+    press('FX1')
+    before = command('peek 0x46c76df2 2')
+    press('PUSH A')
+    press('PUSH B')
+    assert command('peek 0x46c76df2 2') == before, 'main-page clicks changed assignment modes'
+    checks.append('ordinary main-page encoder clicks do not change modes')
+
 def wire():
     return bytes.fromhex(command('midi-tx').split(' ', 1)[1])
 
@@ -114,6 +184,7 @@ try:
     press('YES')
     press('NO')
     press('MIDI')
+    menu_modes()
     for track in range(8):
         press(f'T{track+1}')
         press('FUNC', 'SRC')
@@ -131,10 +202,10 @@ try:
         else:
             raise AssertionError('could not select the required stock channel')
         press('SRC')
-        press('FUNC', 'FX1')
-        encoder('A', 1)       # encoded CC0
+        control1_setup()
+        press('PUSH A')       # toggle PB to CC0
+        press('PUSH B')       # toggle AT to CC0
         encoder('B', 127)
-        encoder('B', 1)       # encoded CC127
         press('YES')
         press('FX1')
         press('FUNC', 'PUSH A')
@@ -150,7 +221,7 @@ try:
     press('T1')
     current_a = current_b = 0
     for cc in range(1, 128):
-        press('FUNC', 'FX1')
+        control1_setup()
         encoder('A', 1)
         encoder('B', -1)
         press('YES')
@@ -174,10 +245,9 @@ try:
             encoder(slot, 37)
             contains(0, cc, 37, before, f'stock {page} {slot} CC{cc}')
     press('FX1')
-    press('FUNC', 'FX1')
-    encoder('A', -127)
-    encoder('A', -1)
-    encoder('B', -1)
+    control1_setup()
+    press('PUSH A')
+    press('PUSH B')
     press('YES')
     press('FX1')
     for slot, delta, expected in [('A', -1, bytes([0xe0, 0, 126])),
@@ -222,7 +292,7 @@ try:
         'emulatorSha256': hashlib.sha256(a.emulator.read_bytes()).hexdigest(),
         'adaptersSha256': hashlib.sha256(Path(__file__).with_name('slots.s').read_bytes()).hexdigest(),
         'verifierSha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        'coverage': 'MKII panel; eight distinct channels; all CC assignments; stock controls; STK restore'
+        'coverage': 'MKII double-tap SETUP and independent click toggles; eight distinct channels; all CC assignments; stock controls; native restore'
                     + ('; two actual sequencer locks with live base unchanged' if a.sequencer else ''),
         'notTested': ([] if a.sequencer else ['sequencer locks']) + ['persistence', 'same-channel arbitration',
                       'LFOs', 'USB lifecycle', 'hardware']}

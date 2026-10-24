@@ -29,9 +29,10 @@ def main():
     if hashlib.sha256(stock).hexdigest() != STOCK:
         parser.error('requires the verified original 1.40C MAIN')
     output.mkdir(parents=True, exist_ok=False)
-    for name, address in [('dispatch', 0x4009ef60), ('assignment', 0x4009f0fe),
-                          ('sequence_pb', 0x4009fd84), ('sequence_at', 0x4009fdf8)]:
-        (output / f'{name}.private.bin').write_bytes(stock[address-BASE:address-BASE+6])
+    for name, address, length in [('dispatch', 0x4009ef60, 6), ('assignment', 0x4009f0fe, 6),
+                                  ('sequence_pb', 0x4009fd84, 6), ('sequence_at', 0x4009fdf8, 6),
+                                  ('setup_press', 0x4003fc44, 8), ('setup_clamp', 0x4003a88e, 6)]:
+        (output / f'{name}.private.bin').write_bytes(stock[address-BASE:address-BASE+length])
     prefix = 'm68k-elf-'
     for tool in ['as', 'ld', 'nm', 'objcopy', 'objdump']:
         if not shutil.which(prefix + tool):
@@ -66,10 +67,12 @@ def main():
         write(address, struct.pack('>I', value))
 
     for address, symbol in [(0x4009ef60, 'slot_dispatch'), (0x4009f0fe, 'slot_assignment'),
-                            (0x4009fd84, 'slot_sequence_pb'), (0x4009fdf8, 'slot_sequence_at')]:
+                            (0x4009fd84, 'slot_sequence_pb'), (0x4009fdf8, 'slot_sequence_at'),
+                            (0x4003a88e, 'slot_setup_clamp')]:
         write(address, struct.pack('>HI', 0x4ef9, symbols[symbol]))
+    write(0x4003fc44, struct.pack('>HIH', 0x4ef9, symbols['slot_setup_press'], 0x4e71))
     descriptor = 0x400d42f4
-    write(descriptor+0x3a, b'PB CC\0AT CC\0')
+    write(descriptor+0x3a, b'PB/CC\0AT/CC\0')
     for index in range(2):
         word(descriptor+0xb2+4*index, 129)
         word(descriptor+0xe2+4*index, symbols['slot_format'])

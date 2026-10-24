@@ -2,6 +2,7 @@
 | Experimental stock-1.40C dispatch adapters; emulator research only.
         .text
         .global slot_dispatch, slot_assignment, slot_format, slot_sequence_pb, slot_sequence_at
+        .global slot_setup_press, slot_setup_clamp
 slot_dispatch:
         movel %a3,%d0
         andil #255,%d0
@@ -65,6 +66,46 @@ assignment_stock:
         .endm
         sequence_slot slot_sequence_pb, 0, 18, 562, sequence_pb.private.bin, 0x4009fd8a, 0x4009fde2
         sequence_slot slot_sequence_at, 1, 19, 563, sequence_at.private.bin, 0x4009fdfe, 0x4009fe4e
+
+| CTRL 1 SETUP delivers a key code and down/up event. Toggle only a clean
+| encoder A/B release; stock's turn-while-held guard must remain effective.
+slot_setup_press:
+        movel %sp@(4),%d0
+        subil #56,%d0
+        cmpil #1,%d0
+        bhi.s setup_press_stock
+        tstl %sp@(8)
+        bne.s setup_press_stock
+        tstl 0x46c7d32c
+        bne.s setup_press_stock
+        lea 0x460d5ce0,%a0
+        lea %a0@(0,%d0:l:4),%a0
+        tstl %a0@
+        beq.s setup_press_cc
+        clrl %a0@
+        bra.s setup_press_stock
+setup_press_cc:
+        movel #1,%a0@
+setup_press_stock:
+        .incbin "setup_press.private.bin"
+        jmp 0x4003fc4c
+
+| A/B rotation selects a CC only after a click has enabled CC mode.
+| Keep encoded 1 (CC0) as the lower bound; 0 is reserved for a mode click.
+slot_setup_clamp:
+        cmpal #2,%a2
+        bge.s setup_clamp_stock
+        tstl %d2
+        beq.s setup_clamp_native
+        tstl %d0
+        bgt.s setup_clamp_stock
+        moveq #1,%d0
+        bra.s setup_clamp_stock
+setup_clamp_native:
+        clrl %d0
+setup_clamp_stock:
+        .incbin "setup_clamp.private.bin"
+        jmp 0x4003a894
 
 | SETUP formatter ABI: (char *destination, unsigned encoded_assignment).
 slot_format:

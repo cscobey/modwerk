@@ -22,7 +22,28 @@ Status: incomplete, unqualified emulator research. No physical hardware used.
 These are local source/control-flow observations, not proof of full saved
 project semantics or of the candidate feature.
 
-## Private candidate v4
+## Current candidate: 0.0.2-experimental
+
+MAIN SHA-256 `984120afb2d5255a9d708caa83647cd900f0e0fe544a19394bfc5e9fa875fe85`.
+The private unit is 420 bytes including local replay spans, at the same
+guarded solo-image zero run. It remains outside the composer/base allocation.
+
+Double-tapping stock FX1 already opens MIDI CTRL 1 SETUP. Its encoder handler
+receives down and up events; only a clean A/B release switches mode. Stock's
+turn-while-held guard suppresses the click after accelerated editing. The
+new clamp preserves STK while turning and keeps CC0 as the mapped lower bound.
+The other encoder handlers and normal main-page presses retain stock behavior.
+
+The updated gate passed 382 checks and a second build reproduced the private
+candidate byte-for-byte. It adds 16 menu checks to the previous 366 output checks:
+double-tap entry, independent A/B click toggles, rotation staying in its mode,
+CC0/127 boundaries, stock CC1 click confirmation, held-encoder acceleration,
+main-page isolation, and immediate live/in-memory Part updates on mode clicks.
+Those in-memory Part observations are not saved-project persistence results.
+The gate also requires the actual SETUP popup to be open before editing it;
+stale staged values alone cannot establish that a double-tap opened the menu.
+
+## Previous candidate: v4 / 0.0.1-experimental
 
 MAIN SHA-256 `49ce9b6cd40f5d9195472e7a60792784a50060700d32e5110df996713d133c53`.
 Built with `build_probe.py`; original adapters occupy a guarded stock zero
