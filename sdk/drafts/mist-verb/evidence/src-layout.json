@@ -1,0 +1,44 @@
+{
+  "scope": "Host layout proof only; native DSP still uses full tables",
+  "sourceHashes": {
+    "generate_src.py": "cbb9d17d699c11a00b01223ddd824ca1e4dfd4ca79a9b200012b5222224b64a9",
+    "verify_src_layout.py": "5819d2da932b3b0824f197217333f3ead06e2fe082c4a2d084a26df1f6fbb067"
+  },
+  "banks": [
+    {
+      "inputRate": 44100,
+      "outputRate": 32000,
+      "taps": 96,
+      "originalCoefficientWords": 3168,
+      "packedCoefficientWords": 1711,
+      "descriptorWords": 33,
+      "exactRows": 33,
+      "scheduleEndpointChecks": 640
+    },
+    {
+      "inputRate": 32000,
+      "outputRate": 44100,
+      "taps": 48,
+      "originalCoefficientWords": 1584,
+      "packedCoefficientWords": 847,
+      "descriptorWords": 33,
+      "exactRows": 33,
+      "scheduleEndpointChecks": 882
+    }
+  ],
+  "unchangedScheduleWords": 1522,
+  "currentProgramAndTablesWords": 8949,
+  "proposedTablesWords": 4146,
+  "proposedTotalBeforeDecoderChanges": 6821,
+  "savedTableWords": 2128,
+  "documentedEmptyArenaWords": [
+    4304,
+    4432
+  ],
+  "minimumDeficitBeforeDecoderChanges": [
+    2517,
+    2389
+  ],
+  "nativeDecoderImplemented": false,
+  "installedFitProven": false
+}

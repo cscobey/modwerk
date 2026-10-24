@@ -174,3 +174,31 @@ Startup duration independent of call partitioning, installed package placement,
 coexistence, instrument controls, firmware/USB lifecycle and hardware
 qualification also remain unfinished. No supported instance count or
 installable build is claimed.
+
+## Program-memory fit investigation (host proof, no DSP change)
+
+Run `python3 -B verify_src_layout.py --check` from this folder to reproduce
+`evidence/src-layout.json`. The current joined program, SRC data and gain
+table occupy **8,949 P words**. The package hook guide documents only
+**4,304 / 4,432 words** in the empty module arena of its named base build
+([arena measurements](../../../docs/OCTATRACK_PACKAGE_DSP_HOOKS.md)). Those
+are shared resources, so a standalone high-address emulator placement does
+not establish that this engine can be installed or coexist with other FX.
+
+The host proof reconstructs all 66 coefficient rows exactly, then checks
+both interpolation endpoints at all 761 rational-clock positions. Phases
+1–31 have a zero terminal tap, and phases 17–31 mirror phases 15–1 over
+the remaining taps. Keep phase 0 and normalized phase 32 separately.
+This permits 2,558 coefficient words plus 66 one-word relative descriptors,
+instead of 4,752 coefficient words. Keeping the current schedules saves
+**2,128 words**, without changing coefficients, cutoff or phase weights.
+
+This is a checked layout proposal, not an implemented native optimization.
+It would still need **6,821 words before changes to the decoder**, exceeding
+the documented empty arenas by 2,517 / 2,389 words. The DSP reader would
+need signed coefficient strides, variable tap counts and a fresh history
+pointer for each phase; omitting a zero tap otherwise breaks the existing
+full-ring wrap assumption. Preserve any newly used address registers and
+measure both code size and execution cost after implementing it. Exact row
+reconstruction does not prove DSP audio parity or a processing improvement.
+No extra X-memory table allocation or larger P arena has been established.

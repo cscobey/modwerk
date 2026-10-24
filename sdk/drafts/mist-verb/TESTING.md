@@ -8,6 +8,14 @@ closed; further upstream submission requires a new user instruction.
 
 ## Current native milestone
 
+Follow-up resource investigation: `verify_src_layout.py --check` verifies
+lossless reconstruction of every SRC row and all 1,522 schedule endpoints.
+The proposed table layout saves 2,128 P words but is not used by the DSP.
+Even its estimated 6,821-word total exceeds the documented empty module
+arenas; installed fit remains unproven. See NATIVE_SRC.md and
+`evidence/src-layout.json`. This host-only evidence update does not change
+the 0.1.5 engine, its audio, or its native performance measurements.
+
 The complete standalone 44.1 kHz path now executes on the emulated DSP:
 conversion, native tank and dry/wet mixer. See [NATIVE_SRC.md](NATIVE_SRC.md)
 and `evidence/performance-controls/` for 0.1.5 optimization, exact static
