@@ -211,3 +211,19 @@ development-base exports and emulator captures; the user then chose emulator ima
 - This is UI illustration evidence from an emulator. It does not add physical
   USB, receiver MIDI, project-persistence or release-qualification evidence.
   Catalogue registration remains outstanding.
+
+
+## Local catalogue and normal USB preparation — 24 October 2026
+
+The native package and its pinned SHA-256 remain unchanged. Focused domain/DOM
+checks cover opt-in/development gating, normal catalogue parsing, installed ID
+recognition, Add/detail/screenshots, configuration round-trip, USB-only card
+refusal, companion preservation and capability rejection. Normal Sync preparation
+accepted the exact 1,914-byte package and prepared its 32-byte removal package
+without changing a companion. No device writes were performed.
+
+The running development server returned the exact pinned binary, thumbnail,
+screenshot and module page successfully. The user confirmed the Local draft
+listing and Add button are visible. Normal catalogue Sync/Keep on the physical
+unit has not been tested; earlier reported hardware results used the diagnostic
+page. This does not add release qualification or card-composer support.

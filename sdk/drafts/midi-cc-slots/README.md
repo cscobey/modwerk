@@ -71,6 +71,20 @@ range. Add `--sequencer` to include its two playback-lock cases.
 
 ## Local app, installation and removal
 
+For the normal local catalogue, set `VITE_LOCAL_CC_SLOTS=1` in the checkout's
+ignored `.env.local` and start the development server. Open Modules → MIDI & USB
+and choose **Midi Mode 2**, marked **Local draft**, or open
+`http://127.0.0.1:5173/module/midi-cc-slots/`. Add it to your module set, then
+use Your Octatrack → Sync to Octatrack to review, trial and explicitly Keep.
+An already installed `f36a496d` is recognized as the same module. Preserve
+other selected modules when reviewing the set.
+
+This overlay and its on-demand, hash-verified package endpoint are development
+only. Production builds do not register the draft. Card firmware builds refuse
+sets containing this draft with instructions to use USB. The public catalogue
+and native card composer remain unchanged. The diagnostic page below remains
+available for detailed restart checks.
+
 Use Node 24, Python 3.12+ and `m68k-elf` binutils on PATH. From this checkout:
 
 ```sh
@@ -145,7 +159,7 @@ event or direct base write overlaps those sites. The user reported the controls 
 independently read build identity. On-device
 install/self-test/Undo/removal and persistence still need exact-build testing. Full
 release metadata, card composition and Keep qualification remain outstanding.
-No catalogue entry is added.
+An opt-in local development listing is available; no public catalogue entry is added.
 No compatibility with MIDI Scenes or other modules is established merely
 because the candidate hook addresses do not overlap their current recipes.
 Same-channel competing tracks and mixed PB/CC assignments need explicit tests.

@@ -19,6 +19,7 @@ import { ownerCredit } from '../catalog/module-authors'
 import { UsbAudioConfigurator } from './UsbAudioConfigurator'
 import { USB_AUDIO_MIDI_CREDITS } from './credits'
 import { USB_AUDIO_MODULE, usbAudioPreset, type UsbAudioConfiguration } from '../config/usb-audio'
+import { isLocalCcModule } from '../dev/local-cc-module'
 
 export function ModuleDetail({ module, selected, onToggle, addBlock, onSwap, browse, onBackToResults, usbAudio, configurationName, configurationId, onConfigureUsbAudio, modal }: { modal?: boolean; browse?: CatalogBrowse | null; onBackToResults?: () => void; module: FirmwareModule; selected: boolean; onToggle: () => void; addBlock?: AddBlock; onSwap?: (removeIds: readonly string[]) => void; usbAudio?: UsbAudioConfiguration; configurationName?: string; configurationId?: string; onConfigureUsbAudio?: (value: UsbAudioConfiguration | undefined) => void }) {
   const previewKey = configurationId + JSON.stringify(usbAudio)
@@ -27,12 +28,12 @@ export function ModuleDetail({ module, selected, onToggle, addBlock, onSwap, bro
   const details = DETAILS[module.id]
   const moduleDocument = MODULE_DOCUMENTS_BY_ID[module.id]
   return <ModuleDetailLayout modal={modal} browse={browse} onBackToResults={onBackToResults} id={module.id} title={module.name} family={details.family} detail={module.detail}
-    titleBadge={isBetaModule(module.id) ? 'Beta' : module.id === USB_AUDIO_MODULE ? 'Outbox 8 compatible' : undefined}
+    titleBadge={isLocalCcModule(module.id) ? 'Local draft' : isBetaModule(module.id) ? 'Beta' : module.id === USB_AUDIO_MODULE ? 'Outbox 8 compatible' : undefined}
     configureTarget={module.id === USB_AUDIO_MODULE && onConfigureUsbAudio ? 'usb-setup' : undefined}
     author={module.authorName} authorUrl={module.authorUrl} contributors={module.contributors} description={module.description}
     selected={selected} onToggle={onToggle} addBlock={addBlock} onSwap={onSwap} backHref="#library" backLabel="All modules"
     preview={<ModuleAudioDetailPreview id={module.id} name={module.name}/>} resources={<ModuleResourceIndicators id={module.id} usbLayout={module.id === USB_AUDIO_MODULE && onConfigureUsbAudio ? draft.layout : undefined} />}
-    notice={moduleDocument.build && <p className="service-note" role="status">{moduleDocument.build.reason}</p>}
+    notice={isLocalCcModule(module.id) ? <p className="service-note" role="status">Local development draft · Install through Sync to Octatrack. Card firmware packaging is still in preparation.</p> : moduleDocument.build && <p className="service-note" role="status">{moduleDocument.build.reason}</p>}
     overviewIntro={module.id === USB_AUDIO_MODULE && onConfigureUsbAudio && <UsbAudioConfigurator key={previewKey} draft={draft} onDraftChange={value => setUsbDraft({ key: previewKey, value })} configuration={usbAudio} selected={selected} configurationName={configurationName} onConfigure={onConfigureUsbAudio} />}
     guide={<>
       <details className="module-disclosure">

@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 2,
+  "id": "midi-cc-slots",
+  "key": "MIDI CC SLOTS",
+  "name": "Midi Mode 2",
+  "version": "0.0.4-experimental",
+  "category": "midi-usb",
+  "source": {
+    "repository": "https://github.com/cscobey/modwerk",
+    "revision": "2b7b5d77bce655d513040a2401c091d7866226e3",
+    "path": "sdk/drafts/midi-cc-slots"
+  },
+  "author": {
+    "github": "cscobey",
+    "name": "Cooper Scobey",
+    "credits": [
+      "Cooper Scobey: original MIDI mode and numeric-label adapters, module copy and routing illustration, MIT.",
+      "LCD images are actual ot_emu captures; underlying Elektron interface rights are retained."
+    ]
+  },
+  "nativeManifest": "manifest.py",
+  "presentation": {
+    "label": "Two more MIDI CC controls",
+    "family": "MIDI track control",
+    "summary": "Switch pitch bend and aftertouch to independent CC0–127 controls. See assigned CC numbers above the knobs on both MIDI CONTROL pages.",
+    "overview": "Midi Mode 2 gives each MIDI track two more CC controls in the familiar CONTROL 1 page. Switch either PB or AT position independently to any CC from 0 to 127, or click again in SETUP to restore its native function. Both MIDI CONTROL pages show assigned controller numbers above their CC knobs.",
+    "highlights": [
+      "Two additional CC positions per MIDI track when PB and AT are both mapped.",
+      "Independent CC0–127 assignments for the A and B positions.",
+      "Numeric CC headers on both MIDI CONTROL pages.",
+      "Restore pitch bend or aftertouch with a click in SETUP."
+    ],
+    "usage": [
+      "Select a MIDI track and double-tap FX1 to open MIDI CONTROL 1 SETUP.",
+      "Click A or B to switch its PB or AT position into CC mode. Turn to choose CC0–127, then press YES.",
+      "Press FX1 to return. Enable the value with FUNC + encoder press and turn it to send values on the track’s output channel.",
+      "Click again in SETUP to restore native behavior. Entering CC mode starts at CC0."
+    ]
+  },
+  "controls": [
+    {
+      "name": "A mode",
+      "default": 0,
+      "count": 2,
+      "labels": [
+        "PB",
+        "CC"
+      ],
+      "doc": "Click encoder A in CONTROL 1 SETUP to switch pitch bend to CC. Entering CC mode starts at CC0."
+    },
+    {
+      "name": "B mode",
+      "default": 0,
+      "count": 2,
+      "labels": [
+        "AT",
+        "CC"
+      ],
+      "doc": "Click encoder B in CONTROL 1 SETUP to switch aftertouch to CC, independently of A."
+    },
+    {
+      "name": "CC assignment",
+      "default": 0,
+      "count": 128,
+      "labels": null,
+      "doc": "In CC mode, turn the corresponding SETUP encoder to select CC0–127 and confirm with YES."
+    },
+    {
+      "name": "A value",
+      "default": 64,
+      "count": 128,
+      "labels": null,
+      "doc": "On CONTROL 1, enable the value with FUNC + encoder press, then turn its encoder to send 0–127. The displayed assignment is separate from the value. A retains the current pitch-bend position’s value; a fresh project starts at 64."
+    },
+    {
+      "name": "B value",
+      "default": 0,
+      "count": 128,
+      "labels": null,
+      "doc": "On CONTROL 1, enable the value with FUNC + encoder press, then turn its encoder to send 0–127. The displayed assignment is separate from the value. B retains the current aftertouch position’s value; a fresh project starts at 0."
+    }
+  ],
+  "access": {
+    "location": "MIDI track → double-tap FX1 → MIDI CONTROL 1 SETUP. A and B switch PB/AT to CC.",
+    "steps": [
+      "Select a MIDI track and set its output channel for your receiving instrument.",
+      "Double-tap FX1 to open CONTROL 1 SETUP. Click A or B to switch its mode to CC.",
+      "Turn the corresponding encoder to choose CC0–127, then press YES.",
+      "Press FX1 to return to CONTROL 1. Enable its value with FUNC + encoder press, then turn it.",
+      "Press FX2 for CONTROL 2; both pages show assigned controller numbers.",
+      "Return to CONTROL 1 SETUP and click a mapped encoder again to restore its native PB or AT function."
+    ],
+    "screenshots": [
+      "media/01-native-setup.png",
+      "media/02-cc-setup.png",
+      "media/03-control-1.png",
+      "media/04-control-2.png",
+      "media/05-native-restored.png"
+    ]
+  },
+  "compatibility": {
+    "firmware": "1.40C",
+    "effectId": null,
+    "location": "MIDI tracks",
+    "conflicts": [],
+    "limitations": [
+      "Local development USB draft; card firmware composition and public catalogue publication are not integrated.",
+      "User-reported controls, labels and working restoration after restart; the connected build identity was not independently read.",
+      "Assignment save/reload, persistent removal, LFOs, shared channels and broader module coexistence remain under test.",
+      "Switching back into CC mode starts at CC0 rather than recalling the previous number."
+    ],
+    "uiClaims": [
+      "key:A@MIDI CONTROL 1 SETUP",
+      "key:B@MIDI CONTROL 1 SETUP",
+      "screen:MIDI CONTROL 1",
+      "screen:MIDI CONTROL 2",
+      "screen:MIDI CONTROL 1 SETUP"
+    ]
+  },
+  "resources": {
+    "recorded": "24 October 2026: exact package footprint and authored-source estimates; chip timing unmeasured",
+    "storage": {
+      "label": "Runtime package",
+      "display": "1,914 bytes · 720-byte image",
+      "value": 1914,
+      "unit": "bytes",
+      "method": "static",
+      "conditions": "Package bytes and image size measured from the verified relocatable package. Runtime loader metadata and copied stock spans add allocation overhead.",
+      "source": "TESTING.md"
+    },
+    "processing": {
+      "label": "ColdFire control processing",
+      "display": "Worst-case chip cycles unmeasured",
+      "value": null,
+      "unit": "cycles/event",
+      "method": "unmeasured",
+      "conditions": "Emulator and source checks do not measure physical CPU load or timing headroom.",
+      "source": "TESTING.md"
+    },
+    "impact": {
+      "conditions": "Source estimates for a small MIDI/UI adapter; no physical worst-case timing or load measurement.",
+      "cpu": {
+        "level": "minimal",
+        "basis": "source-estimate",
+        "rationale": "Small control and label adapters run on the ColdFire CPU; real-chip cost is unmeasured.",
+        "source": "TESTING.md"
+      },
+      "dsp": {
+        "level": "minimal",
+        "basis": "source-estimate",
+        "rationale": "No authored DSP program or DSP effect slot is added.",
+        "source": "TESTING.md"
+      },
+      "memory": {
+        "level": "minimal",
+        "basis": "source-estimate",
+        "rationale": "One 720-byte relocatable image plus copied spans and loader records; package size is 1,914 bytes.",
+        "source": "TESTING.md"
+      }
+    }
+  },
+  "tests": {
+    "report": "TESTING.md",
+    "summary": "398 emulator checks, exact C-loader and simulated saved-set checks passed. The user reported controls, labels and restart restoration working. This is a local draft, not release qualification.",
+    "hardwareStatus": "reported",
+    "evidenceRevision": "2b7b5d77bce655d513040a2401c091d7866226e3",
+    "gates": [
+      "398 MKII emulator assertions",
+      "Guarded package reconstruction and stock-free scan",
+      "Exact C-loader install/Undo/removal with host glue",
+      "Fresh-process saved-set simulation",
+      "Five reviewed real emulator LCD captures"
+    ]
+  },
+  "license": {
+    "spdx": "MIT",
+    "file": "LICENSE",
+    "declaration": "Original adapters, copy and routing artwork are MIT. Underlying Elektron UI material retains its owners’ rights; see media/LICENSE.md."
+  },
+  "media": [
+    {
+      "path": "media/01-native-setup.png",
+      "caption": "Select a MIDI track and double-tap FX1 to open CONTROL 1 SETUP. PB and AT show STK here; click encoder A or B to switch that position into CC mode.",
+      "alt": "MIDI CTRL 1 SETUP showing PB and AT as STK, with CC1 7, CC2 1, CC3 2 and CC4 10.",
+      "credit": "Cooper Scobey — local ot_emu framebuffer capture",
+      "source": "original",
+      "license": "LicenseRef-OT-UI-Documentation",
+      "otUi": {
+        "page": "MIDI CTRL 1 SETUP",
+        "shows": "location-and-controls",
+        "firmware": "1.40C",
+        "moduleVersion": "0.0.4-experimental",
+        "imageSha256": "c00ddf1ca5e6abca8efca968c4b33a38b2149701ca5bb0574d9b2fb3bd818404",
+        "setup": "Headless ot_emu; MKII panel; stopped transport; 128×64 LCD at integer scale 6."
+      },
+      "captureType": "emulator"
+    },
+    {
+      "path": "media/02-cc-setup.png",
+      "caption": "Click A and B in SETUP to switch both positions into CC mode. Each starts at CC0; this example leaves A at CC0 and turns B to CC127, then confirms with YES. Use controller numbers supported by your receiving instrument.",
+      "alt": "MIDI CTRL 1 SETUP with CC0 in the first position and CC127 in the second position.",
+      "credit": "Cooper Scobey — local ot_emu framebuffer capture",
+      "source": "original",
+      "license": "LicenseRef-OT-UI-Documentation",
+      "otUi": {
+        "page": "MIDI CTRL 1 SETUP",
+        "shows": "controls",
+        "firmware": "1.40C",
+        "moduleVersion": "0.0.4-experimental",
+        "imageSha256": "c00ddf1ca5e6abca8efca968c4b33a38b2149701ca5bb0574d9b2fb3bd818404",
+        "setup": "Headless ot_emu; MKII panel; stopped transport; 128×64 LCD at integer scale 6."
+      },
+      "captureType": "emulator"
+    },
+    {
+      "path": "media/03-control-1.png",
+      "caption": "Press FX1 to return to CONTROL 1 and enable A or B with FUNC + encoder press. The headers identify CC0 and CC127; their enabled values are 64 and 32 here. Turn the encoder to send a value on the MIDI track’s output channel.",
+      "alt": "MIDI CONTROL 1 on MIDI channel 01 showing CC0 at 64 and CC127 at 32, with the other four CC positions OFF.",
+      "credit": "Cooper Scobey — local ot_emu framebuffer capture",
+      "source": "original",
+      "license": "LicenseRef-OT-UI-Documentation",
+      "otUi": {
+        "page": "MIDI CONTROL 1",
+        "shows": "controls",
+        "firmware": "1.40C",
+        "moduleVersion": "0.0.4-experimental",
+        "imageSha256": "c00ddf1ca5e6abca8efca968c4b33a38b2149701ca5bb0574d9b2fb3bd818404",
+        "setup": "Headless ot_emu; MKII panel; stopped transport; 128×64 LCD at integer scale 6."
+      },
+      "captureType": "emulator"
+    },
+    {
+      "path": "media/04-control-2.png",
+      "caption": "Press FX2 to view CONTROL 2. Its headers show the assigned CC numbers, here 71–76, instead of slot names. All six values are OFF in this capture; enable a value before sending it.",
+      "alt": "MIDI CONTROL 2 with controller numbers 71, 72, 73, 74, 75 and 76; all six values are OFF.",
+      "credit": "Cooper Scobey — local ot_emu framebuffer capture",
+      "source": "original",
+      "license": "LicenseRef-OT-UI-Documentation",
+      "otUi": {
+        "page": "MIDI CONTROL 2",
+        "shows": "controls",
+        "firmware": "1.40C",
+        "moduleVersion": "0.0.4-experimental",
+        "imageSha256": "c00ddf1ca5e6abca8efca968c4b33a38b2149701ca5bb0574d9b2fb3bd818404",
+        "setup": "Headless ot_emu; MKII panel; stopped transport; 128×64 LCD at integer scale 6."
+      },
+      "captureType": "emulator"
+    },
+    {
+      "path": "media/05-native-restored.png",
+      "caption": "Double-tap FX1 and click A again to restore native pitch bend. PB returns to STK while B keeps CC127, so the modes remain independent. Switching A back to CC later starts at CC0.",
+      "alt": "MIDI CTRL 1 SETUP showing PB as STK in the first position while the second position remains CC127.",
+      "credit": "Cooper Scobey — local ot_emu framebuffer capture",
+      "source": "original",
+      "license": "LicenseRef-OT-UI-Documentation",
+      "otUi": {
+        "page": "MIDI CTRL 1 SETUP",
+        "shows": "controls",
+        "firmware": "1.40C",
+        "moduleVersion": "0.0.4-experimental",
+        "imageSha256": "c00ddf1ca5e6abca8efca968c4b33a38b2149701ca5bb0574d9b2fb3bd818404",
+        "setup": "Headless ot_emu; MKII panel; stopped transport; 128×64 LCD at integer scale 6."
+      },
+      "captureType": "emulator"
+    }
+  ]
+}

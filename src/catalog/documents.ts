@@ -2,5 +2,6 @@
 // Copyright (c) 2026 Jannik Aßfalg (repeat98)
 import catalog from './module-documents.json' with { type: 'json' }
 import { parseModuleDocument } from './module-contract.ts'
-export const MODULE_DOCUMENTS = catalog.modules.map(parseModuleDocument)
+import { localCcDocuments } from '../dev/local-cc-module.ts'
+export const MODULE_DOCUMENTS = [...catalog.modules, ...localCcDocuments].map(parseModuleDocument)
 export const MODULE_DOCUMENTS_BY_ID = Object.fromEntries(MODULE_DOCUMENTS.map(document=>[document.id,document]))

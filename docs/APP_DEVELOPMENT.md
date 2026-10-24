@@ -564,3 +564,21 @@ Routine registered-author updates retain CI-gated automatic merge/publication af
 Developer public work stays in GitHub. The former workspace is **Creator settings**, retaining module claims, per-module Ko-fi links and direct consent-controlled private report links. It no longer fetches or shows a duplicate public report/activity inbox. Private replies/logs remain private. Report bell/email links open the user's report on Modwerk; frontend public replies go to the same GitHub conversation.
 
 New GitHub issue descriptions explain maintainer triage/closure commands, including `/modwerk needs-info <question>`, `/modwerk confirm <affected-version|unknown> <evidence>`, `/modwerk close configuration|duplicate|not_reproducible|insufficient_information|withdrawn <explanation>`, `/modwerk reopen <explanation>` and registered-author version-bound `/modwerk resolve <version> verified-download`. Signed newly created comments only, no PRs, exact numeric identity and current reviewed module ownership. Commands do not grant general repository access or weaken release/hardware gates. Migration **0063_github_actions.sql** adds content-bound receipts and write leases; the existing Worker deployment applies it before code deployment. It stores hashes and identities, never private report text or credentials.
+
+
+## Opt-in local module drafts
+
+Unqualified experiments can use a development-only catalogue overlay without
+editing generated public catalogues or putting them in release module folders.
+Midi Mode 2 uses `VITE_LOCAL_CC_SLOTS=1` in ignored `.env.local`, with metadata
+in `sdk/drafts/midi-cc-slots/local-module.json` and gating in
+`src/dev/local-cc-module.ts`. It preserves the installed runtime ID so inventories
+and saved configurations resolve through the normal catalogue.
+
+The Vite development plugin compiles the original source on demand and checks
+the pinned package digest before normal Sync preparation checks its header,
+capabilities and contents. Serve media through an explicit allowlist. Never
+commit packages or firmware inputs. Keep opt-in drafts excluded from production
+and default test catalogues, and test the enabled path explicitly. Until a draft
+has a native card adapter, reject card builds clearly rather than omitting it.
+This local workflow does not satisfy public release or hardware qualification.
