@@ -3,7 +3,7 @@
   "id": "midi-cc-slots",
   "key": "MIDI CC SLOTS",
   "name": "Midi Mode 2",
-  "version": "0.0.5-experimental",
+  "version": "0.0.6-experimental",
   "category": "midi-usb",
   "source": {
     "repository": "https://github.com/cscobey/modwerk",
@@ -22,21 +22,22 @@
   "presentation": {
     "label": "Two more MIDI CC controls",
     "family": "MIDI track control",
-    "summary": "Switch PB/AT to independent CC0–127 controls, show assigned CC numbers, and give MIDI tracks temporary names from SRC SETUP.",
-    "overview": "Midi Mode 2 gives each MIDI track two more CC controls in the familiar CONTROL 1 page. Switch either PB or AT position independently to any CC from 0 to 127, or click again in SETUP to restore its native function. Both MIDI CONTROL pages show assigned controller numbers above their CC knobs. Version 0.0.5 adds ten-character MIDI track names through NAME/PUSH on encoder F in MIDI NOTE SETUP. Names are temporary in this test build and replace the normal channel header.",
+    "summary": "Switch PB/AT to CC0–127, show assigned CC numbers, and save eight project-wide MIDI track names with channel defaults and overrides.",
+    "overview": "Midi Mode 2 gives each MIDI track two extra CC controls in CONTROL 1 and displays assigned CC numbers on both control pages. NAME/PUSH in MIDI SRC SETUP opens the native ten-character editor. Version 0.0.6 shares eight names throughout the project and saves them with channel profiles in the project folder. Bank 1, Part 1 supplies defaults for newly visited empty banks; other banks/Parts retain overrides.",
     "highlights": [
       "Two additional CC positions per MIDI track when PB and AT are both mapped.",
       "Independent CC0–127 assignments for the A and B positions.",
       "Numeric CC headers on both MIDI CONTROL pages.",
       "Restore pitch bend or aftertouch with a click in SETUP.",
-      "Name MIDI tracks through the native editor in SRC SETUP (temporary names)."
+      "Name the eight MIDI tracks across the project; save channel defaults and bank/Part overrides."
     ],
     "usage": [
       "Select a MIDI track and double-tap FX1 to open MIDI CONTROL 1 SETUP.",
       "Click A or B to switch its PB or AT position into CC mode. Turn to choose CC0–127, then press YES.",
       "Press FX1 to return. Enable the value with FUNC + encoder press and turn it to send values on the track’s output channel.",
       "Click again in SETUP to restore native behavior. Entering CC mode starts at CC0.",
-      "Double-tap SRC on a MIDI track, click F (NAME/PUSH), enter up to ten characters and confirm with YES or cancel with NO."
+      "Double-tap SRC on a MIDI track, click F (NAME/PUSH), enter up to ten characters and confirm with YES or cancel with NO.",
+      "Set channel defaults in Bank 1, Part 1. New empty banks inherit them; keep independent overrides in other banks/Parts. Stop transport and recorders and wait for MIDI PROFILE SAVED before switching off."
     ]
   },
   "controls": [
@@ -88,7 +89,7 @@
       "labels": [
         "NAME"
       ],
-      "doc": "Click F in MIDI NOTE SETUP to open the native name editor. Ten characters; YES confirms, NO cancels. Names are volatile and not saved."
+      "doc": "Click F in MIDI NOTE SETUP. Ten characters; YES confirms, NO cancels. Eight project-wide names autosave while stopped to two project-local checkpoint files."
     }
   ],
   "access": {
@@ -100,7 +101,7 @@
       "Press FX1 to return to CONTROL 1. Enable its value with FUNC + encoder press, then turn it.",
       "Press FX2 for CONTROL 2; both pages show assigned controller numbers.",
       "Return to CONTROL 1 SETUP and click a mapped encoder again to restore its native PB or AT function.",
-      "For naming, double-tap SRC, click F (NAME/PUSH), then use the native editor. Stay in one disposable project and bank for this test."
+      "Double-tap SRC, click F (NAME/PUSH), then use the native editor. Stop transport and recorders and wait for MIDI PROFILE SAVED. Test in a disposable project."
     ],
     "screenshots": [
       "media/01-native-setup.png",
@@ -116,7 +117,7 @@
     "location": "MIDI tracks",
     "conflicts": [],
     "limitations": [
-      "Names are temporary, reset on module replacement/restart and do not follow bank/project changes or Part copy/clear. Use one disposable test project and bank.",
+      "Project profiles use two MIDI2_*.DAT files in the project folder. Copy both with backups. Native Save As/project copy/reload integration and physical reboot remain unqualified. Part copy/clear does not copy/clear shared names. Existing nonzero channels in newly visited banks are preserved; later Bank 1 changes do not overwrite initialized bank/Part profiles.",
       "Local development USB draft; card firmware composition and public catalogue publication are not integrated.",
       "User-reported controls, labels and working restoration after restart; the connected build identity was not independently read.",
       "Assignment save/reload, persistent removal, LFOs, shared channels and broader module coexistence remain under test.",
@@ -136,8 +137,8 @@
     "recorded": "24 October 2026: exact package footprint and authored-source estimates; chip timing unmeasured",
     "storage": {
       "label": "Runtime package",
-      "display": "3,500 bytes · 1,756-byte image",
-      "value": 3500,
+      "display": "7,688 bytes · 5,572-byte image",
+      "value": 7688,
       "unit": "bytes",
       "method": "static",
       "conditions": "Package bytes and image size measured from the verified relocatable package. Runtime loader metadata and copied stock spans add allocation overhead.",
@@ -157,7 +158,7 @@
       "cpu": {
         "level": "minimal",
         "basis": "source-estimate",
-        "rationale": "Small control and label adapters run on the ColdFire CPU; real-chip cost is unmeasured.",
+        "rationale": "MIDI/UI work plus stopped engine-task card I/O; real-chip cost and storage latency remain unmeasured.",
         "source": "TESTING.md"
       },
       "dsp": {
@@ -169,14 +170,14 @@
       "memory": {
         "level": "minimal",
         "basis": "source-estimate",
-        "rationale": "A 1,756-byte image includes 512 bytes for 32 temporary names; copied spans and loader records add overhead. Package size is 3,500 bytes.",
+        "rationale": "A 5,572-byte image includes eight names, channel profiles and card buffering. Two 1,024-byte project checkpoint files store profiles. Package size is 7,688 bytes; loader metadata adds overhead.",
         "source": "TESTING.md"
       }
     }
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "Combined CC and naming emulator regressions, exact C-loader and saved-package simulation passed. Naming in 0.0.5 is not hardware-tested and is not saved with projects.",
+    "summary": "398 CC emulator assertions, profile C core fresh-process tests, 33 native card/removal checks across two fresh processes and exact C-loader upgrade/Undo checks pass. Native card probes supply the base UI callback with a declared private shim; physical reboot remains untested.",
     "hardwareStatus": "untested",
     "evidenceRevision": "c9c6ee00bc28d4d3fbf5c19e2e8265f346042287",
     "gates": [
@@ -185,8 +186,9 @@
       "Exact C-loader install/Undo/removal with host glue",
       "Fresh-process saved-set simulation",
       "Five reviewed real emulator LCD captures",
-      "81 naming/alignment/retirement checks at each of two placements",
-      "Exact 0.0.4 -> 0.0.5 loader upgrade and Undo"
+      "Persistent C profile core: fresh-process defaults/overrides/OFF/project isolation/short names/torn-write recovery/foreign-file protection",
+      "33 native card/profile/removal assertions across two fresh processes; 27 card assertions at a second placement",
+      "Exact 0.0.5 -> 0.0.6 loader upgrade and Undo"
     ]
   },
   "license": {

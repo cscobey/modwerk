@@ -40,7 +40,11 @@ export function ccExpectedModules(inventory: readonly MissingModule[], action: C
 }
 export function ccPersistenceProblem(record: CcInstallRecord, state: LinkState, inventory: readonly MissingModule[] | undefined, reading: { saved: number; savedCount: number; live: number } | undefined, restart: boolean) {
   if (state.status !== 'ready' || !state.identity || state.identity.base !== record.base) return 'Connect to the same Modwerk base used for this install.'
-  if (!inventory || inventory.length !== record.expected.length || record.expected.some(want => !inventory.some(m => m.module === want.module && m.layout === want.layout))) return 'The installed module set differs from the reviewed set. Persistence is not confirmed.'
+  if (!inventory) return 'The installed module list could not be read. Persistence is not confirmed. Try Check card save again.'
+  if (inventory.length !== record.expected.length || record.expected.some(want => !inventory.some(m => m.module === want.module && m.layout === want.layout))) {
+    const describe = (items: readonly { module: string; layout: number }[]) => items.length ? items.map(m => `${m.module} (layout ${m.layout})`).join(', ') : 'none'
+    return `The installed module set differs from the reviewed set. Persistence is not confirmed. Expected: ${describe(record.expected)}. Read back: ${describe(inventory)}.`
+  }
   if (!reading || reading.savedCount !== record.expected.length || reading.live !== record.expected.length) return 'The base has not confirmed the complete saved module set. Do not switch off yet.'
   if (reading.saved !== (restart ? 1 : 7)) return restart ? 'Startup restoration is not confirmed. Power-cycle only after a confirmed card save, reconnect, then check again.' : 'The card save is not confirmed. Keep the Octatrack on, check the card, then try Check card save again.'
   return undefined

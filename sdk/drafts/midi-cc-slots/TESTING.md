@@ -265,3 +265,49 @@ and reset on replacement/restart. Test within one disposable project and bank.
 Screens were visually reviewed for alignment, native editor and BASS alongside
 the numeric CC headers. Existing gallery assets explicitly retain their 0.0.4
 captions and provenance. No public release or native card-composer support.
+
+## Persistent project-profile test 0.0.6 — 24 October 2026
+
+Exact package: 7,688 bytes, 5,572-byte authored image, ABI7, 21 guarded sites,
+16 hash-backed copies, 81 relocations. SHA-256:
+`fbde5be0c3de030cd05bca051deeac0c0c24a57a2402f86e9c97b4671a6be027`.
+The package's ordinary hook 0 schedules the UI work. Card operations run only
+in the stopped engine task through a separate guarded stock receive callsite;
+the blocking receive retains a stock return address and the wake queue retains
+a stock ROM sentinel, never a module buffer. All new C objects pass the shared
+ColdFire code-generation guard.
+
+- Real profile C core, host filesystem/platform: separate processes restore all
+  eight names, Bank 1 defaults, independent bank/Part channels and OFF; projects
+  remain separate. Playing defers writes. Shortening a name normalizes stale
+  trailing bytes; failed and truncated writes retain the prior checkpoint.
+  Foreign files are refused without being overwritten. CI runs this core test.
+- Native ColdFire/card test starts with an empty scratch FAT16 card; stock
+  firmware initializes missing working banks. Every name/channel edit uses
+  panel inputs, with no RAM/name/channel/file injection. It confirms a name,
+  Bank 1 channel 2, Bank 2 override 5 and Bank 3 inherited channel 2. A fresh
+  process reloads the same files, checks names and channels, and verifies the
+  stock SRC SETUP reads the restored channel. Both card checkpoints have valid
+  checksums and sector writes flush without errors.
+- The stock reconstruction has no resident runtime registry. A declared private
+  UI-tick shim supplies ordinary hook-0 scheduling and replays the displaced
+  stock calls; package code and stock card routines are unchanged. Evidence
+  binds original and instrumented image hashes, shim address and hash. This is
+  not a full-base boot, companion coexistence or physical persistence test.
+- 33 native assertions across two fresh lower-placement processes include
+  restoring all package sites and poisoning the entire image with an editor
+  open. YES and NO close safely; reopening SRC finds no retired callbacks.
+  Another placement passes 27 card/default/override/restart assertions.
+- The existing 398 CC/menu/label/sequencer assertions pass on the exact lower
+  image. Actual C-loader host checks pass install/Undo/repeat/removal/recovery,
+  exact 0.0.5-to-0.0.6 upgrade/Undo, and module-set Keep/fresh-process restore/
+  removal/failed-save simulation with a synthetic companion.
+- Guarded reconstruction, 16-byte stock-free scan and supplied MAIN guards pass;
+  no direct current-base site overlap. Evidence is in runtime-0.0.6.json.
+
+The sidecars are autosaved independently of normal native project saves.
+Copy both MIDI2_*.DAT files with a backup. Native Save As/project copy/reload,
+Part copy/clear semantics, card-removal races, physical boot timing, real storage
+latency, receiver MIDI and full companion coexistence remain unqualified.
+Keep saves the module package; MIDI PROFILE SAVED reports the entered profile's
+separate verified checkpoint. No device writes or public release performed.

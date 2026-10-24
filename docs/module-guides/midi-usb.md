@@ -83,3 +83,14 @@ cancel, and poison retired memory to expose stale calls. The Midi Mode 2 local
 naming test uses stable stock routine entry detours, a stock-owned editor buffer
 and stock redraw callback; no module destination/callback survives its removal.
 This does not establish project-name storage or general shared UI ownership.
+
+
+For project-local persistence, run card calls only in an admitted stopped engine
+task, never in a UI callback or ISR. A wake queue may retain its message pointer:
+use a stable stock sentinel rather than a module-owned buffer, and preserve a
+stock return address across a blocking receive. Test the actual card routines
+with fresh emulator processes as well as the portable storage core. A stock-only
+reconstruction has no runtime registry; declare any private scheduling shim and
+bind both image hashes rather than treating it as the complete installed base.
+Sidecar files require explicit backup/copy/reload semantics and separate physical
+qualification; successful module-set Keep does not prove entered data was saved.

@@ -18,7 +18,7 @@ describe('local CC trial review', () => {
     expect(ccTrialProblem(ready, [], review, 'remove')).toContain('not installed')
   })
   it('refuses damaged or substituted local packages', () => {
-    expect(() => ccPackage({ version: '0.0.5-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
+    expect(() => ccPackage({ version: '0.0.6-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
     expect(() => ccPackage({ version: 'wrong', sha256: '', hex: '' })).toThrow('Invalid')
   })
 })
@@ -43,7 +43,16 @@ it('retains a restart receipt across refresh while refusing another base or an i
   expect(ccPersistenceProblem(restored, ready, modules, { ...health, saved: 7 }, true)).toContain('Startup restoration is not confirmed')
 })
 
-it.each([[19,16],[20,15]])('refuses naming-test packages when base capacity is sites=%s copies=%s', (maxSites,maxCopies) => {
+it.each([[20,16],[21,15]])('refuses naming-test packages when base capacity is sites=%s copies=%s', (maxSites,maxCopies) => {
   const state={...ready,identity:{...ready.identity!,capabilities:{abi:7,features:3,maxSites,maxCopies}}}
   expect(ccTrialProblem(state,[],review)).toContain('capabilities')
+})
+
+it('distinguishes an unreadable module list from a real mismatch and names both reviewed and observed layouts', () => {
+  const receipt:CcInstallRecord={schema:1,base,packageSha256:'c'.repeat(64),action:'install',saved:false,restored:false,expected:[{module:CC_SLOTS_ID,layout:1}]}
+  expect(ccPersistenceProblem(receipt,ready,undefined,undefined,false)).toContain('could not be read')
+  const mismatch=ccPersistenceProblem(receipt,ready,[{module:CC_SLOTS_ID,layout:2,handle:1,name:'CC'}],{saved:7,savedCount:1,live:1},false)
+  expect(mismatch).toContain(`Expected: ${CC_SLOTS_ID} (layout 1)`)
+  expect(mismatch).toContain(`Read back: ${CC_SLOTS_ID} (layout 2)`)
+  expect(mismatch).toContain('Persistence is not confirmed')
 })

@@ -54,6 +54,7 @@ export default function CcSlotsLab({ link: supplied }: { link?: OctatrackLink })
   async function verify(next: CcInstallRecord, restart: boolean) {
     const before = link.getState(), modules = await link.inventory(), reading = await link.health(), after = link.getState()
     if (before.identity?.base !== after.identity?.base || before.active !== after.active) throw new Error('The unit changed while checking. Reconnect and check again.')
+    if (modules) setInventory(modules)
     const why = ccPersistenceProblem(next, after, modules, reading, restart)
     if (why) throw new Error(why)
     setInventory(modules); remember({ ...next, saved: true, restored: restart })
@@ -71,9 +72,9 @@ export default function CcSlotsLab({ link: supplied }: { link?: OctatrackLink })
   return <main className="cc-slots-lab">
     <a href="/">← Local Modwerk app</a><h1>Midi Mode 2</h1>
     <p>Local install · module {pin.version}</p>
-    <p>Naming test: double-tap MIDI SRC, then click F (NAME/PUSH). Names are temporary: they reset when the module is replaced or restarted and do not follow bank/project changes. Stay in one disposable test project and bank. Keep installs the feature, not your entered names.</p>
+    <p>Project profile test: double-tap MIDI SRC, then click F (NAME/PUSH). Eight names are shared throughout the project. Set default channels in Bank 1, Part 1; newly visited empty banks inherit them, and later banks/Parts keep their own overrides, including OFF. Existing nonzero channels are preserved.</p>
     <p>Try the controls before choosing Keep. Keep saves the complete running module set to the CF card for the same base to restore at startup. Use your installed base, not a temporary RAM-booted base.</p>
-    <p>Module persistence and saved CC assignments are separate: Keep installs the feature; save assignments with the Octatrack’s normal Part/project workflow. Saved-project behavior remains unqualified. This page does not save projects or flash firmware.</p>
+    <p>Names and channel profiles autosave while transport and recorders are stopped. Wait for MIDI PROFILE SAVED before switching off. Two MIDI2_*.DAT files live in the project folder; copy both when backing up or moving the project. Native Save As/copy/reload integration and physical reboot remain unqualified: use a disposable test project. Keep installs the module; ordinary CC assignments still use the normal Part/project save workflow.</p>
     <section aria-label="Connected Octatrack"><h2>Your Octatrack</h2>
       <p>Status: {state.status}</p>
       {state.identity && <p>Base: <code>{state.identity.base}</code></p>}

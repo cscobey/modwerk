@@ -19,19 +19,26 @@ def main():
     parser.add_argument('--stock', type=Path, required=True)
     parser.add_argument('--installed-main', type=Path)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--profile', action='store_true')
     args = parser.parse_args()
     output = args.output.resolve()
     if any((p / '.git').exists() for p in [output, *output.parents]):
         parser.error('private outputs must be outside every checkout')
     stock, data = args.stock.read_bytes(), args.package.read_bytes()
     assert hashlib.sha256(stock).hexdigest() == STOCK, 'wrong stock MAIN'
-    assert data[:8] == b'MWRM\0\x07\0\0'
+    abi=struct.unpack_from('>H',data,4)[0]
+    assert data[:4] == b'MWRM' and abi in (7,8) and data[6:8] == bytes(2)
     length, bss, count, hooks, sites, module = struct.unpack_from('>6I', data, 8)
     copies = struct.unpack_from('>I', data, 68)[0]
-    assert bss == 0 and hooks == 4 and sites == 20 and copies == 16
+    assert bss == 0 and hooks == 4
+    assert sites == (21 if args.profile else 20) and (12 <= copies <= 128 if args.profile else copies == 16)
+    if abi==8: assert struct.unpack_from('>I',data,72)[0] == 0
     assert module == int(hashlib.sha256(b'midi-cc-slots').hexdigest()[:8], 16)
-    assert data[72:88] == b'\xff'*16
-    cursor = 88
+    header=76 if abi==8 else 72
+    if args.profile:
+        assert struct.unpack_from('>I',data,header)[0]<length and data[header+4:header+16]==b'\xff'*12
+    else: assert data[header:header+16] == b'\xff'*16
+    cursor = header+16
     literal = data[cursor:cursor+length]; image = bytearray(literal); cursor += length
     offsets = struct.unpack_from('>%dI' % count, data, cursor); cursor += count*4
     records = []
@@ -65,7 +72,7 @@ def main():
             assert not (address < at+n and at < address+len(code)), f'base overlap at {hex(address)}'
     output.mkdir(parents=True, exist_ok=False)
     images = []
-    for origin in (0x400d6b20, 0x400d7000):
+    for origin in ((0x400d64e0,0x400d65e0) if args.profile else (0x400d6b20, 0x400d7000)):
         patched = bytearray(stock); instance = bytearray(image)
         assert not any(stock[origin-BASE:origin-BASE+length])
         for offset in offsets:

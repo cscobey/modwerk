@@ -5,7 +5,7 @@ by the local app; no public catalogue entry or release is added. Hardware and
 saved-project persistence are not qualified. Use only a disposable test project
 for trials. The local page offers explicit Keep, removal and restart checks;
 it does not flash firmware. The user reported restoration and working controls on 0.0.4
-after restart; 0.0.5 with naming has not been tested on hardware; independently bound hardware qualification remains outstanding.
+after restart; 0.0.6 project profiles have not been tested on hardware; independently bound hardware qualification remains outstanding.
 
 The prototype replaces either MIDI CONTROL 1 PB/AT position with an
 independent CC 0–127 assignment per MIDI track. Zero in each assignment byte
@@ -29,9 +29,38 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed emulator screenshot gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
-## Version 0.0.5 naming test
+## Version 0.0.6 project-profile test
 
-The new local test version combines the existing CC behavior with temporary
+Eight ten-character names are shared across the project. Double-tap MIDI SRC,
+click F (NAME/PUSH), enter a name and confirm with YES. Channel defaults come
+from **Bank 1, Part 1**. On first visiting a bank/Part outside Bank 1, OFF channels
+inherit those defaults; existing nonzero channels are preserved. Initialized
+bank/Part profiles retain independent overrides, including OFF. Later default
+changes do not overwrite previously initialized profiles.
+
+Names and channel profiles autosave to `MIDI2_0.DAT` and `MIDI2_1.DAT` in the
+current project folder while transport and recorders are stopped. Wait for
+**MIDI PROFILE SAVED** before switching off. A failed write reports **MIDI SAVE
+FAILED** and retains the preceding checkpoint. Copy both files when backing up
+or moving a project; do not delete them expecting native project saves to
+contain this data. A native Save As/copy may omit them. Same-project reload,
+Part copy/clear and native project save/rollback integration remain unqualified;
+shared names deliberately do not belong to a Part. Changing project folders
+loads that project's profile instead of carrying the previous names across.
+
+Use a disposable project for hardware tests. Keep installs the module itself;
+profile files store entered names and channel settings independently. Ordinary
+CC assignments still use stock Part/project saving. The native emulator card
+restart test supplies the base UI callback through a declared private shim;
+it is not evidence of a physical reboot or the full base/companion set.
+
+For an already installed same-ID draft, open the local updater below and choose
+**Try updated module**. Merely adding an already installed module does not
+replace its package.
+
+## Earlier version 0.0.5 naming test
+
+The earlier local test version combined the existing CC behavior with temporary
 MIDI track names. Double-tap SRC on a MIDI track, then click F at NAME/PUSH.
 Use the stock name editor (ten characters), YES to confirm or NO to cancel.
 PUSH shares the neighboring value's vertical baseline. A nonempty name

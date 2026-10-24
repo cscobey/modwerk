@@ -1,10 +1,11 @@
 {
-  "version": "0.0.5-experimental",
-  "sha256": "0012a6d8a4c4fd9714d3dca7c52b80555aa86052a25e0a92f86b40d317e0cc09",
-  "bytes": 3500,
-  "imageBytes": 1756,
+  "version": "0.0.6-experimental",
+  "sha256": "fbde5be0c3de030cd05bca051deeac0c0c24a57a2402f86e9c97b4671a6be027",
+  "bytes": 7688,
+  "imageBytes": 5572,
   "abi": 7,
   "features": 3,
-  "sites": 20,
-  "copies": 16
+  "sites": 21,
+  "copies": 16,
+  "profile": true
 }

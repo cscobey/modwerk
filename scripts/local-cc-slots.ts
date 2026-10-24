@@ -39,7 +39,7 @@ export function localCcSlots(): Plugin {
       const work = await mkdtemp(join(tmpdir(), 'modwerk-cc-slots-'))
       try {
         const output = join(work, 'trial.mwrm')
-        await promisify(execFile)('python3', ['-B', join(server.config.root, 'sdk/drafts/midi-cc-slots/build_runtime.py'), '--output', output], { timeout: 30000 })
+        await promisify(execFile)('python3', ['-B', join(server.config.root, 'sdk/drafts/midi-cc-slots/build_runtime.py'), '--output', output, ...(pin.profile ? ['--profile'] : [])], { timeout: 30000 })
         const data = await readFile(output)
         const approved = JSON.parse(await readFile(join(server.config.root, 'sdk/drafts/midi-cc-slots/local-build.json'), 'utf8')) as { version: string; sha256: string }
         const document = verifiedCcDocument(data, approved)
