@@ -7,7 +7,7 @@
   "category": "midi-usb",
   "source": {
     "repository": "https://github.com/cscobey/modwerk",
-    "revision": "184955f93b852ec1ade18a71077990b73adecd86",
+    "revision": "a612c963530d5c326e67c38c76fca09abd164957",
     "path": "sdk/drafts/midi-cc-slots"
   },
   "author": {
@@ -179,7 +179,7 @@
     "report": "TESTING.md",
     "summary": "398 CC emulator assertions, profile C core fresh-process tests, 33 native card/removal checks across two fresh processes and exact C-loader upgrade/Undo checks pass. Native card probes supply the base UI callback with a declared private shim; physical reboot remains untested.",
     "hardwareStatus": "untested",
-    "evidenceRevision": "184955f93b852ec1ade18a71077990b73adecd86",
+    "evidenceRevision": "a612c963530d5c326e67c38c76fca09abd164957",
     "gates": [
       "398 MKII emulator assertions",
       "Guarded package reconstruction and stock-free scan",
