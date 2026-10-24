@@ -12,7 +12,7 @@ def main():
     for name in ('sdk', 'stock', 'assembler', 'host', 'disassembler', 'output'):
         p.add_argument('--' + name, type=Path, required=True)
     p.add_argument('--frames', type=int, default=7056)
-    p.add_argument('--controls', default='110,64,94,0,83')
+    p.add_argument('--controls', default='110,64,94,83')
     p.add_argument('--signal', choices=('noise', 'silence', 'dc', 'impulse'), default='noise')
     p.add_argument('--mix', type=int, default=127, choices=range(128))
     p.add_argument('--reverb', action='store_true')
@@ -22,9 +22,9 @@ def main():
     args = p.parse_args()
     out = args.output.resolve()
     controls = [int(v) for v in args.controls.split(',')]
-    if len(controls) != 5 or any((not 0 <= v <= 127 for v in controls)):
-        p.error('Controls need five values 0..127')
-    params = ','.join(map(str, controls + [args.mix] + [0] * 6))
+    if len(controls) != 4 or any((not 0 <= v <= 127 for v in controls)):
+        p.error('Controls need four values 0..127')
+    params = ','.join(map(str, controls[:3] + [0, controls[3], args.mix] + [0] * 6))
     if out == ROOT or ROOT in out.parents:
         p.error('Use a private output directory')
     if args.frames <= 0 or args.frames % 7056:
@@ -113,10 +113,10 @@ def main():
             up_input = out / 'tank-wet.raw'
             write(up_input, read(out / 'tank/wet.raw')[3264:])
         subprocess.run([str(out / 'convert'), 'up', str(up_input), str(out / 'reference.raw')], check=True)
-    cmd = [str(args.host), '-mem', str(out / 'A.mem'), '-memB', str(out / 'B.mem'), '-init', format(sym['init'], 'x'), '-proc', format(sym['proc'], 'x'), '-inst', '2', '-core', '0,1', '-alloc', '1,1', '-r7', '2,2', '-audioidx', '0,0', '-frames', '16', '-blocks', str((args.frames + prefix) // 16), '-in', str(out / 'input.raw') + ',' + str(out / 'input.raw'), '-stereo', '-split', str(args.split), '-allocproc', 'end', '-audio', '0', '-guard', '15856', '-guard-shared', '-dirty', '1776', '-out', str(out / 'native.raw'), '-meter', str(out / 'native.meter'), '-trackout', str(out / 'track.txt'), '-track', '79,85', '-params', params, '-params', params]
+    cmd = [str(args.host), '-mem', str(out / 'A.mem'), '-memB', str(out / 'B.mem'), '-init', format(sym['init'], 'x'), '-proc', format(sym['proc'], 'x'), '-inst', '2', '-core', '0,1', '-alloc', '1,1', '-r7', '2,2', '-audioidx', '0,0', '-frames', '16', '-blocks', str((args.frames + prefix) // 16), '-in', str(out / 'input.raw') + ',' + str(out / 'input.raw'), '-stereo', '-split', str(args.split), '-allocproc', 'end', '-audio', '0', '-guard', '13808', '-guard-shared', '-dirty', '1776', '-out', str(out / 'native.raw'), '-meter', str(out / 'native.meter'), '-trackout', str(out / 'track.txt'), '-track', '79,85', '-params', params, '-params', params]
     timeline = None
     if args.control_events:
-        timeline = events(controls + [args.mix] + [0] * 6, prefix // 16)
+        timeline = events(controls[:3] + [0, controls[3], args.mix] + [0] * 6, prefix // 16)
         automation = out / 'parameters.csv'
         automation.write_text(''.join(','.join(map(str, [block] + values)) + '\n'
                                       for block, values in sorted(timeline.items())))
@@ -148,7 +148,7 @@ def main():
         raise RuntimeError('FIFO occupancy out of range')
     trace_result = verify_trace(track, prefix, timeline) if args.control_events else None
     errors = [] if args.control_events else errors
-    report = {'controlTrace': trace_result, 'peakInstructionsPer16Frames': [max((row[k] for row in meters)) for k in (1, 2)], 'fifoOccupancyRange': [min((row[1] for row in track)), max((row[1] for row in track))], 'yExtentWords': 15856, 'scope': 'Native 44.1 kHz experiment; no installed effect or hardware qualification' if args.reverb else 'Standalone native SRC round trip; no reverb or hardware qualification', 'controls': controls, 'signal': args.signal, 'mix': args.mix, 'fullScaleInput': args.full_scale, 'reverb': args.reverb, 'frames': args.frames + prefix, 'split': args.split, 'programWords': len(words), 'tableWords': len(table['words']), 'startupFifoFrames': 2, 'coreOutputsIdentical': True, 'exactHostParity': None if args.control_events else not any(errors), 'maxErrorLsb': max(map(abs, errors), default=0), 'firstMismatch': None if args.control_events else next(((i, a, b) for (i, (a, b)) in enumerate(zip(actual, reference)) if a != b), None), 'sourceHashes': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in ('generate_native_src.py', 'native_src.asm', 'native_src_tables.json', 'rational_src.h', 'core44100.asm', 'core32.asm', 'control_reference.py')}}
+    report = {'controlTrace': trace_result, 'peakInstructionsPer16Frames': [max((row[k] for row in meters)) for k in (1, 2)], 'fifoOccupancyRange': [min((row[1] for row in track)), max((row[1] for row in track))], 'yExtentWords': 13808, 'scope': 'Native 44.1 kHz experiment; no installed effect or hardware qualification' if args.reverb else 'Standalone native SRC round trip; no reverb or hardware qualification', 'controls': controls, 'signal': args.signal, 'mix': args.mix, 'fullScaleInput': args.full_scale, 'reverb': args.reverb, 'frames': args.frames + prefix, 'split': args.split, 'programWords': len(words), 'tableWords': len(table['words']), 'startupFifoFrames': 2, 'coreOutputsIdentical': True, 'exactHostParity': None if args.control_events else not any(errors), 'maxErrorLsb': max(map(abs, errors), default=0), 'firstMismatch': None if args.control_events else next(((i, a, b) for (i, (a, b)) in enumerate(zip(actual, reference)) if a != b), None), 'sourceHashes': {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in ('generate_native_src.py', 'native_src.asm', 'native_src_tables.json', 'rational_src.h', 'core44100.asm', 'core32.asm', 'control_reference.py')}}
     (out / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
     if any(errors):

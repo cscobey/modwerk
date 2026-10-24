@@ -66,7 +66,7 @@ def main():
                 active = [i for i, p in enumerate(parameters) if p.active and i != type_index]
             else:
                 values = [110, 64, 94, 0, 83, 127] + [0] * 6
-                active = range(6)
+                active = (0, 1, 2, 4, 5)
             # Hold both extremes, then move each active knob every block.
             # Spring TYPE stays fixed so expensive modes are not diluted.
             for i in active:

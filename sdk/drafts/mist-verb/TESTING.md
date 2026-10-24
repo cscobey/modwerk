@@ -1,6 +1,6 @@
 # Mist Verb testing
 
-Date: 2026-10-23. Version: 0.1.5-experimental. Target instrument: Octatrack MKII.
+Date: 2026-10-23. Version: 0.1.6-experimental. Target instrument: Octatrack MKII.
 Fork base: `bedbb362` (current with upstream when prepared). This is unpublished
 work on `feat/mist-verb` in `cscobey/modwerk`, under `sdk/drafts/mist-verb/`.
 The user requested fork-only development. The earlier upstream draft PR is
@@ -8,27 +8,42 @@ closed; further upstream submission requires a new user instruction.
 
 ## Current native milestone
 
-Follow-up resource investigation: `verify_src_layout.py --check` verifies
-lossless reconstruction of every SRC row and all 1,522 schedule endpoints.
-The proposed table layout saves 2,128 P words but is not used by the DSP.
-Even its estimated 6,821-word total exceeds the documented empty module
-arenas; installed fit remains unproven. See NATIVE_SRC.md and
-`evidence/src-layout.json`. This host-only evidence update does not change
-the 0.1.5 engine, its audio, or its native performance measurements.
+Current native build: **0.1.6-experimental**, separate SMEAR input diffuser
+removed. TIME/DAMP/DIFF/GAIN/MIX remain; encoder D is inactive, E/F retain
+GAIN/MIX. The original tank topology, lengths and quantization are unchanged.
+See [NATIVE_SRC.md](NATIVE_SRC.md) and `evidence/no-smear/` for the current
+source-hashed reports and before/after comparisons.
 
-The complete standalone 44.1 kHz path now executes on the emulated DSP:
-conversion, native tank and dry/wet mixer. See [NATIVE_SRC.md](NATIVE_SRC.md)
-and `evidence/performance-controls/` for 0.1.5 optimization, exact static
-comparisons, retargeted control ramps and the matched SPRING REV comparison.
-The earlier 0.1.4 results remain in `evidence/native-src/`.
-The chronological sections below retain the earlier measurements; their
-memory layouts and statements of missing SRC describe those earlier stages.
-Current tank: 15,480 Y words, 1,452 code words, 16,798 nominal instructions/16
-tank frames. Joined path: 15,856 Y-word extent, 2,547 code words, 6,274 SRC
-coefficient/schedule words plus 128 gain words. The joined X extent is 240
-words including scratch/gaps/clearing. Five controls ramp in 8 ms at tank rate;
-MIX ramps in 5.805 ms at input rate. Static audio remains identical to 0.1.4. No installable or
-hardware qualification is claimed.
+- Tank: 13,432 Y words, 1,109 code words plus 128 gain words; nominal fixture
+  peak 12,737 executed instructions/core/16 tank frames.
+- Joined: 13,808 Y-word extent, 2,135 code words, 6,274 SRC words plus 128 gain
+  words (8,537 P words total). X extent remains 240 including unused gaps.
+- Three static both-core cases match 0.1.5 at SMEAR zero byte-for-byte,
+  including exact dry and a high feedback/gain mixed case. Joined nominal
+  peak falls 31,139 → 28,046 instructions/core/16 input frames (about 10%).
+- Dynamic five-control traces match the host model at splits 0/1/15;
+  audio matches across splits after startup alignment and silence stays zero.
+- Full-scale standalone SRC matches its host reference after history relocation.
+  Dirty seed 1776, Y/shared/code guards and both-core identity pass throughout.
+- Matched 64-case moving-control benchmark: Mist 29,067 versus Spring 5,094
+  peak instructions/core/16 input frames (5.71×); no chip-cycle claim.
+- Bounded clear is now 132 words/call, retaining 102 calls and the known
+  partition-dependent startup. Four tank controls ramp for 8 ms; MIX for
+  5.805 ms. No installed or hardware qualification is claimed.
+
+`verify_src_layout.py --check` still proves exact reconstruction of all 66
+SRC coefficient rows and 1,522 schedule endpoints. The unimplemented layout
+could save 2,128 P words; its estimated total is now 6,409 before decoder
+changes, still above the documented empty package arenas.
+
+The chronological sections below retain historical results. Their earlier
+layouts, separate diffuser and statements of missing SRC describe those stages.
+The current CLI takes `--controls TIME,DAMP,DIFF,GAIN` (four values).
+
+`npm run module:doctor -- mist-verb` reports no installed module: this draft
+is intentionally outside the module catalogue and installable module folders.
+It is not a green release gate; package integration and qualification remain
+unfinished. No catalogue entry is added to bypass that refusal.
 
 ## Commands and source identity
 

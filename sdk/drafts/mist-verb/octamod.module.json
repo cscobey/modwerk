@@ -3,12 +3,12 @@
   "id": "mist-verb",
   "key": "MIST VERB",
   "name": "Mist Verb",
-  "version": "0.1.5-experimental",
+  "version": "0.1.6-experimental",
   "category": "effects",
   "author": {
     "github": "cscobey",
     "credits": [
-      "Original Clouds reverb, diffuser and stmlib: Émilie Gillet (MIT).",
+      "Original Clouds reverb, diffuser and stmlib: \u00c9milie Gillet (MIT).",
       "Octatrack port preparation and storage proofs: cscobey.",
       "Modwerk/Octabam SDK: retain its existing attribution and licences."
     ]
@@ -18,7 +18,7 @@
     "label": "MIST",
     "family": "Reverb",
     "summary": "Unpublished stereo Clouds reverb port.",
-    "overview": "Target: original 32 kHz reverb and separate stereo diffuser in an independent FX2 insert. Only reference and storage primitives have been tested.",
+    "overview": "Native emulator prototype of the original 32 kHz Clouds reverb tank, without the separate input diffuser. Not installable.",
     "highlights": [
       "Original licensed Clouds source pinned by commit and file hash.",
       "Compact storage keeps original delay lengths and quantization."
@@ -50,13 +50,6 @@
       "labels": null
     },
     {
-      "name": "SMEAR",
-      "default": 0,
-      "count": 128,
-      "doc": "Separate stereo input diffuser wet/dry amount. Target control; not implemented.",
-      "labels": null
-    },
-    {
       "name": "GAIN",
       "default": 83,
       "count": 128,
@@ -77,7 +70,7 @@
     "conflicts": [],
     "uiClaims": [],
     "limitations": [
-      "Standalone 32 kHz core only: no integrated 44.1 kHz effect or installable firmware exists.",
+      "Native 44.1 kHz prototype only; no installable firmware effect exists.",
       "FX1 is outside the initial scope because its 3072-word allocation is too small.",
       "Card/USB combinations, hardware and persistence have not been qualified."
     ],
@@ -106,7 +99,7 @@
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "Optimized native 44.1 kHz path preserves recorded static audio exactly. Dynamic six-control ramps match the integer timing model, produce identical audio across splits, and preserve silence. A finite matched SPRING REV benchmark is recorded. Installed performance, lifecycle and hardware qualification remain unfinished.",
+    "summary": "Separate SMEAR stage removed; current measured results are recorded in TESTING.md. Installed performance, lifecycle and hardware remain unqualified.",
     "hardwareStatus": "untested",
     "gates": [
       "Worst-case cycles under parameter modulation and maximum load",
@@ -118,7 +111,7 @@
   "license": {
     "spdx": "MIT",
     "file": "LICENSE",
-    "declaration": "Original Clouds/stmlib source: Copyright 2012 and 2014 Émilie Gillet, MIT. Port preparation: Copyright 2026 cscobey, MIT. See LICENSE and unchanged original header notices. No Elektron firmware is included."
+    "declaration": "Original Clouds/stmlib source: Copyright 2012 and 2014 \u00c9milie Gillet, MIT. Port preparation: Copyright 2026 cscobey, MIT. See LICENSE and unchanged original header notices. No Elektron firmware is included."
   },
   "media": [],
   "access": {
@@ -126,7 +119,7 @@
     "steps": [
       "Select an audio track.",
       "Hold FUNC and press FX2; choose Mist Verb with LEVEL and press YES (target UI, not verified).",
-      "Press FX2; adjust A TIME, B DAMP, C DIFF, D SMEAR, E GAIN and F MIX (target UI)."
+      "Press FX2; adjust A TIME, B DAMP, C DIFF, E GAIN and F MIX; D is unused (target UI)."
     ],
     "screenshots": []
   },

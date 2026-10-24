@@ -1,8 +1,9 @@
 # Native 44.1 kHz experiment
 
-Version 0.1.5-experimental optimizes the native converters and adds sample-timed control ramps.
+Version 0.1.6-experimental removes the separate SMEAR input diffuser.
+The original reverb tank, its internal diffusion and modulation remain.
 `core44100.asm` runs stereo 44.1 kHz → 32 kHz conversion, the native reverb
-and diffuser, 32 kHz → 44.1 kHz conversion, and dry/wet mixing. The unchanged
+without the separate input diffuser, 32 kHz → 44.1 kHz conversion, and dry/wet mixing. The unchanged
 input stays outside conversion for exact MIX 0 bypass. This is a standalone
 DSP experiment, not an installed effect or instrument firmware.
 
@@ -38,19 +39,19 @@ can be five; a four-frame queue was rejected by the first exact-output test.
 The two startup frames add 2/44100 seconds to the converter's nominal 1.811 ms
 filter delay. This is not a measurement of instrument latency.
 
-The core clears 152 Y words per full clearing call, completing in 102 calls.
+The core clears 132 Y words per full clearing call, completing in 102 calls.
 During this clearing period the wrapper returns dry audio and advances no
 converter state. Trigger splits issue two clearing calls per 16-frame block;
 therefore startup duration still depends on call partitioning. This is a known
 experimental limitation to resolve before lifecycle qualification. After
 clearing, the tank runs one frame per downsampled output. The wrapper saves
 and restores the caller's audio pointer and frame count around each tank call.
-The five tank controls ramp for 256 tank samples (8 ms). MIX ramps for 256
+The four tank controls ramp for 256 tank samples (8 ms). MIX ramps for 256
 44.1 kHz samples (5.805 ms). A new target starts from the current fractional
 value, so an interrupted ramp remains continuous. Slopes retain 24 fractional
 bits and truncate toward zero; the last sample snaps to the exact target.
 This keeps the ramps bounded, including tiny changes toward zero. Initial
-values start at their targets so a static render stays identical to 0.1.4.
+values start at their targets. Tested static renders match 0.1.5 at SMEAR zero.
 Targets are calculated once per external call; only ramp steps run in the
 sample loop. Unchanged targets do not restart a ramp.
 
@@ -65,28 +66,28 @@ generator template cannot silently omit a dry-channel store or another step.
 
 Two additional input allpasses (241 and 399 cells) now use packed storage,
 saving 212 Y words. Their quantization and delay lengths are unchanged.
-The standalone tank occupies 15,480 Y words: rings 0–13431 and diffuser
-13432–15479. Three matched comparisons against 0.1.3 test preservation of
-wet/dry bytes. Nominal tank cost rises from 15,084 to 16,798 instructions per
-16 tank frames as the tradeoff for making room.
+The standalone tank occupies 13,432 Y words, all for its original delay
+rings. Removing the separate diffuser frees 2,048 words. Histories move down
+by that amount, retaining their alignment. Packed-ring placement is unchanged;
+using the freed space to reduce packed-storage overhead is future work.
 
 | Allocation | Relative Y offsets | Words |
 | --- | --- | ---: |
-| Tank and diffuser | 0–15479 | 15480 |
-| Down left, 128-aligned | 15488–15583 | 96 |
-| Down right, 128-aligned | 15616–15711 | 96 |
-| Up left, 64-aligned | 15744–15791 | 48 |
-| Up right, 64-aligned | 15808–15855 | 48 |
+| Tank | 0–13431 | 13432 |
+| Down left, 128-aligned | 13440–13535 | 96 |
+| Down right, 128-aligned | 13568–13663 | 96 |
+| Up left, 64-aligned | 13696–13743 | 48 |
+| Up right, 64-aligned | 13760–13807 | 48 |
 
-The owned extent including alignment gaps is 15,856 24-bit words (47,568
-bytes), ending 14 words before the reserved key window at 15870. Active
-storage is 15,768 words plus 88 words of padding. The joined scalar extent
+The owned extent including alignment gaps is 13,808 24-bit words (41,424
+bytes), ending 2,062 words before the reserved key window at 15870. Active
+storage is 13,720 words plus 88 words of padding. The joined scalar extent
 is X r7+00..ef (240 words including gaps/scratch/clearing). Init clears tank
 state 00..6f and wrapper state 70..ef. The added targets, slopes, fractional
 values and counters are instance-local; no mutable global state is added.
 
-The standalone tank uses 1,452 program words plus 128 gain-table words.
-The joined experiment uses 2,547 program words plus 6,274 SRC table/schedule
+The standalone tank uses 1,109 program words plus 128 gain-table words.
+The joined experiment uses 2,135 program words plus 6,274 SRC table/schedule
 words and the same 128-word gain table. Test placements are P:15000 for
 code, P:18000 for SRC tables and P:14000 for gain; the driver refuses overlap
 with the private stock dump. These are standalone experiment placements,
@@ -109,7 +110,7 @@ guards, compares every output sample, and records source hashes and instruction
 counts. `--control-events` verifies every recorded coefficient, fractional
 value, remaining sample count and target against `control_reference.py`,
 including a reversal before the first ramp finishes. `--signal dc|impulse|silence` covers converter-only fixtures;
-`--controls TIME,DAMP,DIFF,SMEAR,GAIN` and `--mix` exercise the joined path.
+`--controls TIME,DAMP,DIFF,GAIN` and `--mix` exercise the joined path.
 Private dumps, binaries and raw audio remain outside Git. Stock-free reports
 are in `evidence/native-src/`.
 
@@ -120,7 +121,7 @@ proves equivalence to that fixed-point chain for the tested cases; it does
 not erase the tank's measured discrepancy from the original floating-point
 Clouds implementation. Both versions still need sound-quality assessment.
 
-## Optimization and control results
+## Historical 0.1.5 optimization and control results
 
 Matched static renders preserve both cores' audio bytes exactly against
 0.1.4. All use the same input, settings and call splits as their baselines:
@@ -150,7 +151,7 @@ parameters. No listening assessment is claimed.
 
 Reports: `evidence/performance-controls/`. Private renders are separate.
 
-## Matched stock SPRING REV comparison
+## Historical 0.1.5 matched stock SPRING REV comparison
 
 `benchmark_spring.py` runs 1024 blocks (16384 input frames) for one instance
 on each core. Both effects receive the same stereo input, slot placement,
@@ -179,7 +180,7 @@ installable build is claimed.
 
 Run `python3 -B verify_src_layout.py --check` from this folder to reproduce
 `evidence/src-layout.json`. The current joined program, SRC data and gain
-table occupy **8,949 P words**. The package hook guide documents only
+table occupy **8,537 P words**. The package hook guide documents only
 **4,304 / 4,432 words** in the empty module arena of its named base build
 ([arena measurements](../../../docs/OCTATRACK_PACKAGE_DSP_HOOKS.md)). Those
 are shared resources, so a standalone high-address emulator placement does
@@ -194,11 +195,41 @@ instead of 4,752 coefficient words. Keeping the current schedules saves
 **2,128 words**, without changing coefficients, cutoff or phase weights.
 
 This is a checked layout proposal, not an implemented native optimization.
-It would still need **6,821 words before changes to the decoder**, exceeding
-the documented empty arenas by 2,517 / 2,389 words. The DSP reader would
+It would still need **6,409 words before changes to the decoder**, exceeding
+the documented empty arenas by 2,105 / 1,977 words. The DSP reader would
 need signed coefficient strides, variable tap counts and a fresh history
 pointer for each phase; omitting a zero tap otherwise breaks the existing
 full-ring wrap assumption. Preserve any newly used address registers and
 measure both code size and execution cost after implementing it. Exact row
 reconstruction does not prove DSP audio parity or a processing improvement.
 No extra X-memory table allocation or larger P arena has been established.
+
+
+## 0.1.6 removal of the separate input diffuser
+
+`evidence/no-smear/` records the current build. Removing all eight separate
+input-diffuser stages also removes their coefficient mapping and control
+ramp. The tank's own eight allpasses, two long delays, damping, modulation,
+gain and mixer are unchanged. D is inactive; E GAIN and F MIX retain their
+positions. `--controls` now takes four values: TIME,DAMP,DIFF,GAIN.
+The unchanged licensed upstream diffuser stays in the source reference.
+
+Three matched static cases retain identical bytes on both cores against
+0.1.5 with SMEAR zero: nominal wet (72,192 frames), high feedback/gain with
+MIX 40 and split 1 (14,928), and exact dry with split 15 (14,928). Peaks drop
+31,139 → 28,046, 31,402 → 28,300 and 31,187 → 28,085 instructions/core/16
+input frames, about 10%. The nominal standalone tank is 12,737 instructions
+per 16 tank frames on this converted stereo fixture, versus 16,798 before.
+Code falls 1,452 → 1,109 words for the tank, 2,547 → 2,135 joined. Y extent
+falls 15,856 → 13,808. Tables are unchanged. Clearing uses 132 words/call to
+keep the same 102-call startup; its call-partition limitation is unchanged.
+
+Five-control traces match the integer model at splits 0, 1 and 15, with
+identical audio after startup alignment. The moving controls preserve exact
+silence. Converter full-scale stress remains host-exact after relocation.
+All renders use dirty seed 1776, both cores and buffer/shared/code guards.
+The 64-case stock benchmark (three Spring types and all sixteen splits)
+now peaks at 29,067 for Mist versus 5,094 for Spring, approximately 5.71×.
+This remains a substantial performance gap, not a hardware timing result.
+The 8,537 P-word total still exceeds the documented empty package arena;
+no installation or sound-quality qualification is claimed.

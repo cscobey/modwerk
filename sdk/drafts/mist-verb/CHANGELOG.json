@@ -1,5 +1,14 @@
 [
   {
+    "version": "0.1.6-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Remove the separate SMEAR input diffuser while retaining the Clouds reverb tank.",
+      "Keep TIME, DAMP, DIFF, GAIN and MIX; encoder D is reserved.",
+      "Reduce prototype memory and processing use; installation remains unfinished."
+    ]
+  },
+  {
     "version": "0.1.5-experimental",
     "date": "2026-10-23",
     "changes": [

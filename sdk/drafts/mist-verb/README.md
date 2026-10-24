@@ -1,7 +1,7 @@
 # Mist Verb
 
-Unpublished port preparation, version **0.1.5-experimental**, author **cscobey**.
-Target: Mutable Instruments Clouds reverb and the separate stereo diffuser as
+Unpublished port preparation, version **0.1.6-experimental**, author **cscobey**.
+Target: Mutable Instruments Clouds reverb tank as
 an independent Octatrack MKII FX2 insert on OS 1.40C. MKI is not tested.
 
 **A native 44.1 kHz experiment now runs conversion, reverb and dry/wet mixing
@@ -17,7 +17,8 @@ The original MIT-licensed Clouds source by Émilie Gillet is pinned in
 [sources.json](sources.json), with unchanged files under `upstream/`. The
 original C++ is the sound oracle. The port targets the original 32 kHz tank,
 its ten delay lengths, its quantized 16-bit storage with twelve fractional
-bits, both slow modulation oscillators, and the separate stereo diffuser.
+bits, both slow modulation oscillators. The separate stereo input diffuser and
+SMEAR control were removed in 0.1.6 to save memory and processing.
 No disting NT firmware or Elektron code is copied.
 
 Two host storage models now match that original reverb exactly across 63
@@ -32,15 +33,15 @@ emulated DSP56300, with eight distinct instances on both cores. It processes
 test integers, not audio. Its performance is not the cost of a reverb.
 
 `generate_core.py` translates the pinned topology into the initial native
-`core32.asm`: the diffuser, eight reverb allpasses, two damping poles,
+`core32.asm`: eight reverb allpasses, two damping poles,
 modulated reads, packed delay memory and a widened final mixer.
 `render_core32.py` executes it on both emulated cores at a **test rate of
 32 kHz**. The new [native 44.1 kHz experiment](NATIVE_SRC.md) wraps this tank
 with both converters and the final mixer, all running on the emulated DSP.
 Its tested output matches the earlier host-conversion/native-tank chain
 exactly, including full-scale converter saturation and exact dry bypass.
-Stereo FIR scheduling now reduces joined processing work about 27%, and
-short sample-timed ramps smooth control targets. The tank still has measured
+Stereo FIR scheduling and removal of the separate input diffuser reduce
+processing work; short sample-timed ramps smooth the five control targets. The tank still has measured
 differences from the original floating-point source. The complete path remains expensive and unqualified for installation.
 
 [SRC.md](SRC.md) describes the computer reference and filter design.
@@ -58,7 +59,7 @@ continuous 0–127 main-page controls. The six SETUP parameter slots are unused.
 | A | TIME | 96 | Reverb feedback/decay, bounded below unity |
 | B | DAMP | 64 | Darkens the recirculating tail |
 | C | DIFF | 94 | Tank diffusion; nominal 70% starting point |
-| D | SMEAR | 0 | Separate stereo input diffuser amount |
+| D | — | — | Unused; separate input diffuser removed |
 | E | GAIN | 83 | Tank input gain; planned −40 to 0 dB range, about −14 dB default |
 | F | MIX | 40 | Dry/wet; 0 exact dry after the ramp, 127 fully wet |
 
@@ -83,20 +84,24 @@ from another product.
 ## Compatibility and limitations
 
 - FX2 only initially. Its 16,384-word allocation can hold the proposed packed
-  tank and diffuser. FX1 has 3,072 words and cannot hold this layout. No shared
+  tank and conversion histories. FX1 has 3,072 words and cannot hold this layout. No shared
   bus, other module dependency or stock behavior hook is planned.
 - Proposed non-stock effect ID: `0x07`, unused among the fork's declarations
   at base `bedbb362`. USB IDs are assigned through the base's module lifecycle.
-- The tank occupies Y offsets 0–15479. Aligned stereo conversion histories
-  extend ownership through 15855, leaving 14 words before the reserved key
+- The tank occupies Y offsets 0–13431. Aligned stereo conversion histories
+  extend ownership through 13807, leaving 2,062 words before the reserved key
   window at 15870. See NATIVE_SRC.md for active storage and padding.
 - The host class uses 32-bit containers for each modeled 24-bit word. Its C++
-  object size is not the DSP allocation. Diffuser fixed-point precision is
-  not yet proven against its floating-point source.
+  object size is not the DSP allocation. The fixed-point tank still differs
+  from its floating-point source.
 - Independent per-delay rings matched the original across the recorded test
   cases; that is not a proof of every possible input or future implementation.
 - Native conversion and mixing pass the recorded exact-chain comparisons.
   Control-ramp timing, retargeting and partition consistency are tested.
+  Three static both-core comparisons match 0.1.5 with SMEAR zero exactly.
+  The joined program shrinks 2,547 → 2,135 words; Y extent 15,856 → 13,808.
+  The matched stock benchmark still measures 5.71× Spring’s instructions.
+  See `evidence/no-smear/`; this remains too large for the documented arena.
   Startup behavior, audible results and installed controls still need qualification.
 - Worst-case stock SPRING REV remains the performance design target. The
   joined path measures roughly 31,100–32,300 executed instructions per core

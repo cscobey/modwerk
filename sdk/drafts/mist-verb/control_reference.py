@@ -3,8 +3,9 @@
 
 SCALE = 1 << 24
 MASK = SCALE - 1
-CURRENT = (0, 1, 2, 3, 4, 0xbf)
-TRACE = CURRENT + tuple(range(0xc8, 0xce)) + tuple(range(0xe0, 0xe6)) + tuple(range(0xe8, 0xee))
+ACTIVE = (0, 1, 2, 4, 5)
+CURRENT = (0, 1, 2, 4, 0xbf)
+TRACE = CURRENT + tuple(0xc8+i for i in ACTIVE) + tuple(0xe0+i for i in ACTIVE) + tuple(0xe8+i for i in ACTIVE)
 
 
 def q23(value):
@@ -12,12 +13,11 @@ def q23(value):
 
 
 def targets(parameters):
-    time, damp, diff, smear, gain, mix = parameters[:6]
+    time, damp, diff, unused, gain, mix = parameters[:6]
     return (
         (time << 16) * q23(.98 * 128 / 127) // 8388608,
         (q23(.9) * 8388608 - (damp << 16) * q23(.85 * 128 / 127)) // 8388608,
         (diff << 16) * q23(.95 * 128 / 127) // 8388608,
-        8388607 if smear == 127 else smear << 16,
         min(8388607, round(10 ** ((-40 + 40 * gain / 127) / 20) * 8388608)),
         8388607 if mix == 127 else mix << 16,
     )
@@ -28,9 +28,9 @@ def events(base, first_block):
     return {
         0: base,
         first_block + 32: [0] * 12,
-        first_block + 40: [127] * 6 + [0] * 6,
+        first_block + 40: [127,127,127,0,127,127] + [0] * 6,
         first_block + 80: [127, 127, 0, 0, 0, 40] + [0] * 6,
-        first_block + 96: [0, 0, 127, 127, 127, 0] + [0] * 6,
+        first_block + 96: [0, 0, 127, 0, 127, 0] + [0] * 6,
         first_block + 128: base,
     }
 
@@ -39,8 +39,8 @@ class Ramps:
     def __init__(self, goal):
         self.goal = list(goal)
         self.value = [v * SCALE for v in goal]
-        self.step = [0] * 6
-        self.remaining = [0] * 6
+        self.step = [0] * len(goal)
+        self.remaining = [0] * len(goal)
 
     def retarget(self, goal):
         for i, target in enumerate(goal):
@@ -79,9 +79,9 @@ def verify_trace(rows, prefix_frames, timeline):
         else:
             ramp.retarget(goal)
         for _ in range(16):
-            ramp.tick((5,))
+            ramp.tick((4,))
             if clock < 32000:
-                ramp.tick(range(5))
+                ramp.tick(range(4))
                 clock += 44100
             clock -= 32000
         actual = row[3:]

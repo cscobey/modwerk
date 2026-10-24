@@ -1,6 +1,6 @@
 ; Copyright 2026 cscobey. MIT; see LICENSE.
 ; Native SRC round-trip experiment. No reverb, stock effect or firmware.
-; X scalar offsets 70..af; Y histories at 15488,15616,15744,15808.
+; X scalar offsets 70..af; Y histories at 13440,13568,13696,13760.
 init:
         move #>$ffffff,m4
         move #>$ffffff,m5
@@ -16,7 +16,7 @@ src_zero_scalar:
         move x:(r4),a
         move a1,x:(r7+$70)
         move x:(r7+$70),a
-        add #>$3c80,a
+        add #>$3480,a
         move a1,x:(r7+$71)
         move a1,r4
         clr a
@@ -25,7 +25,7 @@ src_zero_scalar:
 src_zero_hist_0:
         nop
         move x:(r7+$70),a
-        add #>$3d00,a
+        add #>$3500,a
         move a1,x:(r7+$72)
         move a1,r4
         clr a
@@ -34,7 +34,7 @@ src_zero_hist_0:
 src_zero_hist_1:
         nop
         move x:(r7+$70),a
-        add #>$3d80,a
+        add #>$3580,a
         move a1,x:(r7+$73)
         move a1,r4
         clr a
@@ -43,7 +43,7 @@ src_zero_hist_1:
 src_zero_hist_2:
         nop
         move x:(r7+$70),a
-        add #>$3dc0,a
+        add #>$35c0,a
         move a1,x:(r7+$74)
         move a1,r4
         clr a

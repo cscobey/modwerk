@@ -70,7 +70,7 @@ def report():
     coefficients = sum(b['packedCoefficientWords'] for b in banks)
     descriptors = sum(b['descriptorWords'] for b in banks)
     schedule = 2 * (320 + 441)
-    native = json.loads((ROOT / 'evidence/performance-controls/ramp-final-wet.json').read_text())
+    native = json.loads((ROOT / 'evidence/no-smear/wet.json').read_text())
     total = native['programWords'] + native['tableWords'] + 128
     proposed = native['programWords'] + coefficients + descriptors + schedule + 128
     return dict(scope='Host layout proof only; native DSP still uses full tables',

@@ -20,10 +20,11 @@ for i, (base, length) in enumerate(sorted(INPUT_APS + TANK_APS + ((4612, 3411), 
     packed = base in (277, 519, 4612, 11602)
     LINES[base] = (length, physical, 0x50 + i, 0x60 + i, packed)
     physical += ((length + 2) // 3) * 2 if packed else length
-DIFFUSER_BASE = physical
-BUFFER_WORDS = DIFFUSER_BASE + 2048
+BUFFER_WORDS = physical
+# Preserve the existing 102-call startup while clearing only the tank.
+CLEAR_CHUNK = 132
 STATE_WORDS = 0x70
-assert BUFFER_WORDS == 15480 and BUFFER_WORDS <= 15870
+assert BUFFER_WORDS == 13432 and BUFFER_WORDS <= 15870
 
 
 def emit(text):
@@ -155,34 +156,6 @@ interpol_{base:04x}_second:''')
         move a1,x:(r7+$32)''')
 
 
-def diffuser(base, length):
-    for offset, output in [(base + length - 1, False), (base, True)]:
-        emit(f'''move x:(r7+$21),a
-            add #>${offset:x},a
-            and #>$0007ff,a
-            add #>${DIFFUSER_BASE:x},a
-            move a1,n5
-            move x:(r7+$20),r5
-            move (r5)+n5''')
-        if not output:
-            emit(f'''move y:(r5),x0
-                move x0,x:(r7+$33)
-                move #>{q(.625)},y1
-                mpy x0,y1,a
-                move x:(r7+$32),x0
-                add x0,a
-                move a1,x:(r7+$32)''')
-        else:
-            emit(f'''move x:(r7+$32),a
-                move a1,y:(r5)
-                move a1,x0
-                move #>{q(.625)},y1
-                mpy -x0,y1,a
-                move x:(r7+$33),x0
-                add x0,a
-                move a1,x:(r7+$32)''')
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -232,7 +205,7 @@ proc:
         move x:(r7+$22),a
         tst a
         beq core_knobs
-        move #>$98,x0
+        move #>${CLEAR_CHUNK:x},x0
         cmp x0,a
         blt core_short_clear
         move x0,a
@@ -262,7 +235,7 @@ core_knobs:''')
         move #>{q(.9)},a
         sub b,a
         move a1,x:(r7+$01)''')
-    for i in (3, 5):
+    for i in (5,):
         emit(f'''move x:(r6+${i:x}),a
             move #>$7f0000,x0
             cmp x0,a
@@ -326,21 +299,6 @@ head_{head:02x}_ready:
             add #>$400000,a
             move a,x:(r7+${value:x})''')
     emit('core_lfo_hold:')
-    offset = 0
-    for slot, lengths in [(0x28, (126, 180, 269, 444)), (0x29, (151, 205, 245, 405))]:
-        emit(f'move x:(r7+${slot:x}),a\nmove a1,x:(r7+$32)')
-        for length in lengths:
-            diffuser(offset, length)
-            offset += length + 1
-        emit(f'''move x:(r7+$32),a
-            move x:(r7+${slot:x}),x0
-            sub x0,a
-            move a1,x0
-            move x:(r7+$03),y1
-            mpy x0,y1,a
-            move x:(r7+${slot:x}),x0
-            add x0,a
-            move a1,x:(r7+${slot:x})''')
     emit('''move x:(r7+$28),a
         move x:(r7+$29),x0
         add x0,a

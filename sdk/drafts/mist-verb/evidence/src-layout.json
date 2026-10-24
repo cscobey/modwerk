@@ -2,7 +2,7 @@
   "scope": "Host layout proof only; native DSP still uses full tables",
   "sourceHashes": {
     "generate_src.py": "cbb9d17d699c11a00b01223ddd824ca1e4dfd4ca79a9b200012b5222224b64a9",
-    "verify_src_layout.py": "5819d2da932b3b0824f197217333f3ead06e2fe082c4a2d084a26df1f6fbb067"
+    "verify_src_layout.py": "efeedd903cfe549b13217529f89d9b24c8d457a82267bf8c51396c687073dd4d"
   },
   "banks": [
     {
@@ -27,17 +27,17 @@
     }
   ],
   "unchangedScheduleWords": 1522,
-  "currentProgramAndTablesWords": 8949,
+  "currentProgramAndTablesWords": 8537,
   "proposedTablesWords": 4146,
-  "proposedTotalBeforeDecoderChanges": 6821,
+  "proposedTotalBeforeDecoderChanges": 6409,
   "savedTableWords": 2128,
   "documentedEmptyArenaWords": [
     4304,
     4432
   ],
   "minimumDeficitBeforeDecoderChanges": [
-    2517,
-    2389
+    2105,
+    1977
   ],
   "nativeDecoderImplemented": false,
   "installedFitProven": false

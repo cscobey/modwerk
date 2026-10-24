@@ -35,7 +35,7 @@ def generate():
     # Down 96-cell rings aligned to 128, up 48-cell rings aligned to 64.
     emit('''; Copyright 2026 cscobey. MIT; see LICENSE.
 ; Native SRC round-trip experiment. No reverb, stock effect or firmware.
-; X scalar offsets 70..af; Y histories at 15488,15616,15744,15808.
+; X scalar offsets 70..af; Y histories at 13440,13568,13696,13760.
 init:
         move #>$ffffff,m4
         move #>$ffffff,m5
@@ -50,7 +50,7 @@ src_zero_scalar:
         move x:>$213,r4
         move x:(r4),a
         move a1,x:(r7+$70)''')
-    for i,(offset,length) in enumerate(((15488,96),(15616,96),(15744,48),(15808,48))):
+    for i,(offset,length) in enumerate(((13440,96),(13568,96),(13696,48),(13760,48))):
         emit(f'''move x:(r7+$70),a
         add #>${offset:x},a
         move a1,x:(r7+${0x71+i:x})
@@ -251,7 +251,7 @@ def replace_one(source,before,after,count=1):
     return source.replace(before,after,1)
 
 def control_smoothing():
-    """Generate six retargetable 256-sample ramps with 24 fractional bits."""
+    """Generate five retargetable 256-sample ramps with 24 fractional bits."""
     lines=[]
     def add(text):lines.extend(line.strip() for line in text.strip().splitlines())
     current=(0,1,2,3,4,0xbf)
@@ -268,7 +268,8 @@ src_mix_goal_ready:
         move x:(r7+$b6),a
         tst a
         bne src_controls_live""")
-    for i,slot in enumerate(current):
+    for i in (0,1,2,4,5):
+        slot=current[i]
         add(f"""move x:(r7+${0xc0+i:x}),a
             move a1,x:(r7+${slot:x})
             move a1,x:(r7+${0xe8+i:x})
@@ -279,7 +280,8 @@ src_mix_goal_ready:
         move a1,x:(r7+$b6)
         rts
 src_controls_live:""")
-    for i,slot in enumerate(current):
+    for i in (0,1,2,4,5):
+        slot=current[i]
         add(f"""move x:(r7+${0xc0+i:x}),a
             move x:(r7+${0xe8+i:x}),x0
             cmp x0,a
@@ -301,7 +303,7 @@ src_target_{i}_divide:
             move a1,x:(r7+${0xe0+i:x})
 src_target_{i}_done:""")
     add('rts')
-    for name,indices in (('src_tank_slew',range(5)),('src_mix_slew',(5,))):
+    for name,indices in (('src_tank_slew',(0,1,2,4)),('src_mix_slew',(5,))):
         add(name+':')
         for i in indices:
             add(f"""move x:(r7+${0xe0+i:x}),a

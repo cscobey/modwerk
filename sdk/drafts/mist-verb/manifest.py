@@ -20,8 +20,7 @@ MODULE = Module(
               doc='Darkens the recirculating tail.'),
         Param(b'DIFF', 94, active=True, formatter=Formatter.PLAIN,
               doc='Tank all-pass diffusion; about 70 percent by default.'),
-        Param(b'SMEAR', 0, active=True, formatter=Formatter.PLAIN,
-              doc='Separate stereo input diffuser wet/dry amount.'),
+        Param(b"", 0, active=False),  # D reserved; separate diffuser removed.
         Param(b'GAIN', 83, active=True, formatter=Formatter.PLAIN,
               doc='Tank input gain, planned -40 to 0 dB range; about -14 dB by default.'),
         Param(b'MIX', 40, active=True, formatter=Formatter.PLAIN,
@@ -31,8 +30,8 @@ MODULE = Module(
     dsp=DspSection(asm="modules/mist-verb/engine.asm", priority=17,
                    bus_role=BusRole.NONE, ybase=YBase.NEVER,
                    r7_latch_slot=None, gate_label=None),
-    claims=Claims(stock_instance_buffer=True, buffer_words=15856),
+    claims=Claims(stock_instance_buffer=True, buffer_words=13808),
     harness=Harness(layout_char=None, is_server=False),
     gates=(Gate("modules/mist-verb/verify.py", remix_arg=False),),
-    dear={"TIME":127,"DAMP":0,"DIFF":127,"SMEAR":127,"GAIN":127,"MIX":127},
+    dear={"TIME":127,"DAMP":0,"DIFF":127,"GAIN":127,"MIX":127},
 )

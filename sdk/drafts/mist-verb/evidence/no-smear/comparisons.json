@@ -1,0 +1,84 @@
+{
+  "scope": "Remove separate diffuser; preserve core tank topology and quantization. Emulator evidence only.",
+  "baselineCommit": "07ea82db1067c55183368e960c34bb3f07629a8c",
+  "staticComparisons": [
+    {
+      "baseline": "ramp-final-wet",
+      "candidate": "no-smear-wet",
+      "bothCoresByteIdentical": true,
+      "audioSha256": [
+        "67a1c1f4a94c845791e64f41ba40a4b863fcfb74a61fdccea7e3a4e746a6177e",
+        "67a1c1f4a94c845791e64f41ba40a4b863fcfb74a61fdccea7e3a4e746a6177e"
+      ],
+      "beforePeak": [
+        31139,
+        31139
+      ],
+      "afterPeak": [
+        28046,
+        28046
+      ]
+    },
+    {
+      "baseline": "no-smear-before-high",
+      "candidate": "no-smear-high",
+      "bothCoresByteIdentical": true,
+      "audioSha256": [
+        "5de302dadd4bdb432d28c2bc142b88a348480061e522255617f4fa75335b211b",
+        "5de302dadd4bdb432d28c2bc142b88a348480061e522255617f4fa75335b211b"
+      ],
+      "beforePeak": [
+        31402,
+        31402
+      ],
+      "afterPeak": [
+        28300,
+        28300
+      ]
+    },
+    {
+      "baseline": "ramp-final-dry",
+      "candidate": "no-smear-dry",
+      "bothCoresByteIdentical": true,
+      "audioSha256": [
+        "2a43783046e201dcd33e31ecfa6311f7150296d95aca5bbc85e72ce068fd38ed",
+        "2a43783046e201dcd33e31ecfa6311f7150296d95aca5bbc85e72ce068fd38ed"
+      ],
+      "beforePeak": [
+        31187,
+        31187
+      ],
+      "afterPeak": [
+        28085,
+        28085
+      ]
+    }
+  ],
+  "dynamicAudioAcrossSplitsExactAfterStartup": true,
+  "dynamicAudioSha256": "e0d0b0e78dbdff97d492dd0a478c1507afcb0df7ffd679dd69389c35e5f7182f",
+  "tankYWordsBeforeAfter": [
+    15480,
+    13432
+  ],
+  "joinedYExtentBeforeAfter": [
+    15856,
+    13808
+  ],
+  "tankCodeWordsBeforeAfter": [
+    1452,
+    1109
+  ],
+  "joinedCodeWordsBeforeAfter": [
+    2547,
+    2135
+  ],
+  "srcWordsUnchanged": 6274,
+  "gainWordsUnchanged": 128,
+  "clearWordsPerCallBeforeAfter": [
+    152,
+    132
+  ],
+  "clearCallsUnchanged": 102,
+  "newPWordsTotal": 8537,
+  "installedFitProven": false
+}

@@ -1,7 +1,7 @@
 ; Copyright 2014 Emilie Gillet; translation Copyright 2026 cscobey.
 ; MIT: see LICENSE and pinned upstream source.
 ; 32 kHz core experiment ONLY. Not a 44.1 kHz Octatrack effect.
-; X r7+00..6f own scalar state. Y first 15480 words own buffer.
+; X r7+00..6f own scalar state. Y first 13432 words own buffer.
 init:
         move #>$ffffff,m5
         move r7,r5
@@ -43,7 +43,7 @@ core_zero:
         move x:(r7+$20),a
         add #>$2804,a
         move a1,x:(r7+$69)
-        move #>$3c78,a
+        move #>$3478,a
         move a1,x:(r7+$22)
         move #>$400000,a
         move a1,x:(r7+$40)
@@ -67,7 +67,7 @@ proc:
         move x:(r7+$22),a
         tst a
         beq core_knobs
-        move #>$98,x0
+        move #>$84,x0
         cmp x0,a
         blt core_short_clear
         move x0,a
@@ -100,13 +100,6 @@ core_knobs:
         move #>$733333,a
         sub b,a
         move a1,x:(r7+$01)
-        move x:(r6+$3),a
-        move #>$7f0000,x0
-        cmp x0,a
-        bne knob_3_hold
-        move #>$7fffff,a
-knob_3_hold:
-        move a1,x:(r7+$3)
         move x:(r6+$5),a
         move #>$7f0000,x0
         cmp x0,a
@@ -239,260 +232,6 @@ head_59_ready:
         move a,x:(r7+$45)
 core_lfo_hold:
         move x:(r7+$28),a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$7d,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move y:(r5),x0
-        move x0,x:(r7+$33)
-        move #>$500000,y1
-        mpy x0,y1,a
-        move x:(r7+$32),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$0,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move x:(r7+$32),a
-        move a1,y:(r5)
-        move a1,x0
-        move #>$500000,y1
-        mpy -x0,y1,a
-        move x:(r7+$33),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$132,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move y:(r5),x0
-        move x0,x:(r7+$33)
-        move #>$500000,y1
-        mpy x0,y1,a
-        move x:(r7+$32),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$7f,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move x:(r7+$32),a
-        move a1,y:(r5)
-        move a1,x0
-        move #>$500000,y1
-        mpy -x0,y1,a
-        move x:(r7+$33),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$240,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move y:(r5),x0
-        move x0,x:(r7+$33)
-        move #>$500000,y1
-        mpy x0,y1,a
-        move x:(r7+$32),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$134,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move x:(r7+$32),a
-        move a1,y:(r5)
-        move a1,x0
-        move #>$500000,y1
-        mpy -x0,y1,a
-        move x:(r7+$33),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$3fd,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move y:(r5),x0
-        move x0,x:(r7+$33)
-        move #>$500000,y1
-        mpy x0,y1,a
-        move x:(r7+$32),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$242,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move x:(r7+$32),a
-        move a1,y:(r5)
-        move a1,x0
-        move #>$500000,y1
-        mpy -x0,y1,a
-        move x:(r7+$33),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$32),a
-        move x:(r7+$28),x0
-        sub x0,a
-        move a1,x0
-        move x:(r7+$03),y1
-        mpy x0,y1,a
-        move x:(r7+$28),x0
-        add x0,a
-        move a1,x:(r7+$28)
-        move x:(r7+$29),a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$495,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move y:(r5),x0
-        move x0,x:(r7+$33)
-        move #>$500000,y1
-        mpy x0,y1,a
-        move x:(r7+$32),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$3ff,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move x:(r7+$32),a
-        move a1,y:(r5)
-        move a1,x0
-        move #>$500000,y1
-        mpy -x0,y1,a
-        move x:(r7+$33),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$563,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move y:(r5),x0
-        move x0,x:(r7+$33)
-        move #>$500000,y1
-        mpy x0,y1,a
-        move x:(r7+$32),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$497,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move x:(r7+$32),a
-        move a1,y:(r5)
-        move a1,x0
-        move #>$500000,y1
-        mpy -x0,y1,a
-        move x:(r7+$33),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$659,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move y:(r5),x0
-        move x0,x:(r7+$33)
-        move #>$500000,y1
-        mpy x0,y1,a
-        move x:(r7+$32),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$565,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move x:(r7+$32),a
-        move a1,y:(r5)
-        move a1,x0
-        move #>$500000,y1
-        mpy -x0,y1,a
-        move x:(r7+$33),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$7ef,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move y:(r5),x0
-        move x0,x:(r7+$33)
-        move #>$500000,y1
-        mpy x0,y1,a
-        move x:(r7+$32),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$21),a
-        add #>$65b,a
-        and #>$0007ff,a
-        add #>$3478,a
-        move a1,n5
-        move x:(r7+$20),r5
-        move (r5)+n5
-        move x:(r7+$32),a
-        move a1,y:(r5)
-        move a1,x0
-        move #>$500000,y1
-        mpy -x0,y1,a
-        move x:(r7+$33),x0
-        add x0,a
-        move a1,x:(r7+$32)
-        move x:(r7+$32),a
-        move x:(r7+$29),x0
-        sub x0,a
-        move a1,x0
-        move x:(r7+$03),y1
-        mpy x0,y1,a
-        move x:(r7+$29),x0
-        add x0,a
-        move a1,x:(r7+$29)
-        move x:(r7+$28),a
         move x:(r7+$29),x0
         add x0,a
         move a1,x0
@@ -546,9 +285,9 @@ interpol_0000_second:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0544
+        bpl quant_0283
         add #>$ff,a
-quant_0544:
+quant_0283:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -587,9 +326,9 @@ tap_0070_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0585
+        bpl quant_0324
         add #>$ff,a
-quant_0585:
+quant_0324:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -627,9 +366,9 @@ tap_0113_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0625
+        bpl quant_0364
         add #>$ff,a
-quant_0625:
+quant_0364:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -667,9 +406,9 @@ tap_0205_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0665
+        bpl quant_0404
         add #>$ff,a
-quant_0665:
+quant_0404:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -706,9 +445,9 @@ tap_0395_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0704
+        bpl quant_0443
         add #>$ff,a
-quant_0704:
+quant_0443:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -804,9 +543,9 @@ tap_0a0b_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0802
+        bpl quant_0541
         add #>$ff,a
-quant_0802:
+quant_0541:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -844,9 +583,9 @@ tap_1202_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0842
+        bpl quant_0581
         add #>$ff,a
-quant_0842:
+quant_0581:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -866,9 +605,9 @@ quant_0842:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0864
+        bpl quant_0603
         add #>$ff,a
-quant_0864:
+quant_0603:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -927,9 +666,9 @@ tap_26d0_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0925
+        bpl quant_0664
         add #>$ff,a
-quant_0925:
+quant_0664:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -967,9 +706,9 @@ tap_2d50_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0965
+        bpl quant_0704
         add #>$ff,a
-quant_0965:
+quant_0704:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -989,9 +728,9 @@ quant_0965:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0987
+        bpl quant_0726
         add #>$ff,a
-quant_0987:
+quant_0726:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)

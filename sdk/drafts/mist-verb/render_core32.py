@@ -25,8 +25,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     for name in ('sdk', 'stock', 'assembler', 'host', 'disassembler', 'output'):
         ap.add_argument('--' + name, required=True, type=Path)
-    ap.add_argument('--controls', default='110,64,94,0,83',
-                    help='TIME,DAMP,DIFF,SMEAR,GAIN, each 0..127; MIX tests 127 and 0')
+    ap.add_argument('--controls', default='110,64,94,83',
+                    help='TIME,DAMP,DIFF,GAIN, each 0..127; MIX tests 127 and 0')
     ap.add_argument('--split', type=int, default=0, choices=range(16),
                     help='Sub-block boundary, 0 for no split')
     ap.add_argument('--compare-output', type=Path,
@@ -36,10 +36,10 @@ def main():
     args = ap.parse_args()
     try:
         controls = [int(v) for v in args.controls.split(',')]
-        if len(controls) != 5 or any(v < 0 or v > 127 for v in controls):
+        if len(controls) != 4 or any(v < 0 or v > 127 for v in controls):
             raise ValueError
     except ValueError:
-        ap.error('--controls requires five integers in 0..127')
+        ap.error('--controls requires four integers in 0..127')
     out = args.output.resolve()
     if ROOT == out or ROOT in out.parents:
         ap.error('Output must be private, outside the module')
@@ -104,7 +104,7 @@ def main():
         if sys.byteorder != 'little':data.byteswap()
         path.write_bytes(data.tobytes())
     raw(out/'input.raw',values)
-    params=controls+[127]+[0]*6
+    params=controls[:3]+[0,controls[3],127]+[0]*6
     base=[str(args.host),'-mem',str(out/'A.mem'),'-memB',str(out/'B.mem'),
           '-init',format(symbols['init'],'x'),'-proc',format(symbols['proc'],'x'),
           '-inst','2','-core','0,1','-alloc','1,1','-r7','2,2','-audioidx','0,0',
@@ -147,9 +147,9 @@ def main():
     subprocess.run(oracle,check=True)
     skip=102*16 if args.split == 0 else 51*16
     (out/'oracle-input.f32').write_bytes(b''.join(struct.pack('<f',v/8388608) for v in stereo[skip*2:]))
-    time,damp,diff,smear,gain=controls
+    time,damp,diff,gain=controls
     coefficients=[.98*time/127,.95*diff/127,.9-.85*damp/127,table[gain]/8388608,
-                  1,1 if smear == 127 else smear/128]
+                  1,0]
     subprocess.run([str(out/'oracle'),str(out/'oracle-input.f32'),str(out/'oracle-output.f32'),
                     *map(str,coefficients)],check=True)
     reference=array.array('f');reference.frombytes((out/'oracle-output.f32').read_bytes())
