@@ -1,3 +1,4 @@
+import pin from '../sdk/drafts/midi-cc-slots/local-build.json' with { type: 'json' }
 // Development-only package compiler. No firmware inputs, device access or public assets.
 import type { Plugin } from 'vite'
 import { execFile } from 'node:child_process'
@@ -15,7 +16,7 @@ export function verifiedCcDocument(data: Uint8Array, verified: { version: string
 
 export function localCcSlots(): Plugin {
   return { name: 'local-cc-slots', apply: 'serve', configureServer(server) {
-    const mediaRoot = '/module-media/midi-cc-slots/0.0.4-experimental'
+    const mediaRoot = '/module-media/midi-cc-slots/' + pin.version
     const media = new Map<string, string>([
       ['presentation/thumbnail.svg', 'image/svg+xml'],
       ...['01-native-setup.png', '02-cc-setup.png', '03-control-1.png', '04-control-2.png', '05-native-restored.png'].map(file => ['media/' + file, 'image/png'] as const),

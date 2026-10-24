@@ -1,9 +1,19 @@
 [
   {
+    "version": "0.0.5-experimental",
+    "date": "2026-10-24",
+    "changes": [
+      "Add temporary MIDI track names through NAME/PUSH on encoder F in MIDI SRC SETUP.",
+      "Align PUSH with the neighboring value in SETUP.",
+      "Keep the extra CC modes and numeric CC headers.",
+      "Known issue: names are temporary and do not save or follow bank/project changes."
+    ]
+  },
+  {
     "version": "0.0.4-experimental",
     "date": "2026-10-24",
     "changes": [
-      "Both MIDI CONTROL pages show each assigned CC number above its encoder instead of CC1\u2013CC10 slot names.",
+      "Both MIDI CONTROL pages show each assigned CC number above its encoder instead of CC1–CC10 slot names.",
       "The remapped PB/AT positions show their assigned numbers; native positions keep PB and AT.",
       "SETUP captions follow the mode as PB, AT or CC, fitting the full stock selection highlight.",
       "Local USB trial update; saved-project behavior and this display change on hardware remain unqualified."
@@ -23,7 +33,7 @@
     "date": "2026-10-24",
     "changes": [
       "Double-tap FX1 on MIDI CONTROL 1, then click A or B to switch its PB/AT position to CC mode.",
-      "Turn the encoder to choose CC0\u2013127; click again to restore PB or AT.",
+      "Turn the encoder to choose CC0–127; click again to restore PB or AT.",
       "Turning alone preserves the selected mode, including stock fast editing while an encoder is held.",
       "Emulator research draft; saved projects, USB integration and hardware remain unqualified."
     ]

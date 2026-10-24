@@ -28,7 +28,7 @@ def main():
     assert data[:8] == b'MWRM\0\x07\0\0'
     length, bss, count, hooks, sites, module = struct.unpack_from('>6I', data, 8)
     copies = struct.unpack_from('>I', data, 68)[0]
-    assert bss == 0 and hooks == 4 and sites == 16 and copies == 8
+    assert bss == 0 and hooks == 4 and sites == 20 and copies == 16
     assert module == int(hashlib.sha256(b'midi-cc-slots').hexdigest()[:8], 16)
     assert data[72:88] == b'\xff'*16
     cursor = 88

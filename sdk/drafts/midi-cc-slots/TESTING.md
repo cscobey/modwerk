@@ -227,3 +227,41 @@ screenshot and module page successfully. The user confirmed the Local draft
 listing and Add button are visible. Normal catalogue Sync/Keep on the physical
 unit has not been tested; earlier reported hardware results used the diagnostic
 page. This does not add release qualification or card-composer support.
+
+
+## Combined 0.0.5 naming test — 24 October 2026
+
+Exact package: 3,500 bytes, 1,756-byte authored image, ABI7, 20 guarded sites,
+16 hash-backed copies. SHA-256:
+`0012a6d8a4c4fd9714d3dca7c52b80555aa86052a25e0a92f86b40d317e0cc09`.
+
+- The existing 398 CC/menu/label/sequencer assertions pass on the combined
+  image. Its reconstruction matches the native emulator image exactly; two
+  placements reconstruct and the naming lifecycle is exercised at both.
+- Each of the two final naming runs passes 81 checks, using real panel input for all eight tracks and four Parts,
+  confirm/cancel, ten-character bounds, unchanged MIDI settings, native audio
+  exclusion, and actual pixel rows to match PUSH's baseline to adjacent OFF.
+- Removal-with-editor-open fault tests restore all package sites, poison the
+  entire module image with illegal instructions, then close with YES or NO.
+  Both close without executing retired code. Only lifecycle code is injected;
+  name edits use panel input. This simulates retirement, not physical USB.
+- The original pointer-table approach failed the poison test because stock
+  cached callbacks. This build detours stable stock routine entries instead;
+  the stock editor retains only its own buffer and a stock redraw callback.
+- Exact C-loader host checks pass prepare/publish/Undo/reinstall/removal and
+  full allocation recovery. The exact 0.0.4-to-0.0.5 upgrade, Undo to 0.0.4,
+  Keep new and removal also pass with the actual C loader. Simulated saved-set checks pass Keep, fresh-process
+  restoration, removal/restart and failed-write fallback with a companion.
+  These restore the package, not runtime-entered names.
+- Stock-free scan passes at the existing 16-byte floor with no exemptions;
+  direct current-base overlap is absent and site/copy guards match both the
+  original MAIN and the privately supplied Modwerk MAIN.
+- Local JSON and binary compiler endpoints return the exact pinned package.
+  No hardware writes were performed. Earlier hardware reports concern 0.0.4;
+  0.0.5's naming, exact USB lifecycle and physical reboot remain untested.
+
+Names do not save, do not follow bank/project identity or Part copy/clear,
+and reset on replacement/restart. Test within one disposable project and bank.
+Screens were visually reviewed for alignment, native editor and BASS alongside
+the numeric CC headers. Existing gallery assets explicitly retain their 0.0.4
+captions and provenance. No public release or native card-composer support.

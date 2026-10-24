@@ -31,7 +31,9 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     for name, address, length in [('dispatch', 0x4009ef60, 6), ('assignment', 0x4009f0fe, 6),
                                   ('sequence_pb', 0x4009fd84, 6), ('sequence_at', 0x4009fdf8, 6),
-                                  ('setup_press', 0x4003fc44, 8), ('setup_clamp', 0x4003a88e, 6)]:
+                                  ('setup_press', 0x4003fc44, 8), ('setup_clamp', 0x4003a88e, 6),
+                                  ('header', 0x4004c40c, 8), ('names_key', 0x4004ae08, 8),
+                                  ('names_draw', 0x40036548, 8), ('names_yes', 0x4007ddd0, 6)]:
         (output / f'{name}.private.bin').write_bytes(stock[address-BASE:address-BASE+length])
     prefix = 'm68k-elf-'
     for tool in ['as', 'ld', 'nm', 'objcopy', 'objdump']:
@@ -41,7 +43,7 @@ def main():
     def run(*argv):
         return subprocess.check_output(argv, cwd=output, text=True)
 
-    run(prefix+'as', '-mcpu=54455', '-o', 'slots.o', str(HERE/'slots.s'))
+    run(prefix+'as', '-mcpu=54455', '-o', 'slots.o', str(HERE/'slots.s'), str(HERE/'names.s'))
     run(prefix+'ld', '-e', 'slot_dispatch', '-Ttext', hex(PLACEMENT), '-o', 'slots.elf', 'slots.o')
     run(prefix+'objcopy', '-O', 'binary', 'slots.elf', 'slots.private.bin')
     symbols = {}
@@ -80,10 +82,14 @@ def main():
         word(descriptor+0xe2+4*index, symbols['slot_format'])
         word(descriptor+0x112+4*index, 0x400467a4)
     word(descriptor+0x18e, 0x11111111)
+    for address, length, symbol in [(0x4004c40c,8,'names_header'), (0x4004ae08,8,'names_open'),
+                                    (0x40036548,8,'names_setup_draw'), (0x4007ddd0,6,'names_confirm')]:
+        write(address, struct.pack('>HI',0x4ef9,symbols[symbol])+(b'\x4e\x71' if length == 8 else b''))
     (output/'candidate.private.bin').write_bytes(image)
     receipt = {'stockSha256': STOCK, 'candidateSha256': hashlib.sha256(image).hexdigest(),
                'sourceSha256': hashlib.sha256((HERE/'slots.s').read_bytes()).hexdigest(),
-               'placement': hex(PLACEMENT), 'symbols': symbols, 'writes': writes,
+               'namesSourceSha256': hashlib.sha256((HERE/'names.s').read_bytes()).hexdigest(),
+               'imageBytes': len(code), 'placement': hex(PLACEMENT), 'symbols': symbols, 'writes': writes,
                'qualification': 'unqualified emulator experiment; placement not approved'}
     (output/'receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
     print(json.dumps({'candidateSha256': receipt['candidateSha256'], 'writes': len(writes)}))

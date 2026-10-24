@@ -1,0 +1,1 @@
+Midi Mode 2 local test version 0.0.5 adds temporary MIDI track names through the native name editor in MIDI SRC SETUP. PUSH aligns with the neighboring value. The local detail page links to an explicit updater for an installed draft. Names are not saved and do not follow bank/project changes.

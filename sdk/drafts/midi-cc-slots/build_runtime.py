@@ -15,6 +15,8 @@ REPLAYS = [('dispatch', 0x4009ef60, 6), ('assignment', 0x4009f0fe, 6),
            ('sequence_pb', 0x4009fd84, 6), ('sequence_at', 0x4009fdf8, 6),
            ('setup_press', 0x4003fc44, 8), ('setup_clamp', 0x4003a88e, 6)]
 
+NAME_REPLAYS = [('header', 0x4004c40c, 8, 'names_header'), ('names_key', 0x4004ae08, 8, 'names_open'),
+                ('names_draw', 0x40036548, 8, 'names_setup_draw'), ('names_yes', 0x4007ddd0, 6, 'names_confirm')]
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
@@ -26,8 +28,8 @@ def main():
     builder = importlib.util.module_from_spec(spec); spec.loader.exec_module(builder)
     with tempfile.TemporaryDirectory(prefix='cc-runtime-') as folder:
         work = Path(folder)
-        source = (HERE / 'slots.s').read_text()
-        for name, _, length in REPLAYS:
+        source = (HERE / 'slots.s').read_text()+'\n'+(HERE / 'names.s').read_text()
+        for name, _, length in [*REPLAYS, *[(n,a,l) for n,a,l,_ in NAME_REPLAYS]]:
             source = source.replace(f'.incbin "{name}.private.bin"', f'replay_{name}: .space {length}')
         source = source.replace('.incbin "\\replay"', 'replay_\\name: .space 6')
         (work / 'slots.s').write_text(source)
@@ -44,6 +46,7 @@ def main():
         offsets = builder.relocations(image, images[1], len(image))
         sym = symbols[0]
         copies = [(sym['replay_' + ('slot_' if name.startswith('sequence_') else '') + name], address, length, bytes.fromhex(guards[hex(address)])) for name, address, length in REPLAYS]
+        copies += [(sym['replay_'+name], address, length, bytes.fromhex(guards[hex(address)])) for name,address,length,_ in NAME_REPLAYS]
         # Authored instruction runs that coincide with stock use the same hash-copy
         # mechanism; never ship a stock-overlap scanner exemption.
         for copy in json.loads((HERE / 'runtime-copies.json').read_text()):
@@ -67,6 +70,8 @@ def main():
             site(descriptor + 0xe2 + 4*index, struct.pack('>I', sym['slot_format']), (0,))
             site(descriptor + 0x112 + 4*index, struct.pack('>I', 0x400467a4))
         site(descriptor + 0x18e, struct.pack('>I', 0x11111111))
+        for _, address, length, symbol in NAME_REPLAYS:
+            site(address, struct.pack('>HI', 0x4ef9, sym[symbol])+(b'\x4e\x71' if length == 8 else b''), (2,))
         builder.unevented(sites, copies)
         data = builder.package(image, 0, [builder.NONE]*4, offsets, sites, name='midi-cc-slots',
                                hashed=True, title='MIDI CC SLOTS', copies=copies)

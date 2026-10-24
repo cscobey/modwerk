@@ -1,3 +1,4 @@
+import pin from '../../sdk/drafts/midi-cc-slots/local-build.json' with { type: 'json' }
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { OctatrackLink } from '../engine/elekloader/octatrack-link'
 import { removalPackage } from '../engine/elekloader/module-set'
@@ -68,8 +69,9 @@ export default function CcSlotsLab({ link: supplied }: { link?: OctatrackLink })
     await verify(trial.record, false)
   }
   return <main className="cc-slots-lab">
-    <a href="/">← Local Modwerk app</a><h1>MIDI CC Slots</h1>
-    <p>Local install · module 0.0.4-experimental</p>
+    <a href="/">← Local Modwerk app</a><h1>Midi Mode 2</h1>
+    <p>Local install · module {pin.version}</p>
+    <p>Naming test: double-tap MIDI SRC, then click F (NAME/PUSH). Names are temporary: they reset when the module is replaced or restarted and do not follow bank/project changes. Stay in one disposable test project and bank. Keep installs the feature, not your entered names.</p>
     <p>Try the controls before choosing Keep. Keep saves the complete running module set to the CF card for the same base to restore at startup. Use your installed base, not a temporary RAM-booted base.</p>
     <p>Module persistence and saved CC assignments are separate: Keep installs the feature; save assignments with the Octatrack’s normal Part/project workflow. Saved-project behavior remains unqualified. This page does not save projects or flash firmware.</p>
     <section aria-label="Connected Octatrack"><h2>Your Octatrack</h2>

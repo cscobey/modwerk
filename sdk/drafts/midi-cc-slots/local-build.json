@@ -1,4 +1,10 @@
 {
-  "version": "0.0.4-experimental",
-  "sha256": "1f435661235af72d7cd5847e380a14c6cfe29c1189c33471e62ea072e8016c64"
+  "version": "0.0.5-experimental",
+  "sha256": "0012a6d8a4c4fd9714d3dca7c52b80555aa86052a25e0a92f86b40d317e0cc09",
+  "bytes": 3500,
+  "imageBytes": 1756,
+  "abi": 7,
+  "features": 3,
+  "sites": 20,
+  "copies": 16
 }

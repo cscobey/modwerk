@@ -18,7 +18,7 @@ describe('local CC trial review', () => {
     expect(ccTrialProblem(ready, [], review, 'remove')).toContain('not installed')
   })
   it('refuses damaged or substituted local packages', () => {
-    expect(() => ccPackage({ version: '0.0.4-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
+    expect(() => ccPackage({ version: '0.0.5-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
     expect(() => ccPackage({ version: 'wrong', sha256: '', hex: '' })).toThrow('Invalid')
   })
 })
@@ -41,4 +41,9 @@ it('retains a restart receipt across refresh while refusing another base or an i
   expect(ccPersistenceProblem(restored, { ...ready, identity: { ...ready.identity!, base: 'd'.repeat(64) } }, modules, health, true)).toContain('same Modwerk base')
   expect(ccPersistenceProblem(restored, ready, modules, { ...health, savedCount: 0 }, true)).toContain('complete saved module set')
   expect(ccPersistenceProblem(restored, ready, modules, { ...health, saved: 7 }, true)).toContain('Startup restoration is not confirmed')
+})
+
+it.each([[19,16],[20,15]])('refuses naming-test packages when base capacity is sites=%s copies=%s', (maxSites,maxCopies) => {
+  const state={...ready,identity:{...ready.identity!,capabilities:{abi:7,features:3,maxSites,maxCopies}}}
+  expect(ccTrialProblem(state,[],review)).toContain('capabilities')
 })

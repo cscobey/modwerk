@@ -4,8 +4,8 @@ Unqualified development draft. A stock-free USB trial package can be compiled
 by the local app; no public catalogue entry or release is added. Hardware and
 saved-project persistence are not qualified. Use only a disposable test project
 for trials. The local page offers explicit Keep, removal and restart checks;
-it does not flash firmware. The user reported restoration and working controls
-after restart; independently bound hardware qualification remains outstanding.
+it does not flash firmware. The user reported restoration and working controls on 0.0.4
+after restart; 0.0.5 with naming has not been tested on hardware; independently bound hardware qualification remains outstanding.
 
 The prototype replaces either MIDI CONTROL 1 PB/AT position with an
 independent CC 0–127 assignment per MIDI track. Zero in each assignment byte
@@ -28,6 +28,25 @@ The [proposed module copy](presentation/COPY.md),
 [original CC Map-style artwork](presentation/thumbnail.svg) and
 [reviewed emulator screenshot gallery](media/README.md) are ready for review.
 They do not register or publish the module.
+
+## Version 0.0.5 naming test
+
+The new local test version combines the existing CC behavior with temporary
+MIDI track names. Double-tap SRC on a MIDI track, then click F at NAME/PUSH.
+Use the stock name editor (ten characters), YES to confirm or NO to cancel.
+PUSH shares the neighboring value's vertical baseline. A nonempty name
+replaces the normal MIDI channel header; CHAN remains editable in SRC SETUP.
+
+Names are volatile and only indexed by the current Part and MIDI track.
+They reset when the module is replaced or restarted. Bank/project identity,
+save/load/reload and Part copy/clear are not integrated; stay in one disposable
+test project and bank. Keep installs the module, not the entered names.
+
+To replace an earlier same-ID draft, open
+`http://127.0.0.1:5173/?preview=midi-cc-slots`, build/read modules and choose
+**Try updated module**. Verify CC behavior and naming before Keep. The normal
+module-set review cannot distinguish these same-ID individual package versions
+from its inventory; the module detail page links to this explicit updater.
 
 ## Controls and usage
 

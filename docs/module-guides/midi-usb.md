@@ -74,3 +74,12 @@ experiments out of installable packages until those lifecycle paths and shared
 UI ownership are designed and tested. A stock key table may serve several
 windows; gate a prototype to its exact page and preserve stock handling in
 other contexts. Test actual LCD output as well as stored text.
+
+
+A live editor adds a module-lifetime requirement. Stock can cache input-table
+callbacks, so restoring a table word alone may leave a retired code address in
+the cache. Test removal while the dialog is open, including both confirm and
+cancel, and poison retired memory to expose stale calls. The Midi Mode 2 local
+naming test uses stable stock routine entry detours, a stock-owned editor buffer
+and stock redraw callback; no module destination/callback survives its removal.
+This does not establish project-name storage or general shared UI ownership.
