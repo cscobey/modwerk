@@ -7,7 +7,7 @@
   "category": "midi-usb",
   "source": {
     "repository": "https://github.com/cscobey/modwerk",
-    "revision": "2b7b5d77bce655d513040a2401c091d7866226e3",
+    "revision": "c9c6ee00bc28d4d3fbf5c19e2e8265f346042287",
     "path": "sdk/drafts/midi-cc-slots"
   },
   "author": {
@@ -178,13 +178,15 @@
     "report": "TESTING.md",
     "summary": "Combined CC and naming emulator regressions, exact C-loader and saved-package simulation passed. Naming in 0.0.5 is not hardware-tested and is not saved with projects.",
     "hardwareStatus": "untested",
-    "evidenceRevision": "2b7b5d77bce655d513040a2401c091d7866226e3",
+    "evidenceRevision": "c9c6ee00bc28d4d3fbf5c19e2e8265f346042287",
     "gates": [
       "398 MKII emulator assertions",
       "Guarded package reconstruction and stock-free scan",
       "Exact C-loader install/Undo/removal with host glue",
       "Fresh-process saved-set simulation",
-      "Five reviewed real emulator LCD captures"
+      "Five reviewed real emulator LCD captures",
+      "81 naming/alignment/retirement checks at each of two placements",
+      "Exact 0.0.4 -> 0.0.5 loader upgrade and Undo"
     ]
   },
   "license": {
