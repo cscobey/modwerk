@@ -7,6 +7,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 
+export function verifiedCcDocument(data: Uint8Array, verified: { version: string; sha256: string }) {
+  const digest = createHash('sha256').update(data).digest('hex')
+  if (digest !== verified.sha256) throw new Error('The source changed since the last local software verification.')
+  return { version: verified.version, sha256: digest, hex: Buffer.from(data).toString('hex') }
+}
+
 export function localCcSlots(): Plugin {
   return { name: 'local-cc-slots', apply: 'serve', configureServer(server) {
     server.middlewares.use('/__local/midi-cc-slots', async (req, res) => {
@@ -18,10 +24,11 @@ export function localCcSlots(): Plugin {
         const output = join(work, 'trial.mwrm')
         await promisify(execFile)('python3', ['-B', join(server.config.root, 'sdk/drafts/midi-cc-slots/build_runtime.py'), '--output', output], { timeout: 30000 })
         const data = await readFile(output)
-        res.end(JSON.stringify({ version: '0.0.3-experimental', sha256: createHash('sha256').update(data).digest('hex'), hex: data.toString('hex') }))
+        const approved = JSON.parse(await readFile(join(server.config.root, 'sdk/drafts/midi-cc-slots/local-build.json'), 'utf8')) as { version: string; sha256: string }
+        res.end(JSON.stringify(verifiedCcDocument(data, approved)))
       } catch {
         res.statusCode = 500
-        res.end(JSON.stringify({ error: 'Could not compile the local draft. Start the app with the prepared Python and m68k-elf tools on PATH.' }))
+        res.end(JSON.stringify({ error: 'Could not prepare the verified local draft. The source may have changed, or Python and m68k-elf tools are missing from PATH.' }))
       } finally { await rm(work, { recursive: true, force: true }) }
     })
   } }

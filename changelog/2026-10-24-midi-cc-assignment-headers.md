@@ -1,0 +1,1 @@
+The local MIDI CC Slots draft shows assigned controller numbers above all CC knobs on both MIDI CONTROL pages. SETUP uses PB, AT or CC captions so the complete label fits its highlight. Native source changes must match the software-verified package before the local compiler offers a trial.

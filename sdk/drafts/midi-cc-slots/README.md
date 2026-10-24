@@ -24,8 +24,9 @@ On MKII, select a MIDI track and press FX1 for CONTROL 1. Double-tap FX1 to
 open MIDI CTRL 1 SETUP. The stock FUNC + FX1 shortcut also opens this menu.
 
 Click encoder A to switch its PB position to CC mode, or encoder B to switch
-its AT position. Each switches independently. STK means the native PB or AT
-behavior; a number means CC mode. A click changes the mode immediately.
+its AT position. Each switches independently. The SETUP caption follows the
+mode: PB or AT for native, CC for mapped. STK means native behavior; a number
+below CC is the assignment. A click changes the mode immediately.
 
 In CC mode, turn that encoder to choose CC 0–127 and press YES to confirm the
 number. Turning alone cannot leave STK or switch back to it at the bottom of
@@ -34,8 +35,12 @@ at CC0; the previous CC number is not remembered across a return to STK.
 
 Return to CONTROL 1 with FX1. Enable each value with the normal FUNC + encoder
 press and turn it to send values. Ordinary main-page encoder clicks retain
-their stock behavior. The main-page PB/AT labels still identify the original
-positions; their values are ordinary 0–127 bytes.
+their stock behavior. On both main CONTROL pages, each CC header is its
+assigned number (0–127),
+not a CC1–CC10 slot name. Remapped PB/AT headers also show their CC number;
+native PB and AT keep their names. Short numeric headers and the two-letter
+SETUP captions fit fully inside the stock highlight. Values stay ordinary
+0–127 bytes.
 
 Build private experiments only, using output folders outside every checkout:
 
@@ -73,7 +78,8 @@ then choose **Undo trial**. Do not use your working project for qualification.
 The route and compiler endpoint exist only in the development server. The
 endpoint compiles original source into a temporary directory, returns a
 stock-free ABI 7 package and removes its temporary files. It accepts no
-firmware input. The app checks package identity, connected loader capabilities
+firmware input. The compiler refuses source changes whose package digest differs from the
+last software-verified local build. The app checks package identity, connected loader capabilities
 and an inventory snapshot tied to the base and running set before sending.
 It never calls Keep, writes firmware or replaces the complete module set.
 Hardware support is checked on the connected unit, not inferred from its

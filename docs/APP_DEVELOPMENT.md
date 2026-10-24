@@ -124,7 +124,8 @@ In a second terminal, run `npm run dev` and open http://127.0.0.1:5173. Vite pro
 For the private MIDI CC Slots development draft, use
 `http://127.0.0.1:5173/?preview=midi-cc-slots` with Python and `m68k-elf`
 binutils on the development server's PATH. Its local-only compiler makes a
-stock-free trial package; the page reviews the connected base and installed
+stock-free trial package and refuses a package digest that differs from the
+software-verified local-build.json; the page reviews the connected base and installed
 set before an explicit temporary USB trial, with Undo and no Keep or flash.
 It is outside the public catalogue. See [the draft's instructions and limits](../sdk/drafts/midi-cc-slots/README.md#local-app-and-temporary-usb-trial).
 

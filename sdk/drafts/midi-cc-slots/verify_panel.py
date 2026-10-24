@@ -17,6 +17,7 @@ p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--emulator', type=Path, required=True)
 p.add_argument('--candidate', type=Path, required=True)
 p.add_argument('--output', type=Path, required=True)
+p.add_argument('--labels-symbols', type=Path, help='private candidate receipt for label tracing')
 p.add_argument('--sequencer', action='store_true', help='also attempt the unqualified lock fixture')
 a = p.parse_args()
 out = a.output.resolve()
@@ -33,8 +34,10 @@ pending = b''
 steps = []
 checks = []
 rows = [0]*8
+label_symbols = json.loads(a.labels_symbols.read_text())['symbols'] if a.labels_symbols else None
+caption_last = {}
 keys = {'YES': 0x31, 'NO': 0x32, 'MIDI': 0x35, 'FUNC': 0x2d,
-        'SRC': 0x22, 'FX1': 0x25, 'FX2': 0x26, 'REC': 0x29,
+        'SRC': 0x22, 'LFO': 0x24, 'FX1': 0x25, 'FX2': 0x26, 'REC': 0x29,
         'PLAY': 0x28, 'STOP': 0x27, 'TRIG1': 0,
         **{f'T{i+1}': 0x10+i for i in range(8)},
         **{f'PUSH {c}': 0x38+i for i, c in enumerate('ABCDEF')}}
@@ -108,9 +111,47 @@ def committed_mode(slot, expected):
     assert live[slot] == stored == expected, f'click did not commit slot {slot} to live and in-memory Part state'
     checks.append(f'slot {slot} mode {expected} commits on click without YES')
 
+def caption_check(expected):
+    if not label_symbols:
+        return
+    for record in command('hits').split()[2:]:
+        v = [int(field, 16) for field in record.split(':')]
+        if v[1] == label_symbols['setup_label_format'] and v[14] < 2:
+            caption_last[v[14]] = v[7]
+    for slot, mapped in enumerate(expected):
+        want = label_symbols['label_cc_text'] if mapped else 0x400d432e + slot*6
+        assert caption_last.get(slot) == want, f'SETUP caption {slot}: {caption_last}'
+    checks.append(f'SETUP captions reflect mapped modes {expected}')
+
+
+def label_check(page, expected):
+    if not label_symbols:
+        return
+    command('hits')
+    advance(500)
+    press('FX2' if page == 'FX1' else 'FX1')
+    advance(500)
+    press(page)
+    advance(500)
+    labels = {}
+    for record in command('hits').split()[2:]:
+        v = [int(field, 16) for field in record.split(':')]
+        if v[1] == label_symbols['label_number']:
+            labels[v[3]] = v[2]
+    first = 0 if page == 'FX1' else 6
+    for slot in range(first, first+6):
+        if slot in expected:
+            assert labels.get(slot) == expected[slot], f'{page} label {slot}: {labels}'
+        else:
+            assert slot not in labels, f'native position unexpectedly drew a CC number: {labels}'
+    shutil.copy(out/'lcd.private.bin', out/f'labels-{page}-track{int(command("peek 0x100b14cc 1").split()[1],16)+1}.private.bin')
+    checks.append(f'{page} headers match assignments {expected}')
+
+
 def menu_modes():
     control1_setup()
     assignments((0, 0), 'double-tap opens CTRL 1 SETUP with native defaults')
+    caption_check((False, False))
     shutil.copy(out/'lcd.private.bin', out/'menu-native.private.bin')
     encoder('A', 127)
     encoder('B', 127)
@@ -125,6 +166,7 @@ def menu_modes():
     press('PUSH B')
     assignments((128, 1), 'click B independently enables the AT position as CC0')
     committed_mode(1, 1)
+    caption_check((True, True))
     shutil.copy(out/'lcd.private.bin', out/'menu-cc.private.bin')
     encoder('C', 1)
     press('PUSH C')
@@ -141,9 +183,11 @@ def menu_modes():
     press('PUSH A')
     assignments((0, 1), 'second A click restores PB and keeps B mapped')
     committed_mode(0, 0)
+    caption_check((False, True))
     press('PUSH B')
     assignments((0, 0), 'second B click restores AT')
     committed_mode(1, 0)
+    caption_check((False, False))
     press('FX1')
     before = command('peek 0x46c76df2 2')
     press('PUSH A')
@@ -184,7 +228,11 @@ try:
     press('YES')
     press('NO')
     press('MIDI')
+    if label_symbols:
+        command(f"watch {hex(label_symbols['label_number'])},{hex(label_symbols['setup_label_format'])}")
+        command('hits')
     menu_modes()
+    label_check('FX1', {2:7, 3:1, 4:2, 5:10})
     for track in range(8):
         press(f'T{track+1}')
         press('FUNC', 'SRC')
@@ -210,6 +258,7 @@ try:
         press('FX1')
         press('FUNC', 'PUSH A')
         press('FUNC', 'PUSH B')
+        label_check('FX1', {0:0, 1:127, 2:7, 3:1, 4:2, 5:10})
         for slot, cc, initial in [('A', 0, 64), ('B', 127, 0)]:
             current = initial
             for value in [1, 63, 64, 126, 127, 0]:
@@ -234,6 +283,7 @@ try:
         current_a, current_b = cc, 128-cc
         if cc % 32 == 0:
             print(f'assignment sweep: {cc}/127 passed', flush=True)
+    label_check('FX2', dict(zip(range(6,12), range(71,77))))
     for page, slots in [('FX1', [('C', 7), ('D', 1), ('E', 2), ('F', 10)]),
                         ('FX2', list(zip('ABCDEF', range(71, 77))))]:
         press(page)
@@ -287,7 +337,22 @@ try:
         for cc, value in [(0, 42), (127, 43)]:
             assert bytes([0xb1, cc, value]) in new, f'locked CC{cc} missing from playback'
             checks.append(f'sequenced track 2 CC{cc} lock {value}')
-    report = {'status': 'passed', 'checks': checks, 'checkCount': len(checks),
+    if label_symbols:
+        command(f"watch {hex(label_symbols['label_number'])}")
+        command('hits')
+        press('SRC')
+        press('LFO')
+        assert command('hits').startswith('hits n=0'), 'numeric CC captions leaked onto another MIDI page'
+        checks.append('other MIDI pages preserve stock captions')
+        press('MIDI')
+        command('hits')
+        press('FX1')
+        advance(500)
+        press('FX2')
+        assert command('hits').startswith('hits n=0'), 'numeric CC captions leaked onto audio pages'
+        checks.append('audio FX pages preserve stock captions')
+        press('MIDI')
+    report = {'status': 'passed' , 'checks': checks, 'checkCount': len(checks),
         'candidateSha256': hashlib.sha256(a.candidate.read_bytes()).hexdigest(),
         'emulatorSha256': hashlib.sha256(a.emulator.read_bytes()).hexdigest(),
         'adaptersSha256': hashlib.sha256(Path(__file__).with_name('slots.s').read_bytes()).hexdigest(),

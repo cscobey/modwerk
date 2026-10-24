@@ -59,7 +59,9 @@ def main():
             code = struct.pack('>HI', 0x4ef9, sym['slot_' + name]) + (b'\x4e\x71' if length == 8 else b'')
             site(address, code, (2,))
         descriptor = 0x400d42f4
-        site(descriptor + 0x3a, b'PB/CC\0AT/CC\0')
+        site(descriptor + 0x3a, b'PB\0\0\0\0AT\0\0\0\0')
+        site(0x4004e474, struct.pack('>HI', 0x4ef9, sym['slot_label']), (2,))
+        site(0x4003fbc4, struct.pack('>HIHH', 0x4ef9, sym['slot_setup_label'], 0x4e71, 0x4e71), (2,))
         for index in range(2):
             site(descriptor + 0xb2 + 4*index, struct.pack('>I', 129))
             site(descriptor + 0xe2 + 4*index, struct.pack('>I', sym['slot_format']), (0,))

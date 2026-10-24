@@ -14,7 +14,7 @@ it('compiles and reviews without sending, then sends only the draft on an explic
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
   const data = new Uint8Array(72), view = new DataView(data.buffer)
   view.setUint32(0, 0x4d57524d); view.setUint16(4, 7); view.setUint32(28, parseInt(CC_SLOTS_ID, 16))
-  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ version: '0.0.3-experimental', sha256: sha(data), hex: Array.from(data,b=>b.toString(16).padStart(2,'0')).join('') }) })))
+  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ version: '0.0.4-experimental', sha256: sha(data), hex: Array.from(data,b=>b.toString(16).padStart(2,'0')).join('') }) })))
   const state: LinkState = { status: 'ready', active: 'b'.repeat(64), identity: { canSubmit: true, base: 'a'.repeat(64), model: 'MKII', capabilities: { abi: 8, features: 3, maxSites: 128, maxCopies: 128 } } }
   const update = vi.fn(async () => {}), selftest = vi.fn(async () => null)
   const link = { start: () => () => {}, getState: () => state, subscribe: () => () => {}, update, selftest, inventory: async () => [{ name: 'Existing module', module: '12345678', layout: 1, handle: 1 }] } as unknown as OctatrackLink

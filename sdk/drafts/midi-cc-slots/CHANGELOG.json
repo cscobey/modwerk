@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.0.4-experimental",
+    "date": "2026-10-24",
+    "changes": [
+      "Both MIDI CONTROL pages show each assigned CC number above its encoder instead of CC1\u2013CC10 slot names.",
+      "The remapped PB/AT positions show their assigned numbers; native positions keep PB and AT.",
+      "SETUP captions follow the mode as PB, AT or CC, fitting the full stock selection highlight.",
+      "Local USB trial update; saved-project behavior and this display change on hardware remain unqualified."
+    ]
+  },
+  {
     "version": "0.0.3-experimental",
     "date": "2026-10-24",
     "changes": [

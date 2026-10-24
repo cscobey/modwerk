@@ -72,7 +72,9 @@ def main():
         write(address, struct.pack('>HI', 0x4ef9, symbols[symbol]))
     write(0x4003fc44, struct.pack('>HIH', 0x4ef9, symbols['slot_setup_press'], 0x4e71))
     descriptor = 0x400d42f4
-    write(descriptor+0x3a, b'PB/CC\0AT/CC\0')
+    write(descriptor+0x3a, b'PB\0\0\0\0AT\0\0\0\0')
+    write(0x4004e474, struct.pack('>HI', 0x4ef9, symbols['slot_label']))
+    write(0x4003fbc4, struct.pack('>HIHH', 0x4ef9, symbols['slot_setup_label'], 0x4e71, 0x4e71))
     for index in range(2):
         word(descriptor+0xb2+4*index, 129)
         word(descriptor+0xe2+4*index, symbols['slot_format'])

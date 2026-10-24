@@ -127,3 +127,106 @@ format_stock:
 format_number: .asciz "%d"
 format_native: .asciz "STK"
         .align 2
+
+| The page renderer has selected its label and computed the centered text
+| coordinates. Only the two stock MIDI CONTROL descriptors are ours. Render
+| a short assignment label using the same fonts, alignment and surface;
+| every other page follows the displaced stock push and continuation.
+        .global slot_label
+slot_label:
+        lea %sp@(-28),%sp
+        moveml %d0-%d1/%a0-%a1,%sp@
+        moveal %fp@(-80),%a0
+        movel %a4,%d1
+        cmpil #5,%d1
+        bhi.w label_stock
+        cmpal #0x400d42f4,%a0
+        beq.s label_page
+        cmpal #0x400d4486,%a0
+        bne.w label_stock
+label_page:
+        movel %d1,%d0
+        addl %d1,%d0
+        addl %d1,%d0
+        addl %d0,%d0
+        lea %a0@(22,%d0:l),%a1
+        cmpal %fp@(-56),%a1
+        bne.w label_stock
+label_main:
+        cmpal #0x400d4486,%a0
+        bne.s label_track
+        addql #6,%d1
+label_track:
+        clrl %d0
+        moveb 0x100b14cc,%d0
+        cmpil #7,%d0
+        bhi.w label_stock
+        moveal %d0,%a0
+        lsll #6,%d0
+        lea %a0@(0,%d0:l),%a1
+        | track * 68 = track * 64 + track * 4
+        addal %a0,%a1
+        addal %a0,%a1
+        addal %a0,%a1
+        addal %d1,%a1
+        addal #0x46c76df2,%a1
+        clrl %d0
+        moveb %a1@,%d0
+        cmpil #2,%d1
+        bge.s label_cc
+        tstl %d0
+        beq.w label_stock
+        cmpil #128,%d0
+        bhi.w label_stock
+        subql #1,%d0
+label_cc:
+        cmpil #127,%d0
+        bhi.w label_stock
+label_number:
+        lea %sp@(16),%a0
+        movel %d0,%sp@-
+        pea format_number
+        movel %a0,%sp@-
+        jsr 0x40013a08
+        lea %sp@(12),%sp
+label_draw:
+        lea %sp@(16),%a0
+        movel %a0,%sp@-
+        pea 0x400b451d
+        clrl %sp@-
+        pea 1
+        movel %sp@(16),%sp@-
+        movel %sp@(28),%sp@-
+        pea 0x400bf10a
+        pea 0x400ba876
+        jsr 0x40013904
+        lea %sp@(32),%sp
+        moveml %sp@,%d0-%d1/%a0-%a1
+        lea %sp@(28),%sp
+        jmp 0x4004e4a6
+label_stock:
+        moveml %sp@,%d0-%d1/%a0-%a1
+        lea %sp@(28),%sp
+        movel %fp@(-56),%sp@-
+        jmp 0x4004e480
+
+| CTRL 1 SETUP draws each caption after the staged value. Keep native PB/AT
+| captions, and use CC while mapped: at most two glyphs, fully inside the
+| stock selection rectangle. Other four captions keep their original text.
+        .global slot_setup_label
+slot_setup_label:
+        cmpil #1,%d4
+        bhi.s setup_label_stock
+        tstl %d6
+        beq.s setup_label_stock
+        cmpil #128,%d6
+        bhi.s setup_label_stock
+        pea label_cc_text
+        bra.s setup_label_format
+setup_label_stock:
+        movel %sp@(52),%sp@-
+setup_label_format:
+        pea 0x400b37cf
+        jmp 0x4003fbce
+label_cc_text: .asciz "CC"
+        .align 2

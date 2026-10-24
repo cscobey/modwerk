@@ -30,7 +30,7 @@ export default function CcSlotsLab({ link: supplied }: { link?: OctatrackLink })
   return <main className="cc-slots-lab">
     <a href="/">← Local Modwerk app</a>
     <h1>MIDI CC Slots</h1>
-    <p>Local development trial · 0.0.3-experimental</p>
+    <p>Local development trial · 0.0.4-experimental</p>
     <p>This draft adds CC mode to the PB and AT positions. It has emulator evidence; hardware, saved projects and mixed-module behavior are unqualified. Use a disposable test project.</p>
     <p>The trial stops playback and adds this one module alongside the installed set. Undo restores the previous set. Nothing here flashes firmware or keeps the draft on the card.</p>
     <section aria-label="Connected Octatrack"><h2>Your Octatrack</h2>
@@ -50,6 +50,6 @@ export default function CcSlotsLab({ link: supplied }: { link?: OctatrackLink })
       {state.notice && <p role="status">{state.notice.text}</p>}
       {error && <p role="alert">{error}</p>}
     </section>
-    <section><h2>Try the controls</h2><ol><li>Select a MIDI track and double-tap FX1.</li><li>Click A or B to switch its PB or AT position into CC mode.</li><li>Turn to choose CC0–127, then press YES.</li><li>Return to CONTROL 1; use FUNC + encoder press to enable the value, then turn it.</li><li>Click the encoder in SETUP again to restore native PB or AT.</li></ol><p>CC mode starts at CC0 each time. Verify MIDI with a receiver or monitor, then undo the trial before returning to your working project.</p></section>
+    <section><h2>Try the controls</h2><p>Both MIDI CONTROL pages show assigned CC numbers above the knobs. SETUP captions show PB, AT or CC for the current mode.</p><ol><li>Select a MIDI track and double-tap FX1.</li><li>Click A or B to switch its PB or AT position into CC mode.</li><li>Turn to choose CC0–127, then press YES.</li><li>Return to CONTROL 1; use FUNC + encoder press to enable the value, then turn it.</li><li>Click the encoder in SETUP again to restore native PB or AT.</li></ol><p>CC mode starts at CC0 each time. Verify MIDI with a receiver or monitor, then undo the trial before returning to your working project.</p></section>
   </main>
 }

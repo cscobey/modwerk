@@ -119,3 +119,32 @@ sequencer, persistence or physical reboot test.
   LFO/shared-channel behavior, Keep/restart and physical reboot: **not tested**.
   The 14 unchanged sites in a supplied file do not prove the connected unit's
   identity or its currently installed runtime set; the page reviews both.
+
+## Assignment headers and SETUP captions 0.0.4 — 24 October 2026
+
+- 398 emulator checks passed: all 382 previous checks plus four mode-caption
+  checks, native PB/AT header restoration, numeric headers on eight tracks,
+  the CC5–CC10 headers on CONTROL 2, and two other-page isolation checks.
+  Label values are traced at the
+  authored renderer, using real panel edits and read-only PC watches.
+- Private LCD captures visually inspected: CONTROL 1 headers 0, 127, 7, 1,
+  2, 10; CONTROL 2 headers 71–76; SETUP CC127/CC0 and the complete highlighted
+  CC caption. Captures stay outside Git.
+- The display adapter takes only the label argument path on the two MIDI
+  CONTROL descriptors. Other page descriptors pass through stock. Native
+  PB/AT headers retain their stock text. SETUP's short PB/AT/CC captions fit
+  the existing highlight rather than changing shared text rendering.
+  Private stock disassembly contains no incoming branch into either displaced
+  label span. The guarded replacements reproduce the displaced argument pushes.
+- The 1,914-byte package has 16 guarded sites, eight copies and an unchanged
+  sender/click implementation. Guard and literal scans passed; exact C-loader
+  install, Undo, repeat install, removal and reclamation passed with host glue
+  against the supplied firmware MAIN. Its reconstructed image is byte-identical
+  to the panel-tested private candidate.
+- The local compiler now refuses a generated package whose digest differs
+  from local-build.json, so editing native source cannot silently offer an
+  unverified package through the running development server.
+- User reported “the control works” on the unit before this display update.
+  No build identity was independently read; this is a reported control
+  result, not qualification of persistence, coexistence or this version.
+- This version's on-device display, USB trial and persistence: **not tested**.
