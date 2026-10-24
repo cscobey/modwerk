@@ -7,7 +7,7 @@
   "category": "midi-usb",
   "source": {
     "repository": "https://github.com/cscobey/modwerk",
-    "revision": "a612c963530d5c326e67c38c76fca09abd164957",
+    "revision": "6b28cb709afb1a3d0594c7c9a947e79aaca4a4c0",
     "path": "sdk/drafts/midi-cc-slots"
   },
   "author": {
@@ -180,7 +180,7 @@
     "report": "TESTING.md",
     "summary": "Profile core checks cover bank overrides, inherited default updates, explicit blank names and lossless 0.0.6 import. Native card, CC and loader checks are recorded in TESTING.md. The new bank override behavior is not hardware-tested.",
     "hardwareStatus": "untested",
-    "evidenceRevision": "a612c963530d5c326e67c38c76fca09abd164957",
+    "evidenceRevision": "6b28cb709afb1a3d0594c7c9a947e79aaca4a4c0",
     "gates": [
       "398 MKII emulator assertions",
       "Guarded package reconstruction and stock-free scan",
