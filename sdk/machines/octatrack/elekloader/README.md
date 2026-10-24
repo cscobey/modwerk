@@ -101,7 +101,10 @@ module packages (`npm run octatrack:module-packages -- --base-only`) so every ba
 checks the remaining published files against their manifest hashes without
 rebuilding or deleting them. Use the full generator for a separately qualified
 module update; existing standalone recipes may name earlier source/tool inputs.
-The cave/table declarations also pin the generator source. Refresh a generator-only pin only after rebuilding
+The cave/table declarations also pin the generator source, and they and the standalone recipes pin the Elekloader
+checkout's files, so a kit update (`vendor/elekloader/kit/kit.json`) needs the same refresh in its own pull request:
+CI has no firmware and cannot see it, and until then the builds refuse with "does not name the exact source inputs"
+(kit 0.7.0, 22 October 2026). Refresh a generator-only pin only after rebuilding
 the affected packages and proving every published byte unchanged; never replace a pin merely to make a check pass.
 
 `--module-sets` enables the candidate whole-set lifecycle (MWCP feature 512,

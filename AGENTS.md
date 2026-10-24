@@ -1,6 +1,6 @@
 # Working in this repository
 
-Modwerk builds custom firmware modules for Elektron instruments. This repository holds the module SDKs (`sdk/`), a React and Vite site (`src/`) and a Cloudflare Worker API (`server/`, `worker.ts`). This file holds the rules for every task. The guides it points to hold the detail, and a lesson learned goes into them, never only into a session.
+Modwerk builds custom firmware modules for Elektron instruments and the other machines in `sdk/machines/`. This repository holds the module SDKs (`sdk/`), a React and Vite site (`src/`) and a Cloudflare Worker API (`server/`, `worker.ts`). This file holds the rules for every task. The guides it points to hold the detail, and a lesson learned goes into them, never only into a session.
 
 ## Setup and checks
 

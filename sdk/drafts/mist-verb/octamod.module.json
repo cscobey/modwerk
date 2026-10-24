@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 2,
+  "id": "mist-verb",
+  "key": "MIST VERB",
+  "name": "Mist Verb",
+  "version": "0.1.7-experimental",
+  "category": "effects",
+  "author": {
+    "github": "cscobey",
+    "credits": [
+      "Original Clouds reverb, diffuser and stmlib: \u00c9milie Gillet (MIT).",
+      "Octatrack port preparation and storage proofs: cscobey.",
+      "Modwerk/Octabam SDK: retain its existing attribution and licences."
+    ]
+  },
+  "nativeManifest": "manifest.py",
+  "presentation": {
+    "label": "MIST",
+    "family": "Reverb",
+    "summary": "Unpublished stereo Clouds reverb port.",
+    "overview": "Native emulator prototype of the original 32 kHz Clouds reverb tank, without the separate input diffuser. Not installable.",
+    "highlights": [
+      "Original licensed Clouds source pinned by commit and file hash.",
+      "Compact storage keeps original delay lengths and quantization."
+    ],
+    "usage": [
+      "Not installable yet; use the host reference scripts described in TESTING.md."
+    ]
+  },
+  "controls": [
+    {
+      "name": "TIME",
+      "default": 96,
+      "count": 128,
+      "doc": "Reverb decay; feedback remains below unity. Target control; not implemented.",
+      "labels": null
+    },
+    {
+      "name": "DAMP",
+      "default": 64,
+      "count": 128,
+      "doc": "Darkens the recirculating tail. Target control; not implemented.",
+      "labels": null
+    },
+    {
+      "name": "DIFF",
+      "default": 94,
+      "count": 128,
+      "doc": "Tank all-pass diffusion; about 70 percent by default. Target control; not qualified.",
+      "labels": null
+    },
+    {
+      "name": "GAIN",
+      "default": 83,
+      "count": 128,
+      "doc": "Tank input gain, planned -40 to 0 dB range; about -14 dB by default. Target control; not implemented.",
+      "labels": null
+    },
+    {
+      "name": "MIX",
+      "default": 40,
+      "count": 128,
+      "doc": "Dry/wet blend; exact dry at 0 and fully wet at 127. Target control; not implemented.",
+      "labels": null
+    }
+  ],
+  "compatibility": {
+    "firmware": "1.40C",
+    "location": "FX2",
+    "conflicts": [],
+    "uiClaims": [],
+    "limitations": [
+      "Native 44.1 kHz prototype only; no installable firmware effect exists.",
+      "FX1 is outside the initial scope because its 3072-word allocation is too small.",
+      "Card/USB combinations, hardware and persistence have not been qualified."
+    ],
+    "effectId": 7
+  },
+  "resources": {
+    "recorded": "Not measured",
+    "storage": {
+      "label": "Storage",
+      "display": "Not measured",
+      "value": null,
+      "unit": "unknown",
+      "method": "unmeasured",
+      "conditions": "Standalone experiments are measured in TESTING.md; complete installed-effect resource use has not been qualified.",
+      "source": "TESTING.md"
+    },
+    "processing": {
+      "label": "CPU / DSP load",
+      "display": "Not measured",
+      "value": null,
+      "unit": "unknown",
+      "method": "unmeasured",
+      "conditions": "Standalone experiments are measured in TESTING.md; complete installed-effect resource use has not been qualified.",
+      "source": "TESTING.md"
+    }
+  },
+  "tests": {
+    "report": "TESTING.md",
+    "summary": "Faster delay storage and lossless mirrored SRC tables preserve recorded audio exactly. Native controls, guard and caller-register probes pass; source-hashed reports are in TESTING.md. Installed performance, lifecycle and hardware remain unqualified.",
+    "hardwareStatus": "untested",
+    "gates": [
+      "Worst-case cycles under parameter modulation and maximum load",
+      "Exact memory region and maximum-instance totals",
+      "Owner-reviewed real-hardware evidence with actual coverage and limitations"
+    ],
+    "evidenceRevision": "f4cfa7697095a28d292bff758beb51deb49b5a86"
+  },
+  "license": {
+    "spdx": "MIT",
+    "file": "LICENSE",
+    "declaration": "Original Clouds/stmlib source: Copyright 2012 and 2014 \u00c9milie Gillet, MIT. Port preparation: Copyright 2026 cscobey, MIT. See LICENSE and unchanged original header notices. No Elektron firmware is included."
+  },
+  "media": [],
+  "access": {
+    "location": "Target: audio track FX2 SETUP; unavailable until implementation.",
+    "steps": [
+      "Select an audio track.",
+      "Hold FUNC and press FX2; choose Mist Verb with LEVEL and press YES (target UI, not verified).",
+      "Press FX2; adjust A TIME, B DAMP, C DIFF, E GAIN and F MIX; D is unused (target UI)."
+    ],
+    "screenshots": []
+  },
+  "source": {
+    "repository": "https://github.com/pichenettes/eurorack",
+    "revision": "f4cfa7697095a28d292bff758beb51deb49b5a86",
+    "path": "clouds/dsp/fx"
+  },
+  "build": {
+    "status": "pending",
+    "reason": "Unpublished draft: native conversion, tank, mixer and control ramps are tested. Processing cost remains above stock SPRING REV; installed placement, composition, control publication, USB lifecycle and persistence remain unqualified."
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "peakInstructionsPer16Frames": [
+    42769,
+    42769
+  ],
+  "fifoOccupancyRange": [
+    2,
+    4
+  ],
+  "yExtentWords": 15856,
+  "scope": "Native 44.1 kHz experiment; no installed effect or hardware qualification",
+  "controls": [
+    110,
+    64,
+    94,
+    0,
+    83
+  ],
+  "signal": "noise",
+  "mix": 127,
+  "fullScaleInput": false,
+  "reverb": true,
+  "frames": 72192,
+  "split": 0,
+  "programWords": 2040,
+  "tableWords": 6274,
+  "startupFifoFrames": 2,
+  "coreOutputsIdentical": true,
+  "exactHostParity": true,
+  "maxErrorLsb": 0,
+  "firstMismatch": null,
+  "sourceHashes": {
+    "generate_native_src.py": "dcba13abc55e19ddf696e72b74ca3d6a88e21462283504dfecad584d9cc23425",
+    "native_src.asm": "56b28592bf2afedaa7913becc9d4b18665063cc59a82e1b88f5c3bbab6eb3cdf",
+    "native_src_tables.json": "9cb2cba95ee090947d90058a79ccf427fc9e6f1a270c6c1b217ba1200d170dab",
+    "rational_src.h": "e9ce0d2fdf01e9891a2af7ee6961991e5ade630dbd9e5e329cbf7413f3966aaf",
+    "core44100.asm": "b7284ee2cc821c6cf25671eb8214fa369b3c6b3dd7e2461f84742840a60fcb6c",
+    "core32.asm": "e5c266e68c170f39638c3ff2d4c5688b5d05d81d45e1d271220100da9e90638c"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "scope": "Host reconstruction and schedule check of actual native tables; native parity report source hashes verified",
+  "sourceHashes": {
+    "generate_src.py": "cbb9d17d699c11a00b01223ddd824ca1e4dfd4ca79a9b200012b5222224b64a9",
+    "src_layout.py": "eacb904ab1be7373f63695891dcc660e7f22f861caac0140cf134d2563451774",
+    "verify_src_layout.py": "7bf47c59a8045f0c94be9b1fa69610fbe534eea8fc4368ed7755fce7dfd23db3",
+    "native_src_tables.json": "91119375a0727112749a3dfd434c20f529ab2a8cafe5b983733a89582ee44b11"
+  },
+  "banks": [
+    {
+      "inputRate": 44100,
+      "outputRate": 32000,
+      "taps": 96,
+      "originalCoefficientWords": 3168,
+      "packedCoefficientWords": 1711,
+      "descriptorWords": 33,
+      "exactRows": 33,
+      "scheduleEndpointChecks": 640
+    },
+    {
+      "inputRate": 32000,
+      "outputRate": 44100,
+      "taps": 48,
+      "originalCoefficientWords": 1584,
+      "packedCoefficientWords": 847,
+      "descriptorWords": 33,
+      "exactRows": 33,
+      "scheduleEndpointChecks": 882
+    }
+  ],
+  "unchangedScheduleWords": 1522,
+  "currentProgramAndTablesWords": 6526,
+  "nativeTableWords": 4146,
+  "nativeParityReport": "evidence/optimization/wet.json",
+  "savedTableWords": 2128,
+  "documentedEmptyArenaWords": [
+    4304,
+    4432
+  ],
+  "minimumDeficitWords": [
+    2222,
+    2094
+  ],
+  "nativeDecoderImplemented": true,
+  "installedFitProven": false
+}

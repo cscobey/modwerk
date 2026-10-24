@@ -1,0 +1,122 @@
+{
+  "scope": "Standalone 32 kHz native core only; no native SRC, stock-matched cycles or firmware qualification",
+  "baselineCommit": "6c6048571568ebefaf6d3c37a8aa9f9f4d1f152e",
+  "baselineCoreSha256": "98279306edcf9ddac19179367af55985ff54187d8037e0dbe5fd034fbb34e361",
+  "optimizedCoreSha256": "3631ac8d7e8c0090e50b74e8ca0ea38fa0afa9e74b8349b0ae0e11c98bf4cd3a",
+  "programWords": {
+    "before": 1857,
+    "after": 1446
+  },
+  "scalarWords": {
+    "before": 120,
+    "after": 112
+  },
+  "bufferWords": {
+    "before": 12972,
+    "after": 15692
+  },
+  "cases": [
+    {
+      "name": "nominal",
+      "params": [
+        110,
+        64,
+        94,
+        0,
+        83,
+        127,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "split": 0,
+      "beforePeakInstructionsPer16Frames": [
+        18908,
+        18908
+      ],
+      "afterPeakInstructionsPer16Frames": [
+        15084,
+        15084
+      ],
+      "bothCoreWetAndDryBitExact": true,
+      "identicalRawSha256": {
+        "input.raw": "c839ee5e33dde5fc3dd5e505f5509405648c3658ffe7c1c06f7943641cf567af",
+        "wet.raw": "b18386a9e271a59fcbc448ff23d0f2fecd05e6591d4d1422ecd547c942131168",
+        "wet.raw.i1": "b18386a9e271a59fcbc448ff23d0f2fecd05e6591d4d1422ecd547c942131168",
+        "dry.raw": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d",
+        "dry.raw.i1": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d"
+      }
+    },
+    {
+      "name": "smear-split-1",
+      "params": [
+        70,
+        100,
+        60,
+        127,
+        100,
+        127,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "split": 1,
+      "beforePeakInstructionsPer16Frames": [
+        18970,
+        18970
+      ],
+      "afterPeakInstructionsPer16Frames": [
+        15145,
+        15145
+      ],
+      "bothCoreWetAndDryBitExact": true,
+      "identicalRawSha256": {
+        "input.raw": "c839ee5e33dde5fc3dd5e505f5509405648c3658ffe7c1c06f7943641cf567af",
+        "wet.raw": "6534facecb8a0b428b83727e19e65b7c86fbf4e7736a0d46aaa7766a315037fe",
+        "wet.raw.i1": "6534facecb8a0b428b83727e19e65b7c86fbf4e7736a0d46aaa7766a315037fe",
+        "dry.raw": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d",
+        "dry.raw.i1": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d"
+      }
+    },
+    {
+      "name": "maximum-split-15",
+      "params": [
+        127,
+        0,
+        127,
+        127,
+        127,
+        127,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "split": 15,
+      "beforePeakInstructionsPer16Frames": [
+        18963,
+        18963
+      ],
+      "afterPeakInstructionsPer16Frames": [
+        15140,
+        15140
+      ],
+      "bothCoreWetAndDryBitExact": true,
+      "identicalRawSha256": {
+        "input.raw": "c839ee5e33dde5fc3dd5e505f5509405648c3658ffe7c1c06f7943641cf567af",
+        "wet.raw": "85c3334ab04b31d1afdaf409e491bc302f24a6467af453833a372e6ad4eb0842",
+        "wet.raw.i1": "85c3334ab04b31d1afdaf409e491bc302f24a6467af453833a372e6ad4eb0842",
+        "dry.raw": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d",
+        "dry.raw.i1": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d"
+      }
+    }
+  ]
+}

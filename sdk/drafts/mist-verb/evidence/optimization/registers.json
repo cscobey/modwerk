@@ -1,0 +1,23 @@
+{
+  "scope": "Private caller probe; not instrument ABI qualification",
+  "sentinels": {
+    "n2": "123456",
+    "n3": "654321",
+    "r3": "123456",
+    "m3": "7"
+  },
+  "callsCheckedPerCore": 4512,
+  "trackedInstances": [
+    0,
+    1
+  ],
+  "faultInjected": false,
+  "preservedOnBothCores": true,
+  "faultDetectedOnBothCores": false,
+  "audioByteIdenticalOnBothCores": true,
+  "sourceHashes": {
+    "core44100.asm": "46409112abef17bbf5a91c09e630876e14d50d07996ccdaedfc33d74a9144eb4",
+    "verify_registers.py": "9259d3b88a98823d9c89cdd98603132b07823ad059bfb34c42a416429cc55063"
+  },
+  "wrapperSourceSha256": "cccb0f3008ba8883af334dbd07661e1ea4f09433124a35003262beb3ff5d757d"
+}

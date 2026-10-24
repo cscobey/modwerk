@@ -1,0 +1,72 @@
+[
+  {
+    "version": "0.1.7-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Use the space freed by SMEAR removal for faster delay storage without changing tested audio.",
+      "Reduce prototype program/table memory about 24 percent with lossless conversion tables.",
+      "Reduce measured processing about 8 percent; further optimization and installation remain unfinished."
+    ]
+  },
+  {
+    "version": "0.1.6-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Remove the separate SMEAR input diffuser while retaining the Clouds reverb tank.",
+      "Keep TIME, DAMP, DIFF, GAIN and MIX; encoder D is reserved.",
+      "Reduce prototype memory and processing use; installation remains unfinished."
+    ]
+  },
+  {
+    "version": "0.1.5-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Reduce prototype processing work about 27 percent while preserving tested static audio.",
+      "Add short, sample-timed ramps for decay, damping, diffusion, smear, gain and dry/wet changes.",
+      "Record a matched stock reverb comparison; further optimization and installation work remain necessary."
+    ]
+  },
+  {
+    "version": "0.1.4-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Run stereo rate conversion and reverb together on the emulated DSP at 44.1 kHz.",
+      "Preserve dry audio outside the conversion path and verify the dry/wet mixer.",
+      "The prototype still needs optimization, smoothing and installation work; it is not ready for an Octatrack."
+    ]
+  },
+  {
+    "version": "0.1.3-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Reduce emulator processing work by another 20 percent while preserving the tested audio.",
+      "Add a tested streaming rate-conversion reference and an offline 44.1 kHz stereo demonstration.",
+      "The converter still runs on the computer; native audio integration and installation remain unfinished."
+    ]
+  },
+  {
+    "version": "0.1.2-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Reduce prototype processing work by about 15 percent while preserving every output sample in three emulator comparisons.",
+      "The prototype remains experimental and is not an installable Octatrack effect."
+    ]
+  },
+  {
+    "version": "0.1.1-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Correct the slower modulation oscillator to follow the original Clouds coefficient more closely.",
+      "The prototype remains experimental and is not an installable Octatrack effect."
+    ]
+  },
+  {
+    "version": "0.1.0-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Begin an unpublished Clouds reverb port for Octatrack FX2.",
+      "Pin the licensed original source and prove a lossless compact buffer model.",
+      "Render an initial 32 kHz reverb core on both emulated cores; it remains too costly and numerically different from the reference, and is not an installable effect."
+    ]
+  }
+]

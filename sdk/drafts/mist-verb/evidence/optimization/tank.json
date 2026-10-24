@@ -1,0 +1,52 @@
+{
+  "wet": {
+    "peakInstructionsPer16Frames": [
+      9765,
+      9765
+    ],
+    "peakSample": 632110,
+    "coreOutputsIdentical": true
+  },
+  "dry": {
+    "peakInstructionsPer16Frames": [
+      9764,
+      9764
+    ],
+    "peakSample": 1435887,
+    "coreOutputsIdentical": true
+  },
+  "referenceErrorDb": -33.387061705785904,
+  "scope": "32 kHz experimental core only; no SRC, smoothing, instrument image or release qualification",
+  "params": [
+    110,
+    64,
+    94,
+    0,
+    83,
+    127,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "bufferWords": 15238,
+  "inputStereo": true,
+  "split": 0,
+  "oracleCoefficients": [
+    0.8488188976377953,
+    0.7031496062992125,
+    0.47165354330708664,
+    0.20280873775482178,
+    1,
+    0
+  ],
+  "sourceHashes": {
+    "core32.asm": "5dc69f1e40e857bdbab35bf7b2820cfdecc19da4f4fb18c85a66734fc925a9e4",
+    "generate_core.py": "09d27179029da4002233629719eba6312765cb30998755281288282ae9208f9e",
+    "oracle_render.cpp": "12daa1dce9b13a2df504ba9b5b1f032e64b22cb22a14a78e4b939705689e5913",
+    "packed_probe.asm": "7e5b1a8bfe2ac98a3a1222cca5518e54c7d449af2f8f70dce38bf72d26801e7b"
+  },
+  "sourceSha256": "5dc69f1e40e857bdbab35bf7b2820cfdecc19da4f4fb18c85a66734fc925a9e4"
+}
