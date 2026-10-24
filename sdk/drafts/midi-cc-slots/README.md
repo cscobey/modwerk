@@ -181,8 +181,8 @@ firmware filename. Unknown or insufficient capabilities block the trial.
 To reproduce the package and private software proofs:
 
 ```sh
-python3 -B sdk/drafts/midi-cc-slots/build_runtime.py --output /private/local/cc.mwrm
-python3 -B sdk/drafts/midi-cc-slots/verify_runtime.py --package /private/local/cc.mwrm --stock /private/local/MAIN.bin --output /private/local/cc-runtime-proof
+python3 -B sdk/drafts/midi-cc-slots/build_runtime.py --profile --output /private/local/cc.mwrm --receipt /private/local/cc-symbols.json
+python3 -B sdk/drafts/midi-cc-slots/verify_runtime.py --profile --package /private/local/cc.mwrm --stock /private/local/MAIN.bin --output /private/local/cc-runtime-proof
 python3 -B sdk/drafts/midi-cc-slots/verify_loader.py --package /private/local/cc.mwrm --main /private/local/MAIN.bin
 python3 -B sdk/drafts/midi-cc-slots/verify_persistence.py --package /private/local/cc.mwrm --main /private/local/MAIN.bin
 ```
@@ -224,3 +224,11 @@ Five actual MKII emulator LCD captures and reviewed captions are in
 [media/README.md](media/README.md), with sanitized source/image/package provenance.
 Firmware, raw LCD/RAM planes and capture working files stay private.
 No receiver audio or physical-device capture.
+
+
+For the project profile, `--profile` is required; omitting it deliberately
+reproduces the earlier 0.0.5 volatile-naming package. Run the core test with
+`python3 -B -m unittest sdk.tests.test_midi_cc_slots_profile`. The native card
+probe accepts `--emulator`, `--candidate`, `--receipt`, `--origin`, `--stock`
+and a new private `--output` directory; use an origin from reconstruction.
+It creates its own scratch card and never accesses a connected instrument.
