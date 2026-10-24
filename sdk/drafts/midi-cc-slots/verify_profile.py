@@ -21,6 +21,7 @@ def main():
     for name in ['emulator', 'candidate', 'receipt', 'output', 'stock']:
         p.add_argument('--'+name, type=Path, required=True)
     p.add_argument('--fixture',type=Path)
+    p.add_argument('--gallery',action='store_true',help='Capture the naming walkthrough with BASS/LEAD examples')
     p.add_argument('--origin', type=lambda n:int(n,0), required=True)
     a = p.parse_args()
     out = a.output.resolve()
@@ -69,6 +70,14 @@ jmp 0x40052228
         native[0x4005221e-0x40000400:0x40052228-0x40000400]=struct.pack('>HIHH',0x4ef9,stub_at,0x4e71,0x4e71)
         candidate=out/'scheduled.private.bin';candidate.write_bytes(native)
     checks=[]
+    initial_name=b'BASS' if a.gallery else b'0'
+    override_name=b'LEAD' if a.gallery else b'1'
+    updated_name=b'BASS2' if a.gallery else b'2'
+    gallery={};panel=[]
+    if a.gallery:
+        lcd_spec=importlib.util.spec_from_file_location('gallery_lcd',ROOT/'sdk/octabam/tools/emu/lcd_view.py')
+        lcd=importlib.util.module_from_spec(lcd_spec);lcd_spec.loader.exec_module(lcd)
+        lcd.ON,lcd.OFF=(240,240,240),(24,24,24)
     def expect(condition,message):
         if not condition:raise AssertionError(message)
         checks.append(message)
@@ -93,7 +102,9 @@ jmp 0x40052228
                 if selector.select(1):pending+=os.read(port.stdout.fileno(),65536)
             raise TimeoutError('emulator reply timeout')
         def cmd(value):
-            log.write('> '+value+'\n');port.stdin.write((value+'\n').encode());port.stdin.flush()
+            log.write('> '+value+'\n')
+            if phase=='create' and value.split()[0] in ['run','key','knob']:panel.append(value)
+            port.stdin.write((value+'\n').encode());port.stdin.flush()
             result=response((b'ok',b'peek ',b'card ',b'err'))
             if result.startswith('err') or ('stop=' in result and 'stop=time' not in result):raise RuntimeError(result)
             return result
@@ -120,14 +131,25 @@ jmp 0x40052228
             if bank_index and read(a.origin+symbols['state']+528+bank_index,1)[0]&(1<<index):
                 at=a.origin+symbols['state']+544+(bank_index-1)*128+index*16
             return read(at,16).split(b'\0',1)[0]
-        def rename_first(character):
+        def shot(filename):
+            if not a.gallery or phase!='create':return
+            run(300)
+            plane=out/(phase+'.lcd.private.bin')
+            lcd.png(lcd.screen(lcd.read_plane(plane)),str(out/filename),6)
+            gallery[filename]={'sha256':hashlib.sha256((out/filename).read_bytes()).hexdigest(),
+                'planeSha256':hashlib.sha256(plane.read_bytes()).hexdigest(),'afterPanelAction':len(panel)}
+        def type_name(name):
+            for _ in range(10):press(0x34)
+            for index,character in enumerate(name):
+                for _ in range(96):
+                    if read(0x460e743c+index,1)==bytes([character]):break
+                    press(0x33)
+                else:raise AssertionError('character not reached')
+                if index+1<len(name):press(0x21)
+        def rename_first(name):
             setup();press(0x3d)
             expect(any(read(0x460e7612,4)),'native F opens bank name editor')
-            for _ in range(10):press(0x34)
-            for _ in range(96):
-                if read(0x460e743c,1)==character:break
-                press(0x33)
-            else:raise AssertionError('character not reached')
+            type_name(name)
             press(0x31);run(1500)
         def profile_channels():return read(a.origin+symbols['state']+8,512)
         try:
@@ -140,35 +162,38 @@ jmp 0x40052228
             press(0x32);press(0x31);run(500);press(0x35);press(0x22);run(1500)
             expect(read(a.origin+symbols['loaded'],4)==b'\0\0\0\1',phase+': engine loads project profile')
             if phase=='create':
-                setup();press(0x3d)
+                setup();shot('06-name-setup.png');press(0x3d)
                 expect(any(read(0x460e7612,4)),'native F opens stock editor')
-                press(0x33);expect(read(0x460e743c,1)==b'0','native UP enters name 0')
-                press(0x31);run(1500);expect(stored(0)==b'0','native YES commits project name')
+                type_name(initial_name);expect(read(0x460e743c,len(initial_name))==initial_name,'native panel enters initial template name');shot('07-name-editor.png')
+                press(0x31);run(1500);expect(stored(0)==initial_name,'native YES commits project name')
                 setup();channel(2);expect(profile_channels()[0]==2,'Bank 1 supplies channel 2 default')
                 bank(1);expect(profile_channels()[32]==2,'Bank 2 inherits Bank 1 channel')
                 setup();channel(5);expect(profile_channels()[32]==5,'Bank 2 accepts channel 5 override')
-                rename_first(b'1');expect(stored(0,1)==b'1','Bank 2 accepts name override')
-                expect(stored(0)==b'0','Bank 2 rename leaves Bank 1 unchanged')
+                rename_first(override_name);expect(stored(0,1)==override_name,'Bank 2 accepts name override')
+                expect(stored(0)==initial_name,'Bank 2 rename leaves Bank 1 unchanged')
+                shot('09-bank2-name.png')
+                if a.gallery:
+                    bank(0);expect(stored(0)==initial_name,'Bank 1 still holds BASS after Bank 2 rename');shot('08-bank1-name.png');bank(1)
                 bank(2);expect(profile_channels()[64]==2,'Bank 3 inherits Bank 1 rather than Bank 2 override')
-                expect(stored(0,2)==b'0','Bank 3 inherits Bank 1 name')
-                bank(0);rename_first(b'2')
-                expect(stored(0)==b'2','Bank 1 default can change')
-                bank(1);expect(stored(0,1)==b'1','Bank 2 retains override after default change')
-                bank(2);expect(stored(0,2)==b'2','unoverridden Bank 3 follows new Bank 1 default')
+                expect(stored(0,2)==initial_name,'Bank 3 inherits Bank 1 name')
+                bank(0);rename_first(updated_name)
+                expect(stored(0)==updated_name,'Bank 1 default can change')
+                bank(1);expect(stored(0,1)==override_name,'Bank 2 retains override after default change')
+                bank(2);expect(stored(0,2)==updated_name,'unoverridden Bank 3 follows new Bank 1 default')
             else:
-                expect(stored(0)==b'2','fresh native process restores Bank 1 name from card')
+                expect(stored(0)==updated_name,'fresh native process restores Bank 1 name from card')
                 expect(profile_channels()[0]==2,'fresh native process restores Bank 1 default')
-                bank(1);expect(stored(0,1)==b'1','fresh native process restores Bank 2 name override');expect(profile_channels()[32]==5,'fresh native process restores Bank 2 override')
+                bank(1);expect(stored(0,1)==override_name,'fresh native process restores Bank 2 name override');expect(profile_channels()[32]==5,'fresh native process restores Bank 2 override')
                 setup();expect(int.from_bytes(read(0x460d5cb4,4),'big')==5,'stock SRC setup reads restored channel 5')
-                press(0x3d);expect(read(0x460e743c,1)==b'1','stock editor reads restored Bank 2 name override');press(0x32)
-                bank(2);expect(stored(0,2)==b'2','fresh process restores inherited Bank 3 name');expect(profile_channels()[64]==2,'fresh native process preserves Bank 3 default')
+                press(0x3d);expect(read(0x460e743c,len(override_name))==override_name,'stock editor reads restored Bank 2 name override');press(0x32)
+                bank(2);expect(stored(0,2)==updated_name,'fresh process restores inherited Bank 3 name');expect(profile_channels()[64]==2,'fresh native process preserves Bank 3 default')
             expect('errors=0' in cmd('card flush'),phase+': card writes flushed without errors')
             # Restore all package sites, retire its image and the private tick
             # shim while the stock editor is open. Its destination and callback
             # must remain safe for either close path after complete removal.
             setup();press(0x3d)
             expect(any(read(0x460e7612,4)),phase+': retirement starts with editor open')
-            expect(read(0x460e743c,1)==b'2',phase+': stock editor reads inherited Bank 3 name')
+            expect(read(0x460e743c,len(updated_name))==updated_name,phase+': stock editor reads inherited Bank 3 name')
             skip_lo=a.origin-0x40000400;skip_hi=skip_lo+json.loads(a.receipt.read_text())['imageBytes']
             i=len(stock) if fixture else 0
             if fixture:emulator_fixture.restore(fixture,cmd)
@@ -201,6 +226,20 @@ jmp 0x40052228
         'uiTickShim':{'site':'0x4005221e','stub':hex(stub_at),'sha256':hashlib.sha256(stub).hexdigest()},
         'packageSha256':json.loads(a.receipt.read_text())['packageSha256'],'origin':hex(a.origin),
         'checks':checks,'hardware':'not tested','fixture':'Empty FAT16 card; stock firmware initializes missing working banks. No name/channel/project-file injection; explicit retirement-site restoration and code poisoning.'}
+    if a.gallery:
+        capture={'schemaVersion':1,'captured':'2026-10-24','moduleId':'midi-cc-slots','moduleVersion':'0.0.7-experimental',
+            'sourceRevision':'aa5745927223d711e71dadfc62130f4122eb0a9f','stockMainSha256':hashlib.sha256(stock).hexdigest(),
+            'packageSha256':report['packageSha256'],'runtimeFixtureSha256':report['runtimeFixtureSha256'],
+            'runtimeModuleSha256':fixture['moduleSha256'] if fixture else None,'uiTickShim':report['uiTickShim'],
+            'emulatorSha256':hashlib.sha256(a.emulator.read_bytes()).hexdigest(),
+            'captureScriptSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            'rendererSha256':hashlib.sha256((ROOT/'sdk/octabam/tools/emu/lcd_view.py').read_bytes()).hexdigest(),
+            'sourceFiles':{f:hashlib.sha256((HERE/f).read_bytes()).hexdigest() for f in ['slots.s','profile_names.s','profile.c','profile_140c.c']},
+            'setup':'MKII panel, stopped transport/recorders, empty scratch FAT16 card initialized by stock firmware; guarded after-boot runtime publication and private UI tick shim. No name/channel injection.',
+            'rendering':'128x64 native LCD including popup planes; unchanged pixels, integer scale 6; grayscale 24/240.',
+            'scope':'Emulator documentation images; not a physical device photograph, full resident-base test or hardware qualification.',
+            'panelActions':panel,'screenshots':gallery}
+        (out/'capture.json').write_text(json.dumps(capture,indent=2)+'\n')
     (out/'report.json').write_text(json.dumps(report,indent=2)+'\n')
     print(f'{len(checks)} native profile/card checks passed across two fresh processes.')
 

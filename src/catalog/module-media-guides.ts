@@ -1,3 +1,5 @@
+import { LOCAL_CC_ID, localCcMediaGuide } from '../dev/local-cc-module'
+
 type Screenshot = { path: string; caption: string; alt: string; additional?: boolean }
 type ScreenshotGuide = { version: string; screenshots: readonly Screenshot[] }
 type Media = { path: string; caption: string; alt: string }
@@ -723,7 +725,7 @@ export const MODULE_MEDIA_GUIDES: Readonly<Record<string, ScreenshotGuide>> = {
 }
 
 export function moduleMediaGuide<T extends Media>(id: string, version: string, media: readonly T[]): { primary: T[]; additional: T[] } {
-  const guide = MODULE_MEDIA_GUIDES[id]
+  const guide = id === LOCAL_CC_ID && localCcMediaGuide ? localCcMediaGuide : MODULE_MEDIA_GUIDES[id]
   if (!guide || guide.version !== version) return { primary: [...media], additional: [] }
 
   const primary: T[] = [], additional: T[] = []

@@ -26,7 +26,7 @@ The presentation name is **Midi Mode 2**. The installed development identity
 remains `midi-cc-slots`; no native code or package hash changes for the name.
 The [proposed module copy](presentation/COPY.md),
 [original CC Map-style artwork](presentation/thumbnail.svg) and
-[reviewed emulator screenshot gallery](media/README.md) are ready for review.
+[reviewed CC and naming emulator gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
 ## Version 0.0.7 bank name defaults and overrides
@@ -270,3 +270,10 @@ fixture. Pass `--fixture /private/.../fixture-47e00000.private.json` and
 The fixture contains initialization/publication only; name and channel edits
 still use panel input. It is an isolated runtime publication simulation, not the
 resident loader or hardware. The actual C-loader lifecycle is tested separately.
+
+
+The normal local listing is `/module/midi-cc-slots/`. Its naming walkthrough
+shows NAME/PUSH, BASS in the editor, Bank 2's LEAD override and Bank 1's BASS
+retained afterward. These four 0.0.7 emulator images have separate provenance
+in `media/capture-names.json`; earlier CC captures retain their original version.
+The firmware package is unchanged by this documentation update.

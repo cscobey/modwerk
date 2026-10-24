@@ -584,3 +584,10 @@ has a native card adapter, reject card builds clearly rather than omitting it.
 Catalogue helpers also reach backend code: include shared source and independent
 data in `LICENSES/platform.json` under the existing contribution terms.
 This local workflow does not satisfy public release or hardware qualification.
+
+Local draft flags in `.env.local` belong to each checkout and do not travel
+with Git. When moving a development server to the fork's main checkout, use
+the checked feature branch, install its locked dependencies and enable the same
+opt-in there. Verify the server's working directory, module metadata/package
+digest and media responses after switching, keeping the existing localhost
+origin so saved browser configurations remain available.

@@ -1,6 +1,34 @@
 # Midi Mode 2 — emulator walkthrough
 
-Actual firmware LCD pixels from the MKII emulator, captured on 24 October 2026. The images illustrate the current 0.0.4-experimental draft. They are not physical-device photographs or hardware qualification.
+Actual firmware LCD pixels from the MKII emulator, captured on 24 October 2026. The naming images show 0.0.7-experimental. The earlier CC walkthrough retains its 0.0.4-experimental capture identity. They are not physical-device photographs or hardware qualification.
+
+## Name a MIDI track
+
+![MIDI NOTE SETUP with NAME/PUSH in the lower right.](06-name-setup.png)
+
+In Bank 1, select a MIDI track and double-tap SRC. Click F at NAME/PUSH.
+
+![Native MIDI TRACK NAME editor containing BASS.](07-name-editor.png)
+
+Enter a default name such as BASS. YES confirms and NO cancels; names can be
+up to ten characters.
+
+![Bank 2 pattern B01 showing the name LEAD.](09-bank2-name.png)
+
+In Bank 2, rename that track to LEAD through the same editor. This overrides
+only Bank 2, shared across its Parts. Other unedited names still follow Bank 1.
+
+![Bank 1 pattern A01 still showing BASS after the Bank 2 edit.](08-bank1-name.png)
+
+Return to Bank 1 to see BASS unchanged. Stop transport and recorders and wait
+for MIDI PROFILE SAVED before switching off. Copy both MIDI3_*.DAT files with
+project backups. Native Save As/copy integration remains unqualified.
+
+These are native emulator LCD exports with guarded runtime publication, not
+physical photographs. Capture hashes, module/source bindings, panel actions,
+renderer and the declared UI tick shim are in capture-names.json. No label or
+pixel shape was redrawn. The earlier native-restoration image below is retained
+as historical CC documentation; the current site gallery has eight images.
 
 ## Open the assignment page
 

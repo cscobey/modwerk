@@ -354,3 +354,30 @@ reports do not qualify the new overrides. No 0.0.7 device writes were performed.
 Physical restart, actual USB lifecycle/companion coexistence and native project
 Save As/copy/reload remain unqualified. Old MIDI2 files are retained for rollback;
 0.0.6 cannot display the newer bank overrides. Copy both MIDI3 files for backups.
+
+## Naming gallery and main fork checkout — 24 October 2026
+
+Four actual emulator LCD exports use the unchanged 0.0.7 package SHA-256
+`5db4164bb52849497e93f0dc5fc3c42b755626bbc5065eb44baab010fb3b4244`.
+The gallery run passes 51 checks across fresh processes and uses only panel
+inputs to enter BASS and LEAD. Guarded runtime publication and the private UI
+shim are the same declared native fixture; no names/channels are injected.
+
+All four 768×384 images were visually reviewed: NAME/PUSH in MIDI NOTE SETUP,
+BASS in the stock editor, LEAD on B01, and BASS still present after returning
+to A01. Original LCD/popup pixels are preserved at integer scale 6 with only
+24/240 grayscale. `media/capture-names.json` records package, source, stock,
+module/fixture, emulator, shim, renderer, plane and PNG hashes plus panel
+inputs. Firmware, raw planes, cards and logs remain private.
+
+The current gallery declares eight assets: four new naming images plus four
+retained CC captures with their original 0.0.4 identity. The earlier fifth CC
+image remains historical documentation. Five main images teach the short
+walkthrough; three extra CC pages appear under More screenshots. The local
+media endpoint has an explicit allowlist and enabled-path DOM checks cover
+the new paths, captions and grouping. Production still excludes the draft.
+
+The user reported the bank-specific naming behavior works after the 0.0.7
+instructions. Exact device/base/package identity and a fresh reboot were not
+independently read, so this remains reported behavior rather than complete
+release qualification. No firmware bytes or version changed for the gallery.
