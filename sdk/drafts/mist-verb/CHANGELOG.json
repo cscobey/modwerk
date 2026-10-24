@@ -1,5 +1,14 @@
 [
   {
+    "version": "0.1.7-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Use the space freed by SMEAR removal for faster delay storage without changing tested audio.",
+      "Reduce prototype program/table memory about 24 percent with lossless conversion tables.",
+      "Reduce measured processing about 8 percent; further optimization and installation remain unfinished."
+    ]
+  },
+  {
     "version": "0.1.6-experimental",
     "date": "2026-10-23",
     "changes": [

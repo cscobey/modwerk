@@ -1,6 +1,6 @@
 # Mist Verb
 
-Unpublished port preparation, version **0.1.6-experimental**, author **cscobey**.
+Unpublished port preparation, version **0.1.7-experimental**, author **cscobey**.
 Target: Mutable Instruments Clouds reverb tank as
 an independent Octatrack MKII FX2 insert on OS 1.40C. MKI is not tested.
 
@@ -23,10 +23,11 @@ No disting NT firmware or Elektron code is copied.
 
 Two host storage models now match that original reverb exactly across 63
 parameter cases each: a global packed ring and independent per-delay rings.
-The native core now uses independent per-delay rings: six all-pass rings
-retain 16-bit quantization in direct 24-bit words; two input allpasses and
-the two long delays use packed storage. The host oracle still uses upstream floating-point
-arithmetic and its original oscillators.
+The native core now uses independent per-delay rings: all eight allpasses
+and the 4,782-cell delay retain 16-bit quantization in direct 24-bit words;
+only the 3,411-cell delay uses packed storage. This spends some of the audio
+memory freed by SMEAR removal to reduce per-sample work. The host oracle
+still uses upstream floating-point arithmetic and its original oscillators.
 
 `packed_probe.asm` separately proves the basic packed-cell access on the
 emulated DSP56300, with eight distinct instances on both cores. It processes
@@ -88,8 +89,8 @@ from another product.
   bus, other module dependency or stock behavior hook is planned.
 - Proposed non-stock effect ID: `0x07`, unused among the fork's declarations
   at base `bedbb362`. USB IDs are assigned through the base's module lifecycle.
-- The tank occupies Y offsets 0–13431. Aligned stereo conversion histories
-  extend ownership through 13807, leaving 2,062 words before the reserved key
+- The tank occupies Y offsets 0–15237. Aligned stereo conversion histories
+  extend ownership through 15727, leaving 142 words before the reserved key
   window at 15870. See NATIVE_SRC.md for active storage and padding.
 - The host class uses 32-bit containers for each modeled 24-bit word. Its C++
   object size is not the DSP allocation. The fixed-point tank still differs
@@ -99,9 +100,12 @@ from another product.
 - Native conversion and mixing pass the recorded exact-chain comparisons.
   Control-ramp timing, retargeting and partition consistency are tested.
   Three static both-core comparisons match 0.1.5 with SMEAR zero exactly.
-  The joined program shrinks 2,547 → 2,135 words; Y extent 15,856 → 13,808.
-  The matched stock benchmark still measures 5.71× Spring’s instructions.
-  See `evidence/no-smear/`; this remains too large for the documented arena.
+  Further storage and table optimizations preserve eight recorded fixtures
+  and all sixteen moving-control benchmark splits byte-for-byte versus 0.1.6.
+  Program/table memory falls 8,537 → 6,526 words; nominal processing about 8%.
+  The joined Y extent rises to 15,728 words to make delay access faster.
+  The matched benchmark still measures 5.28× Spring’s instructions.
+  See `evidence/optimization/`; installed fit remains unproven.
   Startup behavior, audible results and installed controls still need qualification.
 - Worst-case stock SPRING REV remains the performance design target. The
   joined path measures roughly 31,100–32,300 executed instructions per core

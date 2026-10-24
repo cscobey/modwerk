@@ -3,7 +3,7 @@
   "id": "mist-verb",
   "key": "MIST VERB",
   "name": "Mist Verb",
-  "version": "0.1.6-experimental",
+  "version": "0.1.7-experimental",
   "category": "effects",
   "author": {
     "github": "cscobey",
@@ -99,7 +99,7 @@
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "Separate SMEAR stage removed; current measured results are recorded in TESTING.md. Installed performance, lifecycle and hardware remain unqualified.",
+    "summary": "Faster delay storage and lossless mirrored SRC tables preserve recorded audio exactly. Native controls, guard and caller-register probes pass; source-hashed reports are in TESTING.md. Installed performance, lifecycle and hardware remain unqualified.",
     "hardwareStatus": "untested",
     "gates": [
       "Worst-case cycles under parameter modulation and maximum load",

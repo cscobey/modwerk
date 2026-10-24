@@ -2,7 +2,8 @@
 """Generate a 32 kHz DSP56300 tank experiment, NOT a 44.1 kHz OT effect.
 
 Translated from the pinned MIT Clouds topology. Independent delay rings store
-most all-pass cells directly; two input allpasses and the long delays are packed.
+all all-pass cells and the longest delay directly; only the shorter long
+delay is packed. Quantization remains unchanged.
 Control smoothing and rate conversion are not implemented here.
 """
 from pathlib import Path
@@ -12,19 +13,19 @@ ROOT = Path(__file__).resolve().parent
 code = []
 INPUT_APS = ((0, 113), (114, 162), (277, 241), (519, 399))
 TANK_APS = ((919, 1653), (2573, 2038), (8024, 1913), (9938, 1663))
-# Pack two additional input allpasses to reserve aligned SRC histories.
+# Use the space freed by removing SMEAR to avoid packing three busy rings.
 # Every all-pass cell retains the same 16-bit quantization.
 LINES = {}
 physical = 0
 for i, (base, length) in enumerate(sorted(INPUT_APS + TANK_APS + ((4612, 3411), (11602, 4782)))):
-    packed = base in (277, 519, 4612, 11602)
+    packed = base == 4612
     LINES[base] = (length, physical, 0x50 + i, 0x60 + i, packed)
     physical += ((length + 2) // 3) * 2 if packed else length
 BUFFER_WORDS = physical
 # Preserve the existing 102-call startup while clearing only the tank.
-CLEAR_CHUNK = 132
+CLEAR_CHUNK = 150
 STATE_WORDS = 0x70
-assert BUFFER_WORDS == 13432 and BUFFER_WORDS <= 15870
+assert BUFFER_WORDS == 15238 and BUFFER_WORDS <= 15870
 
 
 def emit(text):

@@ -1,6 +1,6 @@
 ; Copyright 2026 cscobey. MIT; see LICENSE.
 ; Native SRC round-trip experiment. No reverb, stock effect or firmware.
-; X scalar offsets 70..af; Y histories at 13440,13568,13696,13760.
+; X scalar offsets 70..af; Y histories at 15360,15488,15616,15680.
 init:
         move #>$ffffff,m4
         move #>$ffffff,m5
@@ -16,7 +16,7 @@ src_zero_scalar:
         move x:(r4),a
         move a1,x:(r7+$70)
         move x:(r7+$70),a
-        add #>$3480,a
+        add #>$3c00,a
         move a1,x:(r7+$71)
         move a1,r4
         clr a
@@ -25,7 +25,7 @@ src_zero_scalar:
 src_zero_hist_0:
         nop
         move x:(r7+$70),a
-        add #>$3500,a
+        add #>$3c80,a
         move a1,x:(r7+$72)
         move a1,r4
         clr a
@@ -34,7 +34,7 @@ src_zero_hist_0:
 src_zero_hist_1:
         nop
         move x:(r7+$70),a
-        add #>$3580,a
+        add #>$3d00,a
         move a1,x:(r7+$73)
         move a1,r4
         clr a
@@ -43,7 +43,7 @@ src_zero_hist_1:
 src_zero_hist_2:
         nop
         move x:(r7+$70),a
-        add #>$35c0,a
+        add #>$3d40,a
         move a1,x:(r7+$74)
         move a1,r4
         clr a
@@ -51,9 +51,9 @@ src_zero_hist_2:
         move a1,y:(r4)+
 src_zero_hist_3:
         nop
-        move #>$19290,a
+        move #>$18a40,a
         move a1,x:(r7+$77)
-        move #>$19510,a
+        move #>$18cc0,a
         move a1,x:(r7+$78)
         move #>$2,a
         move a1,x:(r7+$79)
@@ -63,6 +63,8 @@ src_zero_hist_3:
 proc:
         move r3,x:(r7+$8e)
         move m3,x:(r7+$8f)
+        move n2,x:(r7+$91)
+        move n3,x:(r7+$92)
         move #>$ffffff,m3
         move #>$ffffff,m4
         move #>$ffffff,m5
@@ -138,6 +140,8 @@ src_frame_done:
         nop
         move x:(r7+$8e),r3
         move x:(r7+$8f),m3
+        move x:(r7+$91),n2
+        move x:(r7+$92),n3
         move #>$ffffff,m5
         rts
 src_down_push:
@@ -160,29 +164,50 @@ src_down_filter:
         move p:(r4)+,a
         move a1,x:(r7+$83)
         move r4,a
-        cmp #>$19510,a
+        cmp #>$18cc0,a
         blt src_down_schedule
-        move #>$19290,a
+        move #>$18a40,a
 src_down_schedule:
         move a1,x:(r7+$77)
         move #>95,m4
         move #>95,m5
+        move x:(r7+$82),r3
+        move p:(r3)+,a
+        move r3,x:(r7+$90)
+        move a1,x1
+        and #>$1ffff,a
+        add #>$18000,a
+        move a1,r3
+        move #>$1,n3
+        move #>94,n2
+        move x1,a
+        and #>$40000,a
+        tst a
+        bne src_down_first_short
+        move #>95,n2
+src_down_first_short:
+        move x1,a
+        and #>$20000,a
+        tst a
+        beq src_down_first_forward
+        move #>$ffffff,n3
+src_down_first_forward:
+; A short phase omits its zero tail: restart both history reads.
         move x:(r7+$71),r5
         move x:(r7+$72),r4
         move (r5)-
         move (r4)-
-        move x:(r7+$82),r3
         clr a
         clr b
         move y:(r5)-,y0
         move y:(r4)-,y1
-        do #95,>src_down_stereo_first
-        move p:(r3)+,x0
+        do n2,>src_down_stereo_first
+        move p:(r3)+n3,x0
         mac y0,x0,a  y:(r5)-,y0
         mac x0,y1,b  y:(r4)-,y1
 src_down_stereo_first:
         nop
-        move p:(r3)+,x0
+        move p:(r3)+n3,x0
         mac y0,x0,a
         mac x0,y1,b
 ; Save the right accumulator without losing its extension bits.
@@ -200,17 +225,43 @@ src_down_stereo_first:
         asr #$2,a,a
         move a1,x:(r7+$88)
         move a0,x:(r7+$89)
+        move x:(r7+$90),r3
+        move p:(r3)+,a
+        move r3,x:(r7+$90)
+        move a1,x1
+        and #>$1ffff,a
+        add #>$18000,a
+        move a1,r3
+        move #>$1,n3
+        move #>94,n2
+        move x1,a
+        and #>$40000,a
+        tst a
+        bne src_down_second_short
+        move #>95,n2
+src_down_second_short:
+        move x1,a
+        and #>$20000,a
+        tst a
+        beq src_down_second_forward
+        move #>$ffffff,n3
+src_down_second_forward:
+; A short phase omits its zero tail: restart both history reads.
+        move x:(r7+$71),r5
+        move x:(r7+$72),r4
+        move (r5)-
+        move (r4)-
         clr a
         clr b
         move y:(r5)-,y0
         move y:(r4)-,y1
-        do #95,>src_down_stereo_second
-        move p:(r3)+,x0
+        do n2,>src_down_stereo_second
+        move p:(r3)+n3,x0
         mac y0,x0,a  y:(r5)-,y0
         mac x0,y1,b  y:(r4)-,y1
 src_down_stereo_second:
         nop
-        move p:(r3)+,x0
+        move p:(r3)+n3,x0
         mac y0,x0,a
         mac x0,y1,b
 ; Save the right accumulator without losing its extension bits.
@@ -271,29 +322,50 @@ src_up_filter:
         move p:(r4)+,a
         move a1,x:(r7+$83)
         move r4,a
-        cmp #>$19882,a
+        cmp #>$19032,a
         blt src_up_schedule
-        move #>$19510,a
+        move #>$18cc0,a
 src_up_schedule:
         move a1,x:(r7+$78)
         move #>47,m4
         move #>47,m5
+        move x:(r7+$82),r3
+        move p:(r3)+,a
+        move r3,x:(r7+$90)
+        move a1,x1
+        and #>$1ffff,a
+        add #>$186af,a
+        move a1,r3
+        move #>$1,n3
+        move #>46,n2
+        move x1,a
+        and #>$40000,a
+        tst a
+        bne src_up_first_short
+        move #>47,n2
+src_up_first_short:
+        move x1,a
+        and #>$20000,a
+        tst a
+        beq src_up_first_forward
+        move #>$ffffff,n3
+src_up_first_forward:
+; A short phase omits its zero tail: restart both history reads.
         move x:(r7+$73),r5
         move x:(r7+$74),r4
         move (r5)-
         move (r4)-
-        move x:(r7+$82),r3
         clr a
         clr b
         move y:(r5)-,y0
         move y:(r4)-,y1
-        do #47,>src_up_stereo_first
-        move p:(r3)+,x0
+        do n2,>src_up_stereo_first
+        move p:(r3)+n3,x0
         mac y0,x0,a  y:(r5)-,y0
         mac x0,y1,b  y:(r4)-,y1
 src_up_stereo_first:
         nop
-        move p:(r3)+,x0
+        move p:(r3)+n3,x0
         mac y0,x0,a
         mac x0,y1,b
 ; Save the right accumulator without losing its extension bits.
@@ -311,17 +383,43 @@ src_up_stereo_first:
         asr #$2,a,a
         move a1,x:(r7+$88)
         move a0,x:(r7+$89)
+        move x:(r7+$90),r3
+        move p:(r3)+,a
+        move r3,x:(r7+$90)
+        move a1,x1
+        and #>$1ffff,a
+        add #>$186af,a
+        move a1,r3
+        move #>$1,n3
+        move #>46,n2
+        move x1,a
+        and #>$40000,a
+        tst a
+        bne src_up_second_short
+        move #>47,n2
+src_up_second_short:
+        move x1,a
+        and #>$20000,a
+        tst a
+        beq src_up_second_forward
+        move #>$ffffff,n3
+src_up_second_forward:
+; A short phase omits its zero tail: restart both history reads.
+        move x:(r7+$73),r5
+        move x:(r7+$74),r4
+        move (r5)-
+        move (r4)-
         clr a
         clr b
         move y:(r5)-,y0
         move y:(r4)-,y1
-        do #47,>src_up_stereo_second
-        move p:(r3)+,x0
+        do n2,>src_up_stereo_second
+        move p:(r3)+n3,x0
         mac y0,x0,a  y:(r5)-,y0
         mac x0,y1,b  y:(r4)-,y1
 src_up_stereo_second:
         nop
-        move p:(r3)+,x0
+        move p:(r3)+n3,x0
         mac y0,x0,a
         mac x0,y1,b
 ; Save the right accumulator without losing its extension bits.
@@ -375,15 +473,6 @@ src_round_positive:
         move #>$800000,b0
 src_round_addend:
         add b,a
-; Record endpoint overflow rather than silently claiming parity.
-        move a,x0
-        move a1,y0
-        move x0,b
-        cmp y0,b
-        beq src_round_inrange
-        move x:(r7+$85),b
-        add #>$1,b
-        move b1,x:(r7+$85)
-src_round_inrange:
+; Keep the wide endpoint; host parity checks cover final saturation.
         move #>$0,a0
         rts

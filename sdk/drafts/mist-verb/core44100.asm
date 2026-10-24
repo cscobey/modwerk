@@ -2,7 +2,7 @@
 ; Copyright 2014 Emilie Gillet; translation Copyright 2026 cscobey.
 ; MIT: see LICENSE and pinned upstream source.
 ; 32 kHz core experiment ONLY. Not a 44.1 kHz Octatrack effect.
-; X r7+00..6f own scalar state. Y first 13432 words own buffer.
+; X r7+00..6f own scalar state. Y first 15238 words own buffer.
 tank_start:
         move #>$ffffff,m5
         move r7,r5
@@ -24,27 +24,27 @@ rv_core_zero:
         add #>$113,a
         move a1,x:(r7+$62)
         move x:(r7+$20),a
-        add #>$1b5,a
+        add #>$204,a
         move a1,x:(r7+$63)
         move x:(r7+$20),a
-        add #>$2bf,a
+        add #>$393,a
         move a1,x:(r7+$64)
         move x:(r7+$20),a
-        add #>$934,a
+        add #>$a08,a
         move a1,x:(r7+$65)
         move x:(r7+$20),a
-        add #>$112a,a
+        add #>$11fe,a
         move a1,x:(r7+$66)
         move x:(r7+$20),a
-        add #>$1a0c,a
+        add #>$1ae0,a
         move a1,x:(r7+$67)
         move x:(r7+$20),a
-        add #>$2185,a
+        add #>$2259,a
         move a1,x:(r7+$68)
         move x:(r7+$20),a
-        add #>$2804,a
+        add #>$28d8,a
         move a1,x:(r7+$69)
-        move #>$3478,a
+        move #>$3b86,a
         move a1,x:(r7+$22)
         move #>$400000,a
         move a1,x:(r7+$40)
@@ -68,7 +68,7 @@ tank_run:
         move x:(r7+$22),a
         tst a
         beq rv_core_knobs
-        move #>$84,x0
+        move #>$96,x0
         cmp x0,a
         blt rv_core_short_clear
         move x0,a
@@ -361,10 +361,10 @@ rv_quant_0364:
         bpl rv_tap_0205_ready
         move #>$f0,a
 rv_tap_0205_ready:
-        bsr >cell_address
-        move #>$113,n5
+        move a1,n5
+        move x:(r7+$62),r5
         move (r5)+n5
-        bsr >rv_cell_fetch
+        move y:(r5),a
         asl #$8,a,a
         move a1,a
         move a1,x:(r7+$33)
@@ -385,10 +385,11 @@ rv_quant_0404:
         and #>$00ffff,a
         move a1,x:(r7+$30)
         move x:(r7+$52),a
-        bsr >cell_address
-        move #>$113,n5
+        move a1,n5
+        move x:(r7+$62),r5
         move (r5)+n5
-        bsr >rv_cell_store
+        move x:(r7+$30),a
+        move a1,y:(r5)
         move x:(r7+$32),x0
         move x:(r7+$02),y1
         mpy -x0,y1,a
@@ -400,10 +401,10 @@ rv_quant_0404:
         bpl rv_tap_0395_ready
         move #>$18e,a
 rv_tap_0395_ready:
-        bsr >cell_address
-        move #>$1b5,n5
+        move a1,n5
+        move x:(r7+$63),r5
         move (r5)+n5
-        bsr >rv_cell_fetch
+        move y:(r5),a
         asl #$8,a,a
         move a1,a
         move a1,x:(r7+$33)
@@ -417,17 +418,18 @@ rv_tap_0395_ready:
         move a,x0
         move x0,a
         tst a
-        bpl rv_quant_0443
+        bpl rv_quant_0444
         add #>$ff,a
-rv_quant_0443:
+rv_quant_0444:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
         move x:(r7+$53),a
-        bsr >cell_address
-        move #>$1b5,n5
+        move a1,n5
+        move x:(r7+$63),r5
         move (r5)+n5
-        bsr >rv_cell_store
+        move x:(r7+$30),a
+        move a1,y:(r5)
         move x:(r7+$32),x0
         move x:(r7+$02),y1
         mpy -x0,y1,a
@@ -452,10 +454,10 @@ rv_quant_0443:
         sub #>$12ae,a
 rv_interpol_2d52_first:
         move a1,x:(r7+$49)
-        bsr >cell_address
-        move #>$2804,n5
+        move a1,n5
+        move x:(r7+$69),r5
         move (r5)+n5
-        bsr >rv_cell_fetch
+        move y:(r5),a
         asl #$8,a,a
         move a1,a
         move a1,x:(r7+$47)
@@ -465,10 +467,10 @@ rv_interpol_2d52_first:
         blt rv_interpol_2d52_second
         clr a
 rv_interpol_2d52_second:
-        bsr >cell_address
-        move #>$2804,n5
+        move a1,n5
+        move x:(r7+$69),r5
         move (r5)+n5
-        bsr >rv_cell_fetch
+        move y:(r5),a
         asl #$8,a,a
         move a1,a
         move x:(r7+$47),x0
@@ -515,9 +517,9 @@ rv_tap_0a0b_ready:
         move a,x0
         move x0,a
         tst a
-        bpl rv_quant_0541
+        bpl rv_quant_0543
         add #>$ff,a
-rv_quant_0541:
+rv_quant_0543:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -555,9 +557,9 @@ rv_tap_1202_ready:
         move a,x0
         move x0,a
         tst a
-        bpl rv_quant_0581
+        bpl rv_quant_0583
         add #>$ff,a
-rv_quant_0581:
+rv_quant_0583:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -577,15 +579,15 @@ rv_quant_0581:
         move a,x0
         move x0,a
         tst a
-        bpl rv_quant_0603
+        bpl rv_quant_0605
         add #>$ff,a
-rv_quant_0603:
+rv_quant_0605:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
         move x:(r7+$56),a
         bsr >cell_address
-        move #>$112a,n5
+        move #>$11fe,n5
         move (r5)+n5
         bsr >rv_cell_store
         move x:(r7+$32),a
@@ -596,7 +598,7 @@ rv_quant_0603:
         move #>$d52,a
 rv_tap_1f56_ready:
         bsr >cell_address
-        move #>$112a,n5
+        move #>$11fe,n5
         move (r5)+n5
         bsr >rv_cell_fetch
         asl #$8,a,a
@@ -638,9 +640,9 @@ rv_tap_26d0_ready:
         move a,x0
         move x0,a
         tst a
-        bpl rv_quant_0664
+        bpl rv_quant_0666
         add #>$ff,a
-rv_quant_0664:
+rv_quant_0666:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -678,9 +680,9 @@ rv_tap_2d50_ready:
         move a,x0
         move x0,a
         tst a
-        bpl rv_quant_0704
+        bpl rv_quant_0706
         add #>$ff,a
-rv_quant_0704:
+rv_quant_0706:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -700,17 +702,18 @@ rv_quant_0704:
         move a,x0
         move x0,a
         tst a
-        bpl rv_quant_0726
+        bpl rv_quant_0728
         add #>$ff,a
-rv_quant_0726:
+rv_quant_0728:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
         move x:(r7+$59),a
-        bsr >cell_address
-        move #>$2804,n5
+        move a1,n5
+        move x:(r7+$69),r5
         move (r5)+n5
-        bsr >rv_cell_store
+        move x:(r7+$30),a
+        move a1,y:(r5)
         move x:(r7+$32),a
         move a1,x:(r7+$38)
         move x:(r7+$39),x0
@@ -830,7 +833,7 @@ rv_store_middle:
 
 ; Copyright 2026 cscobey. MIT; see LICENSE.
 ; Streaming wrapper; no installed effect or hardware qualification.
-; X scalar offsets 70..af; Y histories at 13440,13568,13696,13760.
+; X scalar offsets 70..af; Y histories at 15360,15488,15616,15680.
 init:
         move #>tank_start,r4
         jsr (r4)
@@ -848,7 +851,7 @@ src_zero_scalar:
         move x:(r4),a
         move a1,x:(r7+$70)
         move x:(r7+$70),a
-        add #>$3480,a
+        add #>$3c00,a
         move a1,x:(r7+$71)
         move a1,r4
         clr a
@@ -857,7 +860,7 @@ src_zero_scalar:
 src_zero_hist_0:
         nop
         move x:(r7+$70),a
-        add #>$3500,a
+        add #>$3c80,a
         move a1,x:(r7+$72)
         move a1,r4
         clr a
@@ -866,7 +869,7 @@ src_zero_hist_0:
 src_zero_hist_1:
         nop
         move x:(r7+$70),a
-        add #>$3580,a
+        add #>$3d00,a
         move a1,x:(r7+$73)
         move a1,r4
         clr a
@@ -875,7 +878,7 @@ src_zero_hist_1:
 src_zero_hist_2:
         nop
         move x:(r7+$70),a
-        add #>$35c0,a
+        add #>$3d40,a
         move a1,x:(r7+$74)
         move a1,r4
         clr a
@@ -883,9 +886,9 @@ src_zero_hist_2:
         move a1,y:(r4)+
 src_zero_hist_3:
         nop
-        move #>$19290,a
+        move #>$18a40,a
         move a1,x:(r7+$77)
-        move #>$19510,a
+        move #>$18cc0,a
         move a1,x:(r7+$78)
         move #>$2,a
         move a1,x:(r7+$79)
@@ -902,6 +905,8 @@ proc:
 src_audio_active:
         move r3,x:(r7+$8e)
         move m3,x:(r7+$8f)
+        move n2,x:(r7+$91)
+        move n3,x:(r7+$92)
         move #>$ffffff,m3
         move #>$ffffff,m4
         move #>$ffffff,m5
@@ -1005,6 +1010,8 @@ src_frame_done:
         nop
         move x:(r7+$8e),r3
         move x:(r7+$8f),m3
+        move x:(r7+$91),n2
+        move x:(r7+$92),n3
         move #>$ffffff,m5
         rts
 src_down_push:
@@ -1027,29 +1034,50 @@ src_down_filter:
         move p:(r4)+,a
         move a1,x:(r7+$83)
         move r4,a
-        cmp #>$19510,a
+        cmp #>$18cc0,a
         blt src_down_schedule
-        move #>$19290,a
+        move #>$18a40,a
 src_down_schedule:
         move a1,x:(r7+$77)
         move #>95,m4
         move #>95,m5
+        move x:(r7+$82),r3
+        move p:(r3)+,a
+        move r3,x:(r7+$90)
+        move a1,x1
+        and #>$1ffff,a
+        add #>$18000,a
+        move a1,r3
+        move #>$1,n3
+        move #>94,n2
+        move x1,a
+        and #>$40000,a
+        tst a
+        bne src_down_first_short
+        move #>95,n2
+src_down_first_short:
+        move x1,a
+        and #>$20000,a
+        tst a
+        beq src_down_first_forward
+        move #>$ffffff,n3
+src_down_first_forward:
+; A short phase omits its zero tail: restart both history reads.
         move x:(r7+$71),r5
         move x:(r7+$72),r4
         move (r5)-
         move (r4)-
-        move x:(r7+$82),r3
         clr a
         clr b
         move y:(r5)-,y0
         move y:(r4)-,y1
-        do #95,>src_down_stereo_first
-        move p:(r3)+,x0
+        do n2,>src_down_stereo_first
+        move p:(r3)+n3,x0
         mac y0,x0,a  y:(r5)-,y0
         mac x0,y1,b  y:(r4)-,y1
 src_down_stereo_first:
         nop
-        move p:(r3)+,x0
+        move p:(r3)+n3,x0
         mac y0,x0,a
         mac x0,y1,b
 ; Save the right accumulator without losing its extension bits.
@@ -1067,17 +1095,43 @@ src_down_stereo_first:
         asr #$2,a,a
         move a1,x:(r7+$88)
         move a0,x:(r7+$89)
+        move x:(r7+$90),r3
+        move p:(r3)+,a
+        move r3,x:(r7+$90)
+        move a1,x1
+        and #>$1ffff,a
+        add #>$18000,a
+        move a1,r3
+        move #>$1,n3
+        move #>94,n2
+        move x1,a
+        and #>$40000,a
+        tst a
+        bne src_down_second_short
+        move #>95,n2
+src_down_second_short:
+        move x1,a
+        and #>$20000,a
+        tst a
+        beq src_down_second_forward
+        move #>$ffffff,n3
+src_down_second_forward:
+; A short phase omits its zero tail: restart both history reads.
+        move x:(r7+$71),r5
+        move x:(r7+$72),r4
+        move (r5)-
+        move (r4)-
         clr a
         clr b
         move y:(r5)-,y0
         move y:(r4)-,y1
-        do #95,>src_down_stereo_second
-        move p:(r3)+,x0
+        do n2,>src_down_stereo_second
+        move p:(r3)+n3,x0
         mac y0,x0,a  y:(r5)-,y0
         mac x0,y1,b  y:(r4)-,y1
 src_down_stereo_second:
         nop
-        move p:(r3)+,x0
+        move p:(r3)+n3,x0
         mac y0,x0,a
         mac x0,y1,b
 ; Save the right accumulator without losing its extension bits.
@@ -1138,29 +1192,50 @@ src_up_filter:
         move p:(r4)+,a
         move a1,x:(r7+$83)
         move r4,a
-        cmp #>$19882,a
+        cmp #>$19032,a
         blt src_up_schedule
-        move #>$19510,a
+        move #>$18cc0,a
 src_up_schedule:
         move a1,x:(r7+$78)
         move #>47,m4
         move #>47,m5
+        move x:(r7+$82),r3
+        move p:(r3)+,a
+        move r3,x:(r7+$90)
+        move a1,x1
+        and #>$1ffff,a
+        add #>$186af,a
+        move a1,r3
+        move #>$1,n3
+        move #>46,n2
+        move x1,a
+        and #>$40000,a
+        tst a
+        bne src_up_first_short
+        move #>47,n2
+src_up_first_short:
+        move x1,a
+        and #>$20000,a
+        tst a
+        beq src_up_first_forward
+        move #>$ffffff,n3
+src_up_first_forward:
+; A short phase omits its zero tail: restart both history reads.
         move x:(r7+$73),r5
         move x:(r7+$74),r4
         move (r5)-
         move (r4)-
-        move x:(r7+$82),r3
         clr a
         clr b
         move y:(r5)-,y0
         move y:(r4)-,y1
-        do #47,>src_up_stereo_first
-        move p:(r3)+,x0
+        do n2,>src_up_stereo_first
+        move p:(r3)+n3,x0
         mac y0,x0,a  y:(r5)-,y0
         mac x0,y1,b  y:(r4)-,y1
 src_up_stereo_first:
         nop
-        move p:(r3)+,x0
+        move p:(r3)+n3,x0
         mac y0,x0,a
         mac x0,y1,b
 ; Save the right accumulator without losing its extension bits.
@@ -1178,17 +1253,43 @@ src_up_stereo_first:
         asr #$2,a,a
         move a1,x:(r7+$88)
         move a0,x:(r7+$89)
+        move x:(r7+$90),r3
+        move p:(r3)+,a
+        move r3,x:(r7+$90)
+        move a1,x1
+        and #>$1ffff,a
+        add #>$186af,a
+        move a1,r3
+        move #>$1,n3
+        move #>46,n2
+        move x1,a
+        and #>$40000,a
+        tst a
+        bne src_up_second_short
+        move #>47,n2
+src_up_second_short:
+        move x1,a
+        and #>$20000,a
+        tst a
+        beq src_up_second_forward
+        move #>$ffffff,n3
+src_up_second_forward:
+; A short phase omits its zero tail: restart both history reads.
+        move x:(r7+$73),r5
+        move x:(r7+$74),r4
+        move (r5)-
+        move (r4)-
         clr a
         clr b
         move y:(r5)-,y0
         move y:(r4)-,y1
-        do #47,>src_up_stereo_second
-        move p:(r3)+,x0
+        do n2,>src_up_stereo_second
+        move p:(r3)+n3,x0
         mac y0,x0,a  y:(r5)-,y0
         mac x0,y1,b  y:(r4)-,y1
 src_up_stereo_second:
         nop
-        move p:(r3)+,x0
+        move p:(r3)+n3,x0
         mac y0,x0,a
         mac x0,y1,b
 ; Save the right accumulator without losing its extension bits.
@@ -1242,16 +1343,7 @@ src_round_positive:
         move #>$800000,b0
 src_round_addend:
         add b,a
-; Record endpoint overflow rather than silently claiming parity.
-        move a,x0
-        move a1,y0
-        move x0,b
-        cmp y0,b
-        beq src_round_inrange
-        move x:(r7+$85),b
-        add #>$1,b
-        move b1,x:(r7+$85)
-src_round_inrange:
+; Keep the wide endpoint; host parity checks cover final saturation.
         move #>$0,a0
         rts
 

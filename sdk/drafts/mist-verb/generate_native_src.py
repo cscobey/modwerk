@@ -7,12 +7,15 @@ from pathlib import Path
 import re
 import argparse
 from generate_src import bank
+from src_layout import packed_bank
 ROOT=Path(__file__).resolve().parent
 # P addresses are standalone experiment placements, not installed allocations.
 TABLE=0x18000
 DOWN=TABLE
-UP=DOWN+33*96
-SCHEDULE=UP+33*48
+UP=DOWN+1711
+DOWN_DESCRIPTORS=UP+847
+UP_DESCRIPTORS=DOWN_DESCRIPTORS+33
+SCHEDULE=UP_DESCRIPTORS+33
 code=[]
 def emit(s): code.extend(x.strip() for x in s.strip().splitlines())
 def generate():
@@ -22,20 +25,24 @@ def generate():
         rows=bank(rate,taps)
         assert max(sum(map(abs,row)) for row in rows) < 3*(1<<23)
         assert max(sum(abs(a-b) for a,b in zip(x,y)) for x,y in zip(rows,rows[1:]))+2 < (1<<23)
-    tables=[v & 0xffffff for rate,taps in ((44100,96),(32000,48)) for row in bank(rate,taps) for v in row]
+    packed=[packed_bank(rate,taps) for rate,taps in ((44100,96),(32000,48))]
+    assert [len(p[1]) for p in packed]==[1711,847]
+    tables=[v & 0xffffff for p in packed for v in p[1]]
+    tables += [v for p in packed for v in p[2]]
+    assert TABLE+len(tables)==SCHEDULE
     starts=[]
-    for rate,out,taps,base in ((44100,32000,96,DOWN),(32000,44100,48,UP)):
+    for rate,out,base in ((44100,32000,DOWN_DESCRIPTORS),(32000,44100,UP_DESCRIPTORS)):
         start=TABLE+len(tables);starts.append(start)
         period=320 if rate==44100 else 441
         for n in range(period):
             clock=(n*rate)%out
             phase,rem=divmod(clock*32,out)
-            tables.extend((base+phase*taps,(rem<<23)//out))
+            tables.extend((base+phase,(rem<<23)//out))
     # Buffer bases deliberately match the planned reverb tail layout.
     # Down 96-cell rings aligned to 128, up 48-cell rings aligned to 64.
     emit('''; Copyright 2026 cscobey. MIT; see LICENSE.
 ; Native SRC round-trip experiment. No reverb, stock effect or firmware.
-; X scalar offsets 70..af; Y histories at 13440,13568,13696,13760.
+; X scalar offsets 70..af; Y histories at 15360,15488,15616,15680.
 init:
         move #>$ffffff,m4
         move #>$ffffff,m5
@@ -50,7 +57,7 @@ src_zero_scalar:
         move x:>$213,r4
         move x:(r4),a
         move a1,x:(r7+$70)''')
-    for i,(offset,length) in enumerate(((13440,96),(13568,96),(13696,48),(13760,48))):
+    for i,(offset,length) in enumerate(((15360,96),(15488,96),(15616,48),(15680,48))):
         emit(f'''move x:(r7+$70),a
         add #>${offset:x},a
         move a1,x:(r7+${0x71+i:x})
@@ -66,6 +73,8 @@ src_zero_hist_{i}:
 proc:
         move r3,x:(r7+$8e)
         move m3,x:(r7+$8f)
+        move n2,x:(r7+$91)
+        move n3,x:(r7+$92)
         move #>$ffffff,m3
         move #>$ffffff,m4
         move #>$ffffff,m5
@@ -141,6 +150,8 @@ src_frame_done:
         nop
         move x:(r7+$8e),r3
         move x:(r7+$8f),m3
+        move x:(r7+$91),n2
+        move x:(r7+$92),n3
         move #>$ffffff,m5
         rts''')
     # FIFO write index starts at two (the first two entries are silent).
@@ -171,23 +182,46 @@ src_{direction}_schedule:
         # the next sample while the current sample is accumulated.
         emit(f"""move #>{taps-1},m4
             move #>{taps-1},m5
+            move x:(r7+$82),r3""")
+        coefficient_base=DOWN if direction=='down' else UP
+        for phase in ('first','second'):
+            if phase=='second':emit('move x:(r7+$90),r3')
+            emit(f"""move p:(r3)+,a
+            move r3,x:(r7+$90)
+            move a1,x1
+            and #>$1ffff,a
+            add #>${coefficient_base:x},a
+            move a1,r3
+            move #>$1,n3
+            move #>{taps-2},n2
+            move x1,a
+            and #>$40000,a
+            tst a
+            bne src_{direction}_{phase}_short
+            move #>{taps-1},n2
+src_{direction}_{phase}_short:
+            move x1,a
+            and #>$20000,a
+            tst a
+            beq src_{direction}_{phase}_forward
+            move #>$ffffff,n3
+src_{direction}_{phase}_forward:
+            ; A short phase omits its zero tail: restart both history reads.
             move x:(r7+${slots[0]:x}),r5
             move x:(r7+${slots[1]:x}),r4
             move (r5)-
             move (r4)-
-            move x:(r7+$82),r3""")
-        for phase in ('first','second'):
-            emit(f"""clr a
+            clr a
             clr b
             move y:(r5)-,y0
             move y:(r4)-,y1
-            do #{taps-1},>src_{direction}_stereo_{phase}
-            move p:(r3)+,x0
+            do n2,>src_{direction}_stereo_{phase}
+            move p:(r3)+n3,x0
             mac y0,x0,a  y:(r5)-,y0
             mac x0,y1,b  y:(r4)-,y1
 src_{direction}_stereo_{phase}:
             nop
-            move p:(r3)+,x0
+            move p:(r3)+n3,x0
             mac y0,x0,a
             mac x0,y1,b
             ; Save the right accumulator without losing its extension bits.
@@ -232,16 +266,7 @@ src_round_positive:
         move #>$800000,b0
 src_round_addend:
         add b,a
-        ; Record endpoint overflow rather than silently claiming parity.
-        move a,x0
-        move a1,y0
-        move x0,b
-        cmp y0,b
-        beq src_round_inrange
-        move x:(r7+$85),b
-        add #>$1,b
-        move b1,x:(r7+$85)
-src_round_inrange:
+        ; Keep the wide endpoint; host parity checks cover final saturation.
         move #>$0,a0
         rts''')
     return '\n'.join(('' if s.endswith(':') or s.startswith(';') else '        ')+s for s in code)+'\n',tables

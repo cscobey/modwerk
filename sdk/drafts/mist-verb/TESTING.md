@@ -1,6 +1,6 @@
 # Mist Verb testing
 
-Date: 2026-10-23. Version: 0.1.6-experimental. Target instrument: Octatrack MKII.
+Date: 2026-10-23. Version: 0.1.7-experimental. Target instrument: Octatrack MKII.
 Fork base: `bedbb362` (current with upstream when prepared). This is unpublished
 work on `feat/mist-verb` in `cscobey/modwerk`, under `sdk/drafts/mist-verb/`.
 The user requested fork-only development. The earlier upstream draft PR is
@@ -8,33 +8,37 @@ closed; further upstream submission requires a new user instruction.
 
 ## Current native milestone
 
-Current native build: **0.1.6-experimental**, separate SMEAR input diffuser
-removed. TIME/DAMP/DIFF/GAIN/MIX remain; encoder D is inactive, E/F retain
-GAIN/MIX. The original tank topology, lengths and quantization are unchanged.
-See [NATIVE_SRC.md](NATIVE_SRC.md) and `evidence/no-smear/` for the current
-source-hashed reports and before/after comparisons.
+Current native build: **0.1.7-experimental**, faster ring storage and lossless
+mirrored SRC tables. TIME/DAMP/DIFF/GAIN/MIX remain; encoder D inactive, E/F
+retain GAIN/MIX. Tank topology, lengths, quantization, cutoff and phase weights
+are unchanged. See [NATIVE_SRC.md](NATIVE_SRC.md) and `evidence/optimization/`.
 
-- Tank: 13,432 Y words, 1,109 code words plus 128 gain words; nominal fixture
-  peak 12,737 executed instructions/core/16 tank frames.
-- Joined: 13,808 Y-word extent, 2,135 code words, 6,274 SRC words plus 128 gain
-  words (8,537 P words total). X extent remains 240 including unused gaps.
-- Three static both-core cases match 0.1.5 at SMEAR zero byte-for-byte,
-  including exact dry and a high feedback/gain mixed case. Joined nominal
-  peak falls 31,139 → 28,046 instructions/core/16 input frames (about 10%).
-- Dynamic five-control traces match the host model at splits 0/1/15;
-  audio matches across splits after startup alignment and silence stays zero.
-- Full-scale standalone SRC matches its host reference after history relocation.
-  Dirty seed 1776, Y/shared/code guards and both-core identity pass throughout.
-- Matched 64-case moving-control benchmark: Mist 29,067 versus Spring 5,094
-  peak instructions/core/16 input frames (5.71×); no chip-cycle claim.
-- Bounded clear is now 132 words/call, retaining 102 calls and the known
-  partition-dependent startup. Four tank controls ramp for 8 ms; MIX for
-  5.805 ms. No installed or hardware qualification is claimed.
+- Tank: 15,238 Y words, 1,098 code words plus 128 gain words; nominal fixture
+  peak 9,765 instructions/core/16 tank frames (previously 12,737).
+- Joined: 15,728 Y extent, 2,252 code words, 4,146 SRC words plus 128 gain
+  words (6,526 P total, previously 8,537). X extent remains 240 including gaps.
+  Only 142 words remain before the reserved key window; no coexistence proof.
+- Eight recorded fixtures and all sixteen moving-control benchmark cases
+  preserve both cores' audio bytes exactly against 0.1.6. Nominal joined
+  peak drops 28,046 → 25,888 instructions/core/16 input frames (about 8%).
+- Dynamic five-control traces match the integer model at splits 0/1/15;
+  moving controls preserve silence and exact dry remains unchanged.
+- Full-scale, DC and impulse SRC fixtures match the integer host exactly.
+  Converter stress rises slightly, 17,681 → 17,745 instructions/16 input frames.
+- Dirty seed 1776, Y/shared/code guards and both-core identity pass throughout.
+- Matched 64-case Spring comparison peaks at Mist 26,916 versus Spring 5,094
+  instructions/core/16 input frames (5.28×); no chip-cycle claim.
+- Caller-register probe checks n2/n3/r3/m3 sentinels with separate tracking on
+  each core, 4,512 blocks/core; audio stays identical. A deliberate n2 fault
+  is detected on both cores as a positive control. Not full instrument ABI.
+- Clear chunk is 150 words to retain 102 calls and the known startup split
+  limitation. Four tank controls ramp for 8 ms; MIX for 5.805 ms.
 
-`verify_src_layout.py --check` still proves exact reconstruction of all 66
-SRC coefficient rows and 1,522 schedule endpoints. The unimplemented layout
-could save 2,128 P words; its estimated total is now 6,409 before decoder
-changes, still above the documented empty package arenas.
+`verify_src_layout.py --check` reconstructs all 66 coefficient rows and
+1,522 schedule endpoints and checks actual native table words and current
+parity-report source hashes. The mirrored layout is now implemented on the
+DSP. The 6,526 P-word total still exceeds the documented empty package arenas
+by 2,222 / 2,094 words. No installable effect or hardware qualification.
 
 The chronological sections below retain historical results. Their earlier
 layouts, separate diffuser and statements of missing SRC describe those stages.

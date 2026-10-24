@@ -1,43 +1,15 @@
 #!/usr/bin/env python3
 # Copyright 2026 cscobey. MIT; see LICENSE.
-"""Check a lossless SRC table layout proposal; does not change native DSP."""
+"""Verify the lossless SRC layout used by the native DSP experiment."""
 import argparse
 import hashlib
 import json
 from pathlib import Path
 
-from generate_src import bank
+from src_layout import packed_bank
 
 ROOT = Path(__file__).resolve().parent
 
-
-def packed_bank(rate, taps):
-    rows = bank(rate, taps)
-    data, descriptors = [], []
-    # The terminal phase has its own normalization: do not infer it from phase 0.
-    canonical = {}
-    for phase in [0, *range(1, 17), 32]:
-        row = rows[phase]
-        if phase:
-            assert row[-1] == 0
-            row = row[:-1]
-        canonical[phase] = len(data)
-        data.extend(row)
-    for phase in range(33):
-        mirror = 16 < phase < 32
-        source = 32 - phase if mirror else phase
-        count = taps if phase == 0 else taps - 1
-        start = canonical[source] + (count - 1 if mirror else 0)
-        step = -1 if mirror else 1
-        # One 24-bit relative descriptor: pointer 0..16, reverse 17, short 18.
-        assert start < 1 << 17
-        word = start | (int(mirror) << 17) | (int(phase != 0) << 18)
-        descriptors.append(word)
-        recovered = [data[start + step * i] for i in range(count)]
-        if count < taps:
-            recovered.append(0)
-        assert recovered == rows[phase], (rate, phase)
-    return rows, data, descriptors
 
 
 def decode(data, descriptors, phase, taps):
@@ -50,19 +22,30 @@ def decode(data, descriptors, phase, taps):
 
 def report():
     banks = []
+    actual = json.loads((ROOT / 'native_src_tables.json').read_text())
+    words, base = actual['words'], actual['base']
+    coefficient_cursor, descriptor_cursor = 0, 2558
+    schedule_cursor = 2624
     for rate, output, taps in ((44100, 32000, 96), (32000, 44100, 48)):
         rows, data, descriptors = packed_bank(rate, taps)
         assert [decode(data, descriptors, p, taps) for p in range(33)] == rows
+        assert words[coefficient_cursor:coefficient_cursor+len(data)] == [v & 0xffffff for v in data]
+        assert words[descriptor_cursor:descriptor_cursor+33] == descriptors
         period = output // 100
         # Check both endpoints of every phase interpolation in a complete
         # rational clock period, including endpoint 32 and all reverse rows.
         endpoint_checks = 0
         for n in range(period):
             phase, remainder = divmod(((n * rate) % output) * 32, output)
-            assert 0 <= (remainder << 23) // output < 1 << 23
+            weight = (remainder << 23) // output
+            assert 0 <= weight < 1 << 23
+            assert words[schedule_cursor+2*n:schedule_cursor+2*n+2] == [base+descriptor_cursor+phase, weight]
             for endpoint in (phase, phase + 1):
                 assert decode(data, descriptors, endpoint, taps) == rows[endpoint]
                 endpoint_checks += 1
+        coefficient_cursor += len(data)
+        descriptor_cursor += 33
+        schedule_cursor += period * 2
         banks.append(dict(inputRate=rate, outputRate=output, taps=taps,
                           originalCoefficientWords=33 * taps,
                           packedCoefficientWords=len(data), descriptorWords=33,
@@ -70,20 +53,25 @@ def report():
     coefficients = sum(b['packedCoefficientWords'] for b in banks)
     descriptors = sum(b['descriptorWords'] for b in banks)
     schedule = 2 * (320 + 441)
-    native = json.loads((ROOT / 'evidence/no-smear/wet.json').read_text())
+    assert coefficient_cursor == 2558 and descriptor_cursor == 2624
+    assert schedule_cursor == len(words) == 4146
+    native = json.loads((ROOT / 'evidence/optimization/wet.json').read_text())
+    for name, sha in native['sourceHashes'].items():
+        assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == sha, name
+    assert native['tableWords'] == len(words)
+    assert native['coreOutputsIdentical'] and native['exactHostParity']
     total = native['programWords'] + native['tableWords'] + 128
-    proposed = native['programWords'] + coefficients + descriptors + schedule + 128
-    return dict(scope='Host layout proof only; native DSP still uses full tables',
+    return dict(scope='Host reconstruction and schedule check of actual native tables; native parity report source hashes verified',
                 sourceHashes={name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
-                              for name in ('generate_src.py', 'verify_src_layout.py')},
+                              for name in ('generate_src.py', 'src_layout.py', 'verify_src_layout.py', 'native_src_tables.json')},
                 banks=banks, unchangedScheduleWords=schedule,
                 currentProgramAndTablesWords=total,
-                proposedTablesWords=coefficients + descriptors + schedule,
-                proposedTotalBeforeDecoderChanges=proposed,
+                nativeTableWords=coefficients + descriptors + schedule,
+                nativeParityReport="evidence/optimization/wet.json",
                 savedTableWords=4752 - coefficients - descriptors,
                 documentedEmptyArenaWords=[4304, 4432],
-                minimumDeficitBeforeDecoderChanges=[proposed - n for n in (4304, 4432)],
-                nativeDecoderImplemented=False, installedFitProven=False)
+                minimumDeficitWords=[total - n for n in (4304, 4432)],
+                nativeDecoderImplemented=True, installedFitProven=False)
 
 
 if __name__ == '__main__':

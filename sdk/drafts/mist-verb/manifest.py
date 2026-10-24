@@ -30,7 +30,7 @@ MODULE = Module(
     dsp=DspSection(asm="modules/mist-verb/engine.asm", priority=17,
                    bus_role=BusRole.NONE, ybase=YBase.NEVER,
                    r7_latch_slot=None, gate_label=None),
-    claims=Claims(stock_instance_buffer=True, buffer_words=13808),
+    claims=Claims(stock_instance_buffer=True, buffer_words=15728),
     harness=Harness(layout_char=None, is_server=False),
     gates=(Gate("modules/mist-verb/verify.py", remix_arg=False),),
     dear={"TIME":127,"DAMP":0,"DIFF":127,"GAIN":127,"MIX":127},

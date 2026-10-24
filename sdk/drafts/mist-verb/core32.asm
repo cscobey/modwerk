@@ -1,7 +1,7 @@
 ; Copyright 2014 Emilie Gillet; translation Copyright 2026 cscobey.
 ; MIT: see LICENSE and pinned upstream source.
 ; 32 kHz core experiment ONLY. Not a 44.1 kHz Octatrack effect.
-; X r7+00..6f own scalar state. Y first 13432 words own buffer.
+; X r7+00..6f own scalar state. Y first 15238 words own buffer.
 init:
         move #>$ffffff,m5
         move r7,r5
@@ -23,27 +23,27 @@ core_zero:
         add #>$113,a
         move a1,x:(r7+$62)
         move x:(r7+$20),a
-        add #>$1b5,a
+        add #>$204,a
         move a1,x:(r7+$63)
         move x:(r7+$20),a
-        add #>$2bf,a
+        add #>$393,a
         move a1,x:(r7+$64)
         move x:(r7+$20),a
-        add #>$934,a
+        add #>$a08,a
         move a1,x:(r7+$65)
         move x:(r7+$20),a
-        add #>$112a,a
+        add #>$11fe,a
         move a1,x:(r7+$66)
         move x:(r7+$20),a
-        add #>$1a0c,a
+        add #>$1ae0,a
         move a1,x:(r7+$67)
         move x:(r7+$20),a
-        add #>$2185,a
+        add #>$2259,a
         move a1,x:(r7+$68)
         move x:(r7+$20),a
-        add #>$2804,a
+        add #>$28d8,a
         move a1,x:(r7+$69)
-        move #>$3478,a
+        move #>$3b86,a
         move a1,x:(r7+$22)
         move #>$400000,a
         move a1,x:(r7+$40)
@@ -67,7 +67,7 @@ proc:
         move x:(r7+$22),a
         tst a
         beq core_knobs
-        move #>$84,x0
+        move #>$96,x0
         cmp x0,a
         blt core_short_clear
         move x0,a
@@ -389,10 +389,10 @@ quant_0364:
         bpl tap_0205_ready
         move #>$f0,a
 tap_0205_ready:
-        bsr >cell_address
-        move #>$113,n5
+        move a1,n5
+        move x:(r7+$62),r5
         move (r5)+n5
-        bsr >cell_fetch
+        move y:(r5),a
         asl #$8,a,a
         move a1,a
         move a1,x:(r7+$33)
@@ -413,10 +413,11 @@ quant_0404:
         and #>$00ffff,a
         move a1,x:(r7+$30)
         move x:(r7+$52),a
-        bsr >cell_address
-        move #>$113,n5
+        move a1,n5
+        move x:(r7+$62),r5
         move (r5)+n5
-        bsr >cell_store
+        move x:(r7+$30),a
+        move a1,y:(r5)
         move x:(r7+$32),x0
         move x:(r7+$02),y1
         mpy -x0,y1,a
@@ -428,10 +429,10 @@ quant_0404:
         bpl tap_0395_ready
         move #>$18e,a
 tap_0395_ready:
-        bsr >cell_address
-        move #>$1b5,n5
+        move a1,n5
+        move x:(r7+$63),r5
         move (r5)+n5
-        bsr >cell_fetch
+        move y:(r5),a
         asl #$8,a,a
         move a1,a
         move a1,x:(r7+$33)
@@ -445,17 +446,18 @@ tap_0395_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0443
+        bpl quant_0444
         add #>$ff,a
-quant_0443:
+quant_0444:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
         move x:(r7+$53),a
-        bsr >cell_address
-        move #>$1b5,n5
+        move a1,n5
+        move x:(r7+$63),r5
         move (r5)+n5
-        bsr >cell_store
+        move x:(r7+$30),a
+        move a1,y:(r5)
         move x:(r7+$32),x0
         move x:(r7+$02),y1
         mpy -x0,y1,a
@@ -480,10 +482,10 @@ quant_0443:
         sub #>$12ae,a
 interpol_2d52_first:
         move a1,x:(r7+$49)
-        bsr >cell_address
-        move #>$2804,n5
+        move a1,n5
+        move x:(r7+$69),r5
         move (r5)+n5
-        bsr >cell_fetch
+        move y:(r5),a
         asl #$8,a,a
         move a1,a
         move a1,x:(r7+$47)
@@ -493,10 +495,10 @@ interpol_2d52_first:
         blt interpol_2d52_second
         clr a
 interpol_2d52_second:
-        bsr >cell_address
-        move #>$2804,n5
+        move a1,n5
+        move x:(r7+$69),r5
         move (r5)+n5
-        bsr >cell_fetch
+        move y:(r5),a
         asl #$8,a,a
         move a1,a
         move x:(r7+$47),x0
@@ -543,9 +545,9 @@ tap_0a0b_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0541
+        bpl quant_0543
         add #>$ff,a
-quant_0541:
+quant_0543:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -583,9 +585,9 @@ tap_1202_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0581
+        bpl quant_0583
         add #>$ff,a
-quant_0581:
+quant_0583:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -605,15 +607,15 @@ quant_0581:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0603
+        bpl quant_0605
         add #>$ff,a
-quant_0603:
+quant_0605:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
         move x:(r7+$56),a
         bsr >cell_address
-        move #>$112a,n5
+        move #>$11fe,n5
         move (r5)+n5
         bsr >cell_store
         move x:(r7+$32),a
@@ -624,7 +626,7 @@ quant_0603:
         move #>$d52,a
 tap_1f56_ready:
         bsr >cell_address
-        move #>$112a,n5
+        move #>$11fe,n5
         move (r5)+n5
         bsr >cell_fetch
         asl #$8,a,a
@@ -666,9 +668,9 @@ tap_26d0_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0664
+        bpl quant_0666
         add #>$ff,a
-quant_0664:
+quant_0666:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -706,9 +708,9 @@ tap_2d50_ready:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0704
+        bpl quant_0706
         add #>$ff,a
-quant_0704:
+quant_0706:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
@@ -728,17 +730,18 @@ quant_0704:
         move a,x0
         move x0,a
         tst a
-        bpl quant_0726
+        bpl quant_0728
         add #>$ff,a
-quant_0726:
+quant_0728:
         asr #$8,a,a
         and #>$00ffff,a
         move a1,x:(r7+$30)
         move x:(r7+$59),a
-        bsr >cell_address
-        move #>$2804,n5
+        move a1,n5
+        move x:(r7+$69),r5
         move (r5)+n5
-        bsr >cell_store
+        move x:(r7+$30),a
+        move a1,y:(r5)
         move x:(r7+$32),a
         move a1,x:(r7+$38)
         move x:(r7+$39),x0
