@@ -581,4 +581,6 @@ capabilities and contents. Serve media through an explicit allowlist. Never
 commit packages or firmware inputs. Keep opt-in drafts excluded from production
 and default test catalogues, and test the enabled path explicitly. Until a draft
 has a native card adapter, reject card builds clearly rather than omitting it.
+Catalogue helpers also reach backend code: include shared source and independent
+data in `LICENSES/platform.json` under the existing contribution terms.
 This local workflow does not satisfy public release or hardware qualification.

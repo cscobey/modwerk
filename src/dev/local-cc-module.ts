@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later OR Elastic-2.0
+// Copyright (c) 2026 Jannik Aßfalg (repeat98)
+// Copyright (c) 2026 Cooper Scobey
 // Opt-in development catalogue overlay. Never a published catalogue or bundled firmware asset.
 import document from '../../sdk/drafts/midi-cc-slots/local-module.json'
 import pin from '../../sdk/drafts/midi-cc-slots/local-build.json'
