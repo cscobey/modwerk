@@ -8,11 +8,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def main():
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--package', required=True, type=Path)
-    p.add_argument('--main', required=True, type=Path)
-    args = p.parse_args()
+def fixture_source(main):
     loader = ROOT / 'sdk/runtime/loader'
     source = (loader / 'tests/host_test.c').read_text().split('int main(void)')[0]
     source = source.replace('#include "../loader.c"', f'#include "{loader / "loader.c"}"')
@@ -21,8 +17,18 @@ def main():
     # The original small fake address range never crosses the host pool's
     # truncated address; real firmware addresses need an explicit upper bound.
     source = source.replace('a >= lo && n <= RUNTIME_POOL_BYTES - (a - lo)', 'a >= lo && a - lo < RUNTIME_POOL_BYTES && n <= RUNTIME_POOL_BYTES - (a - lo)')
-    size = args.main.stat().st_size
+    size = main.stat().st_size
     source = source.replace('stock[256], original[256]', f'stock[{size}], original[{size}]')
+    return source
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--package', required=True, type=Path)
+    p.add_argument('--main', required=True, type=Path)
+    args = p.parse_args()
+    loader = ROOT / "sdk/runtime/loader"
+    source = fixture_source(args.main)
     source += r'''
 int main(int argc, char **argv) {
     CHECK(argc == 3);

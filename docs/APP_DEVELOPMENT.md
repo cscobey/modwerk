@@ -126,8 +126,15 @@ For the private MIDI CC Slots development draft, use
 binutils on the development server's PATH. Its local-only compiler makes a
 stock-free trial package and refuses a package digest that differs from the
 software-verified local-build.json; the page reviews the connected base and installed
-set before an explicit temporary USB trial, with Undo and no Keep or flash.
-It is outside the public catalogue. See [the draft's instructions and limits](../sdk/drafts/midi-cc-slots/README.md#local-app-and-temporary-usb-trial).
+set before an explicit temporary USB trial, with Undo, Keep, removal and
+restart verification. Keep saves the whole running set on the installed base.
+A resolved Keep call is not proof of persistence: legacy diagnostics may be
+missing, and a failed save can leave the module running only until power-off.
+Require a completed self-test report before Keep, explicit saved-set diagnostics
+and matching module IDs/layouts; require
+the startup-restored result separately after reboot. This is not package-byte
+readback or saved-project qualification. The page never flashes firmware.
+It is outside the public catalogue. See [the draft's instructions and limits](../sdk/drafts/midi-cc-slots/README.md#local-app-installation-and-removal).
 
 ## Search indexing
 

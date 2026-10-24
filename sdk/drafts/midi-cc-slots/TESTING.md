@@ -1,6 +1,8 @@
 # MIDI CC Slots investigation
 
-Status: incomplete, unqualified emulator research. No physical hardware used.
+Status: unqualified development draft. Software evidence below is locally
+observed; hardware reports are identified separately. No physical unit was
+driven by the verification scripts.
 
 ## Observed stock behavior
 
@@ -22,7 +24,7 @@ Status: incomplete, unqualified emulator research. No physical hardware used.
 These are local source/control-flow observations, not proof of full saved
 project semantics or of the candidate feature.
 
-## Current candidate: 0.0.2-experimental
+## Earlier candidate: 0.0.2-experimental
 
 MAIN SHA-256 `984120afb2d5255a9d708caa83647cd900f0e0fe544a19394bfc5e9fa875fe85`.
 The private unit is 420 bytes including local replay spans, at the same
@@ -114,7 +116,7 @@ sequencer, persistence or physical reboot test.
 - Local HTTP endpoint returned the same package digest as the direct build.
   Capability/stale-inventory/package-identity and DOM trial tests cover that
   preparation sends nothing, an explicit trial adds only the draft, and the
-  real link's self-test callback is supplied. No Keep action exists.
+  real link's self-test callback is supplied. At that revision no Keep action existed.
 - Hardware USB, actual loader coexistence, saved Part/project persistence,
   LFO/shared-channel behavior, Keep/restart and physical reboot: **not tested**.
   The 14 unchanged sites in a supplied file do not prove the connected unit's
@@ -147,4 +149,31 @@ sequencer, persistence or physical reboot test.
 - User reported “the control works” on the unit before this display update.
   No build identity was independently read; this is a reported control
   result, not qualification of persistence, coexistence or this version.
-- This version's on-device display, USB trial and persistence: **not tested**.
+- User subsequently reported the display update working. The connected build
+  identity was not independently read; this remains a reported result.
+- Exact-build USB lifecycle and physical restart persistence: **not tested**.
+
+
+## Local persistence workflow — 24 October 2026
+
+The native package remains 0.0.4-experimental, 1,914 bytes, SHA-256
+`1f435661235af72d7cd5847e380a14c6cfe29c1189c33471e62ea072e8016c64`.
+Only the local app workflow and software verification changed.
+
+- Explicit Keep follows this page's own tested one-module trial; Undo remains.
+  Removal stages only the empty same-ID package, then requires explicit Keep.
+- DOM checks cover review sending nothing, explicit Keep, save-failure and
+  missing-diagnostics rejection/recovery, companion preservation, removal and
+  Undo, plus refusal of an unreported legacy self-test. Restart verification rejects the immediate saved result and requires
+  the distinct startup-restored result with matching base and IDs/layouts.
+- `verify_persistence.py` compiles the actual C runtime loader and modset.c
+  against the supplied private MAIN. The exact package is kept, restored in a
+  fresh process, removed, then absent in another fresh process. A synthetic
+  companion survives throughout. Failed writes leave the prior saved set
+  restorable in a fresh process. Files are simulated in a temporary directory;
+  no physical card I/O, ColdFire execution, task scheduling or USB is exercised.
+- The running local compiler endpoint returned the same pinned package digest.
+- Keep, physical power-cycle restoration and persistent removal on the actual
+  Octatrack: **not tested**. The user chose to perform that test later.
+- Module persistence does not establish assignment persistence in saved Parts
+  or projects. Inventory/diagnostic checks do not read back package bytes.

@@ -1,7 +1,7 @@
 import { verifiedCcDocument } from '../../scripts/local-cc-slots'
 import { sha } from '../../vendor/elekloader/kit/src/bytes'
 import { describe, expect, it } from 'vitest'
-import { ccPackage, ccTrialProblem, CC_SLOTS_ID } from './cc-slots'
+import { ccPackage, ccTrialProblem, ccPersistenceProblem, parseCcInstallRecord, CC_SLOTS_ID, type CcInstallRecord } from './cc-slots'
 import type { LinkState } from '../engine/elekloader/octatrack-link'
 const base = 'a'.repeat(64)
 const ready: LinkState = { status: 'ready', active: 'b'.repeat(64), identity: { base, model: 'MKII', canSubmit: true, capabilities: { abi: 8, features: 3, maxSites: 128, maxCopies: 128 } } }
@@ -14,7 +14,8 @@ describe('local CC trial review', () => {
     expect(ccTrialProblem({ ...ready, identity: { ...ready.identity!, capabilities: undefined } }, [], review)).toBeTruthy()
     expect(ccTrialProblem(ready, undefined, review)).toBeTruthy()
     expect(ccTrialProblem({ ...ready, active: 'c'.repeat(64) }, [], review)).toBeTruthy()
-    expect(ccTrialProblem(ready, [{ module: CC_SLOTS_ID, handle: 1, layout: 1, name: 'CC' }], review)).toContain('already installed')
+    expect(ccTrialProblem(ready, [{ module: CC_SLOTS_ID, handle: 1, layout: 1, name: 'CC' }], review)).toBeUndefined()
+    expect(ccTrialProblem(ready, [], review, 'remove')).toContain('not installed')
   })
   it('refuses damaged or substituted local packages', () => {
     expect(() => ccPackage({ version: '0.0.4-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
@@ -26,4 +27,18 @@ it('does not offer edited native source as the verified local trial', () => {
   const data = new Uint8Array([1, 2, 3]), digest = sha(data)
   expect(verifiedCcDocument(data, { version: 'test', sha256: digest }).sha256).toBe(digest)
   expect(() => verifiedCcDocument(new Uint8Array([1, 2, 4]), { version: 'test', sha256: digest })).toThrow('source changed')
+})
+
+it('retains a restart receipt across refresh while refusing another base or an incomplete saved set', () => {
+  const receipt: CcInstallRecord = { schema: 1, base, packageSha256: 'c'.repeat(64), action: 'install', saved: true, restored: false, expected: [{ module: CC_SLOTS_ID, layout: 1 }] }
+  const restored = parseCcInstallRecord(JSON.stringify(receipt))!
+  expect(restored).toEqual(receipt)
+  expect(parseCcInstallRecord('{broken')).toBeUndefined()
+  expect(parseCcInstallRecord(JSON.stringify({ ...receipt, saved: false, restored: true }))).toBeUndefined()
+  const modules = [{ module: CC_SLOTS_ID, layout: 1, handle: 1, name: 'CC' }]
+  const health = { saved: 1, savedCount: 1, live: 1 }
+  expect(ccPersistenceProblem(restored, ready, modules, health, true)).toBeUndefined()
+  expect(ccPersistenceProblem(restored, { ...ready, identity: { ...ready.identity!, base: 'd'.repeat(64) } }, modules, health, true)).toContain('same Modwerk base')
+  expect(ccPersistenceProblem(restored, ready, modules, { ...health, savedCount: 0 }, true)).toContain('complete saved module set')
+  expect(ccPersistenceProblem(restored, ready, modules, { ...health, saved: 7 }, true)).toContain('Startup restoration is not confirmed')
 })
