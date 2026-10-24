@@ -136,6 +136,11 @@ the startup-restored result separately after reboot. This is not package-byte
 readback or saved-project qualification. The page never flashes firmware.
 It is outside the public catalogue. See [the draft's instructions and limits](../sdk/drafts/midi-cc-slots/README.md#local-app-installation-and-removal).
 
+The unit can report private or newer modules absent from this checkout’s catalogue.
+Keep those inventory IDs visible and use a neutral preview when their
+documentation/artwork is missing; never dereference catalogue metadata just
+because the unit reported a module, or discard unknown entries to render it.
+
 ## Search indexing
 
 The production build includes HTML summaries: the homepage links to available modules on all three supported machines, module pages use their current catalogue documentation, and `/submit/` describes the shared developer workflow. Public forum pages include their existing public excerpt. A small same-origin, parser-blocking script in the head hides these summaries before the body can paint, preventing a text flash while React loads. React replaces them with the interactive app. With JavaScript disabled, or if the app script fails to load or execute before mounting, the summaries remain readable. Firmware and private account/report data are never prerender inputs.
