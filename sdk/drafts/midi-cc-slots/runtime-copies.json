@@ -1,0 +1,14 @@
+[
+  {
+    "offset": 378,
+    "address": "0x4003b3be",
+    "length": 16,
+    "sha256": "2208dade979a9235783eacb36cdde6fac1f68a1c1e97629678e6ef71eaa7643b"
+  },
+  {
+    "offset": 620,
+    "address": "0x4003cf60",
+    "length": 16,
+    "sha256": "49600c806d592d753729983c84557aab4a412eebec0d3a117d71d470fb534a03"
+  }
+]

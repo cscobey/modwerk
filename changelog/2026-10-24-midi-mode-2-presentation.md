@@ -1,0 +1,1 @@
+The private MIDI CC Slots draft now has a Midi Mode 2 presentation: module-page copy, controls, screenshot captions and original routing artwork in the CC Map visual style. Catalogue registration and screenshot capture remain separate next steps; the installed package is unchanged.

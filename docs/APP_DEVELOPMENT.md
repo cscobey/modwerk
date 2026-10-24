@@ -121,6 +121,26 @@ npm run dev:community
 
 In a second terminal, run `npm run dev` and open http://127.0.0.1:5173. Vite proxies /api to the local Cloudflare runtime on port 8788, with D1 emulated locally. `.dev.vars` (ignored) sets the local `APP_URL` and overrides the production values in `wrangler.worker.jsonc`. Without the API, local configuration and firmware storage still work; community actions explain their unavailable state.
 
+For the private MIDI CC Slots development draft, use
+`http://127.0.0.1:5173/?preview=midi-cc-slots` with Python and `m68k-elf`
+binutils on the development server's PATH. Its local-only compiler makes a
+stock-free trial package and refuses a package digest that differs from the
+software-verified local-build.json; the page reviews the connected base and installed
+set before an explicit temporary USB trial, with Undo, Keep, removal and
+restart verification. Keep saves the whole running set on the installed base.
+A resolved Keep call is not proof of persistence: legacy diagnostics may be
+missing, and a failed save can leave the module running only until power-off.
+Require a completed self-test report before Keep, explicit saved-set diagnostics
+and matching module IDs/layouts; require
+the startup-restored result separately after reboot. This is not package-byte
+readback or saved-project qualification. The page never flashes firmware.
+It is outside the public catalogue. See [the draft's instructions and limits](../sdk/drafts/midi-cc-slots/README.md#local-app-installation-and-removal).
+
+The unit can report private or newer modules absent from this checkout’s catalogue.
+Keep those inventory IDs visible and use a neutral preview when their
+documentation/artwork is missing; never dereference catalogue metadata just
+because the unit reported a module, or discard unknown entries to render it.
+
 ## Search indexing
 
 The production build includes HTML summaries: the homepage links to available modules on all three supported machines, module pages use their current catalogue documentation, and `/submit/` describes the shared developer workflow. Public forum pages include their existing public excerpt. A small same-origin, parser-blocking script in the head hides these summaries before the body can paint, preventing a text flash while React loads. React replaces them with the interactive app. With JavaScript disabled, or if the app script fails to load or execute before mounting, the summaries remain readable. Firmware and private account/report data are never prerender inputs.
@@ -544,3 +564,23 @@ Routine registered-author updates retain CI-gated automatic merge/publication af
 Developer public work stays in GitHub. The former workspace is **Creator settings**, retaining module claims, per-module Ko-fi links and direct consent-controlled private report links. It no longer fetches or shows a duplicate public report/activity inbox. Private replies/logs remain private. Report bell/email links open the user's report on Modwerk; frontend public replies go to the same GitHub conversation.
 
 New GitHub issue descriptions explain maintainer triage/closure commands, including `/modwerk needs-info <question>`, `/modwerk confirm <affected-version|unknown> <evidence>`, `/modwerk close configuration|duplicate|not_reproducible|insufficient_information|withdrawn <explanation>`, `/modwerk reopen <explanation>` and registered-author version-bound `/modwerk resolve <version> verified-download`. Signed newly created comments only, no PRs, exact numeric identity and current reviewed module ownership. Commands do not grant general repository access or weaken release/hardware gates. Migration **0063_github_actions.sql** adds content-bound receipts and write leases; the existing Worker deployment applies it before code deployment. It stores hashes and identities, never private report text or credentials.
+
+
+## Opt-in local module drafts
+
+Unqualified experiments can use a development-only catalogue overlay without
+editing generated public catalogues or putting them in release module folders.
+Midi Mode 2 uses `VITE_LOCAL_CC_SLOTS=1` in ignored `.env.local`, with metadata
+in `sdk/drafts/midi-cc-slots/local-module.json` and gating in
+`src/dev/local-cc-module.ts`. It preserves the installed runtime ID so inventories
+and saved configurations resolve through the normal catalogue.
+
+The Vite development plugin compiles the original source on demand and checks
+the pinned package digest before normal Sync preparation checks its header,
+capabilities and contents. Serve media through an explicit allowlist. Never
+commit packages or firmware inputs. Keep opt-in drafts excluded from production
+and default test catalogues, and test the enabled path explicitly. Until a draft
+has a native card adapter, reject card builds clearly rather than omitting it.
+Catalogue helpers also reach backend code: include shared source and independent
+data in `LICENSES/platform.json` under the existing contribution terms.
+This local workflow does not satisfy public release or hardware qualification.

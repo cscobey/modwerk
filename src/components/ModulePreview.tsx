@@ -226,14 +226,16 @@ const ART: Readonly<Record<string, () => ReactElement>> = {
 }
 
 export function ModulePreview({ id, compact = false }: { id: string; compact?: boolean }) {
+  // A unit can report a private or newer module that this catalogue does not know.
+  const details = DETAILS[id], document = MODULE_DOCUMENTS_BY_ID[id]
   return (
     <div className={'module-preview ' + (compact ? 'compact-preview' : '')} data-module={id} aria-hidden="true">
-      <div className="preview-label"><span>{DETAILS[id].label}</span><span className="preview-led" /></div>
+      <div className="preview-label"><span>{details?.label ?? 'Unlisted module'}</span><span className="preview-led" /></div>
       <svg viewBox="0 0 320 192" className="signal-art" fill="none">
         <g className="signal-grid">{[52, 97, 142].map((y) => <path key={y} d={'M20 ' + y + 'H300'} />)}{[64, 128, 192, 256].map((x) => <path key={x} d={'M' + x + ' 33V163'} />)}</g>
-        {ART[id] ? ART[id]() : <image href={assetUrl('module-media/' + id + '/' + MODULE_DOCUMENTS_BY_ID[id].version + '/presentation/thumbnail.svg')} width="320" height="192" />}
+        {ART[id] ? ART[id]() : document ? <image href={assetUrl('module-media/' + id + '/' + document.version + '/presentation/thumbnail.svg')} width="320" height="192" /> : null}
       </svg>
-      <div className="preview-controls">{DETAILS[id].controls.slice(0, 3).map((control) => <span key={control}>{control}</span>)}</div>
+      <div className="preview-controls">{details?.controls.slice(0, 3).map((control) => <span key={control}>{control}</span>)}</div>
     </div>
   )
 }

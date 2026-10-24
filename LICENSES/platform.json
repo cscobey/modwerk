@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "licensor": "Jannik Aßfalg (repeat98)",
+  "licensor": "Jannik A\u00dffalg (repeat98)",
   "auditBase": "65452618de82a23ea56a7f0cd864044740e0b810",
   "auditDate": "2026-10-09",
   "backendPaths": [
@@ -45,6 +45,7 @@
     "src/config/development-discord.ts",
     "src/config/support.ts",
     "src/config/usb-audio.ts",
+    "src/dev/local-cc-module.ts",
     "src/devices/registry.ts",
     "src/hosting.ts",
     "src/legal/policy.ts",
@@ -54,6 +55,8 @@
     ".github/module-authors.json",
     "docs/news/008-beta-invitation.draft.json",
     "sdk/catalog.json",
+    "sdk/drafts/midi-cc-slots/local-build.json",
+    "sdk/drafts/midi-cc-slots/local-module.json",
     "src/catalog/machine-modules.json",
     "src/catalog/module-documents.json",
     "src/catalog/module-sets.json",
