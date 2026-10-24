@@ -173,7 +173,21 @@ Only the local app workflow and software verification changed.
   restorable in a fresh process. Files are simulated in a temporary directory;
   no physical card I/O, ColdFire execution, task scheduling or USB is exercised.
 - The running local compiler endpoint returned the same pinned package digest.
-- Keep, physical power-cycle restoration and persistent removal on the actual
-  Octatrack: **not tested**. The user chose to perform that test later.
+- The user subsequently pasted “Startup restoration confirmed by the base”
+  from the local page and reported the controls working after restart. This
+  is a reported Keep/restart result, not an independently read exact-build
+  hardware qualification. Persistent removal on the unit remains untested.
 - Module persistence does not establish assignment persistence in saved Parts
   or projects. Inventory/diagnostic checks do not read back package bytes.
+
+
+## Midi Mode 2 presentation — 24 October 2026
+
+The presentation name is now Midi Mode 2. Proposed listing copy, control
+instructions, five screenshot captions and an original vector thumbnail are
+in `presentation/`. The thumbnail follows CC Map’s dark grid and lilac routing
+style and was rendered locally and visually inspected. It is a conceptual
+illustration, not device UI evidence. No native source, installed module ID,
+package bytes, catalogue entry or generated publication metadata changed.
+The actual screenshots remain pending; the capture plan distinguishes physical
+LCD photographs, supported development-base exports and emulator captures.

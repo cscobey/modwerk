@@ -1,10 +1,11 @@
-# MIDI CC Slots — local development draft
+# Midi Mode 2 — local development draft
 
 Unqualified development draft. A stock-free USB trial package can be compiled
 by the local app; no public catalogue entry or release is added. Hardware and
 saved-project persistence are not qualified. Use only a disposable test project
 for trials. The local page offers explicit Keep, removal and restart checks;
-it does not flash firmware. Physical restart persistence still needs testing.
+it does not flash firmware. The user reported restoration and working controls
+after restart; independently bound hardware qualification remains outstanding.
 
 The prototype replaces either MIDI CONTROL 1 PB/AT position with an
 independent CC 0–127 assignment per MIDI track. Zero in each assignment byte
@@ -18,6 +19,15 @@ channel, mute and duplicate-value handling. It creates no transport clock.
 The stopped-panel gate has measured the two CC positions, stock controls and
 STK restoration. Sequencing, persistence and hardware runtime integration remain
 unqualified. See TESTING.md.
+
+## Name, copy and artwork
+
+The presentation name is **Midi Mode 2**. The installed development identity
+remains `midi-cc-slots`; no native code or package hash changes for the name.
+The [proposed module copy](presentation/COPY.md),
+[original CC Map-style artwork](presentation/thumbnail.svg) and
+[screenshot capture plan](presentation/README.md) are ready for review.
+They do not register or publish the module.
 
 ## Controls and usage
 
