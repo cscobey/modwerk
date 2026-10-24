@@ -1,0 +1,10 @@
+[
+  {
+    "version": "0.0.1-experimental",
+    "date": "2026-10-23",
+    "changes": [
+      "Starts an unqualified emulator prototype for assigning MIDI CONTROL 1 PB and AT to CC numbers.",
+      "Native PB and AT remain the proposed defaults; no installable release is added."
+    ]
+  }
+]
