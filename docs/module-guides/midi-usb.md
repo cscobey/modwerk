@@ -63,3 +63,14 @@ It binds IDENTIFY to the build receipt, supplies synthetic snapshots with fake a
 ## Digitakt and Digitone
 
 SysEx ids are resources: claim them (`sysex:0x7d` in `platform.claims`), because two mods may never claim the same one ([Digitakt guide](../../sdk/machines/digitakt/README.md)). The core delivers key and encoder events to your handler (`ev_key`, `ev_enc`); return nonzero only when you take the event. A MIDI generator or MIDI effect follows the same rules as on the Octatrack (note-offs, pass-through, the most events one input can produce) and records in TESTING.md the shared memory, fast SRAM and time per event it measured under a flood of notes, CC and clock.
+
+## Prototyping MIDI UI names
+
+The isolated `sdk/drafts/midi-track-names` experiment demonstrates the stock
+name editor and normal MIDI channel-header override. UI success is separate
+from persistence: a Part/track-indexed RAM table has no bank/project identity
+and cannot satisfy save/reload/copy/clear or reboot requirements. Keep such
+experiments out of installable packages until those lifecycle paths and shared
+UI ownership are designed and tested. A stock key table may serve several
+windows; gate a prototype to its exact page and preserve stock handling in
+other contexts. Test actual LCD output as well as stored text.
