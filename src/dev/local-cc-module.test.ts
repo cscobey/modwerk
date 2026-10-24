@@ -10,7 +10,7 @@ async function local(enabled = true, dev = true) {
 it('requires both an explicit local opt-in and a development build', async () => {
   expect((await local(false)).localCcDocuments).toEqual([])
   expect((await local(true, false)).localCcPackages).toEqual([])
-  expect((await local()).localCcPackages[0]).toMatchObject({ id: 'midi-cc-slots', name: 'Midi Mode 2', bytes: 7732, abi: 7, sites: 21, copies: 16 })
+  expect((await local()).localCcPackages[0]).toMatchObject({ id: 'midi-cc-slots', name: 'Midi Mode 2', bytes: 10536, abi: 7, sites: 21, copies: 16 })
 })
 it('registers the local listing, source, artwork, real screenshots and installed runtime identity together', async () => {
   await local()
@@ -32,7 +32,7 @@ it('registers the local listing, source, artwork, real screenshots and installed
   expect(inventory.moduleIds).toEqual([module.id])
   const grid=renderToStaticMarkup(createElement(ModuleGrid,{ids:[module.id],inventory,describe:()=>module.detail,onOpen(){},onRemove(){},onKeep(){},onSaveUnit(){}}))
   expect(grid).toContain('Midi Mode 2');expect(grid).not.toContain('Not in the library')
-  expect(grid).toContain('module-media/midi-cc-slots/0.0.6-experimental/presentation/thumbnail.svg')
+  expect(grid).toContain('module-media/midi-cc-slots/0.0.7-experimental/presentation/thumbnail.svg')
   expect(renderToStaticMarkup(createElement(ModuleAccess,{id:module.id}))).toContain('media/03-control-1.png')
   const card=renderToStaticMarkup(createElement(ModuleCard,{module,selected:false,baseline:null,compared:false,canCompare:true,onToggle(){},onCompare(){}}))
   expect(card).toContain('Local draft');expect(card).toContain('Add Midi Mode 2')

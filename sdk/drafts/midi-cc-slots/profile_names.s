@@ -4,21 +4,20 @@
 .text
 .global names_header,names_open,names_store,names_setup_draw,names_confirm
 names_slot:
- | Also gives the stock-only emulator probe an initial engine wake. On the
- | installed base the ordinary module tick drives this independently.
- lea %sp@(-16),%sp
- moveml %d0-%d1/%a0-%a1,%sp@
- clrl %sp@-
- jsr mm_profile_tick
- addql #4,%sp
- moveml %sp@,%d0-%d1/%a0-%a1
- lea %sp@(16),%sp
  clrl %d0
  moveb 0x100b14cc,%d0
- andil #7,%d0
- lsll #4,%d0
- lea names_store,%a0
- addal %d0,%a0
+ movel %d0,%sp@-
+ jsr mm_profile_name
+ moveal %d0,%a0
+ addql #4,%sp
+ rts
+names_edit:
+ clrl %d0
+ moveb 0x100b14cc,%d0
+ movel %d0,%sp@-
+ jsr mm_profile_edit
+ moveal %d0,%a0
+ addql #4,%sp
  rts
 names_header:
  lea %sp@(-24),%sp
@@ -53,8 +52,10 @@ names_open:
  jsr mm_profile_ready
  tstl %d0
  beq.s names_open_not_ready
- bsr names_slot
+ bsr names_edit
  moveal %a0,%a2
+ tstl %d0
+ beq.s names_open_not_ready
  jsr 0x40056808
  pea 0x4004e978
  pea 1
@@ -112,7 +113,9 @@ names_confirm:
  movel %a2,%sp@-
  jsr 0x40013f40
  addql #8,%sp
- jsr mm_profile_changed
+ movel %a2,%sp@-
+ jsr mm_profile_name_changed
+ addql #4,%sp
  pea -1
  jsr 0x4004d948
  addql #4,%sp

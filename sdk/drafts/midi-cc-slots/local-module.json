@@ -3,7 +3,7 @@
   "id": "midi-cc-slots",
   "key": "MIDI CC SLOTS",
   "name": "Midi Mode 2",
-  "version": "0.0.6-experimental",
+  "version": "0.0.7-experimental",
   "category": "midi-usb",
   "source": {
     "repository": "https://github.com/cscobey/modwerk",
@@ -22,14 +22,14 @@
   "presentation": {
     "label": "Two more MIDI CC controls",
     "family": "MIDI track control",
-    "summary": "Switch PB/AT to CC0–127, show assigned CC numbers, and save eight project-wide MIDI track names with channel defaults and overrides.",
-    "overview": "Midi Mode 2 gives each MIDI track two extra CC controls in CONTROL 1 and displays assigned CC numbers on both control pages. NAME/PUSH in MIDI SRC SETUP opens the native ten-character editor. Version 0.0.6 shares eight names throughout the project and saves them with channel profiles in the project folder. Bank 1, Part 1 supplies defaults for newly visited empty banks; other banks/Parts retain overrides.",
+    "summary": "Switch PB/AT to CC0–127, show assigned CC numbers, and save Bank 1 track-name defaults with independent bank overrides.",
+    "overview": "Midi Mode 2 gives each MIDI track two extra CC controls in CONTROL 1 and displays assigned CC numbers on both control pages. NAME/PUSH in MIDI SRC SETUP opens the native ten-character editor. Bank 1 supplies eight default names; renaming in another bank overrides only that bank, across all its Parts. Unoverridden names continue to follow Bank 1. Channel defaults still come from Bank 1, Part 1, with bank/Part overrides.",
     "highlights": [
       "Two additional CC positions per MIDI track when PB and AT are both mapped.",
       "Independent CC0–127 assignments for the A and B positions.",
       "Numeric CC headers on both MIDI CONTROL pages.",
       "Restore pitch bend or aftertouch with a click in SETUP.",
-      "Name the eight MIDI tracks across the project; save channel defaults and bank/Part overrides."
+      "Save Bank 1 name defaults and independent bank name overrides, plus channel profiles."
     ],
     "usage": [
       "Select a MIDI track and double-tap FX1 to open MIDI CONTROL 1 SETUP.",
@@ -37,7 +37,8 @@
       "Press FX1 to return. Enable the value with FUNC + encoder press and turn it to send values on the track’s output channel.",
       "Click again in SETUP to restore native behavior. Entering CC mode starts at CC0.",
       "Double-tap SRC on a MIDI track, click F (NAME/PUSH), enter up to ten characters and confirm with YES or cancel with NO.",
-      "Set channel defaults in Bank 1, Part 1. New empty banks inherit them; keep independent overrides in other banks/Parts. Stop transport and recorders and wait for MIDI PROFILE SAVED before switching off."
+      "Set channel defaults in Bank 1, Part 1. New empty banks inherit them; keep independent overrides in other banks/Parts. Stop transport and recorders and wait for MIDI PROFILE SAVED before switching off.",
+      "Name tracks in Bank 1. Rename a track in another bank to override that bank only; unedited names continue to follow Bank 1. A blank name is an explicit override."
     ]
   },
   "controls": [
@@ -89,7 +90,7 @@
       "labels": [
         "NAME"
       ],
-      "doc": "Click F in MIDI NOTE SETUP. Ten characters; YES confirms, NO cancels. Eight project-wide names autosave while stopped to two project-local checkpoint files."
+      "doc": "Click F in MIDI NOTE SETUP. Ten characters; YES confirms, NO cancels. Bank 1 supplies default names; other banks can override each track independently. Names are shared across Parts within a bank and autosave while stopped."
     }
   ],
   "access": {
@@ -117,7 +118,7 @@
     "location": "MIDI tracks",
     "conflicts": [],
     "limitations": [
-      "Project profiles use two MIDI2_*.DAT files in the project folder. Copy both with backups. Native Save As/project copy/reload integration and physical reboot remain unqualified. Part copy/clear does not copy/clear shared names. Existing nonzero channels in newly visited banks are preserved; later Bank 1 changes do not overwrite initialized bank/Part profiles.",
+      "Profiles use two MIDI3_*.DAT files in the project folder; copy both with backups. Existing 0.0.6 MIDI2_*.DAT profiles import once and remain unchanged. Native Save As/project copy/reload remains unqualified. Names belong to banks, shared across their Parts; a blank override does not revert to inheritance. Existing nonzero channels in newly visited banks are preserved; later Bank 1 channel changes do not overwrite initialized profiles.",
       "Local development USB draft; card firmware composition and public catalogue publication are not integrated.",
       "User-reported controls, labels and working restoration after restart; the connected build identity was not independently read.",
       "Assignment save/reload, persistent removal, LFOs, shared channels and broader module coexistence remain under test.",
@@ -137,8 +138,8 @@
     "recorded": "24 October 2026: exact package footprint and authored-source estimates; chip timing unmeasured",
     "storage": {
       "label": "Runtime package",
-      "display": "7,732 bytes · 5,616-byte image",
-      "value": 7732,
+      "display": "10,536 bytes · 8,324-byte image",
+      "value": 10536,
       "unit": "bytes",
       "method": "static",
       "conditions": "Package bytes and image size measured from the verified relocatable package. Runtime loader metadata and copied stock spans add allocation overhead.",
@@ -170,14 +171,14 @@
       "memory": {
         "level": "minimal",
         "basis": "source-estimate",
-        "rationale": "A 5,616-byte image includes eight names, channel profiles and card buffering. Two 1,024-byte project checkpoint files store profiles. Package size is 7,732 bytes; loader metadata adds overhead.",
+        "rationale": "An 8,324-byte image includes Bank 1 names, fifteen banks of name overrides, channel profiles and card buffering. Two 4,096-byte files save the profiles. Package size is 10,536 bytes; loader metadata adds overhead.",
         "source": "TESTING.md"
       }
     }
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "398 CC emulator assertions, profile C core fresh-process tests, 33 native card/removal checks across two fresh processes and exact C-loader upgrade/Undo checks pass. Native card probes supply the base UI callback with a declared private shim; physical reboot remains untested.",
+    "summary": "Profile core checks cover bank overrides, inherited default updates, explicit blank names and lossless 0.0.6 import. Native card, CC and loader checks are recorded in TESTING.md. The new bank override behavior is not hardware-tested.",
     "hardwareStatus": "untested",
     "evidenceRevision": "a612c963530d5c326e67c38c76fca09abd164957",
     "gates": [
@@ -187,8 +188,10 @@
       "Fresh-process saved-set simulation",
       "Five reviewed real emulator LCD captures",
       "Persistent C profile core: fresh-process defaults/overrides/OFF/project isolation/short names/torn-write recovery/foreign-file protection",
-      "33 native card/profile/removal assertions across two fresh processes at each of two placements",
-      "Exact 0.0.5 -> 0.0.6 loader upgrade and Undo"
+      "Bank-level naming overrides, inherited default updates, blank overrides, shared Parts and fresh-process restore",
+      "Lossless 0.0.6 import with original checkpoints unchanged",
+      "Exact 0.0.6 -> 0.0.7 loader upgrade and Undo",
+      "48 native card/name/removal assertions across fresh processes at each of two runtime placements"
     ]
   },
   "license": {

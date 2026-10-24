@@ -5,7 +5,7 @@ by the local app; no public catalogue entry or release is added. Hardware and
 saved-project persistence are not qualified. Use only a disposable test project
 for trials. The local page offers explicit Keep, removal and restart checks;
 it does not flash firmware. The user reported restoration and working controls on 0.0.4
-after restart; 0.0.6 project profiles have not been tested on hardware; independently bound hardware qualification remains outstanding.
+after restart; 0.0.7 bank overrides have not been tested on hardware; independently bound hardware qualification remains outstanding.
 
 The prototype replaces either MIDI CONTROL 1 PB/AT position with an
 independent CC 0–127 assignment per MIDI track. Zero in each assignment byte
@@ -29,7 +29,35 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed emulator screenshot gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
-## Version 0.0.6 project-profile test
+## Version 0.0.7 bank name defaults and overrides
+
+**Bank 1 supplies eight default names. Renaming in Banks 2–16 changes only
+that bank**, across all four of its Parts. Unedited tracks continue to follow
+Bank 1, including later changes to its defaults. Clearing a name in another
+bank creates an explicit blank override (showing the native channel header),
+not a return to inheritance. NO cancels without creating an override.
+The NAME/PUSH entry and ten-character editor are unchanged.
+
+The new profile uses `MIDI3_0.DAT` and `MIDI3_1.DAT`, two 4,096-byte
+checkpoints in the project folder. Copy both with backups. On first use,
+existing 0.0.6 `MIDI2_*.DAT` profiles import their shared names as Bank 1's
+defaults and retain all channel defaults/overrides. Both old files remain
+unchanged. Once a new profile exists it takes precedence; importing again
+must not erase later bank edits. A new module trial can create these files;
+Undo restores module code, not entered profile data. Downgrading to 0.0.6
+uses the retained old files and cannot display the newer bank overrides.
+
+Stop transport and recorders and wait for **MIDI PROFILE SAVED**. Keep still
+installs the module separately; wait for **Card save confirmed** before the
+first restart test. Channel behavior remains Bank 1, Part 1 defaults with
+independent bank/Part overrides. Native Save As/copy/reload integration remains
+unqualified; back up the sidecars explicitly and test on a disposable project.
+
+The user reported names working in the earlier build and observed the previous
+shared-name behavior across Banks 1 and 2. Those reports do not qualify the new
+bank override build or independently establish the device/package identity.
+
+## Earlier version 0.0.6 project-profile test
 
 Eight ten-character names are shared across the project. Double-tap MIDI SRC,
 click F (NAME/PUSH), enter a name and confirm with YES. Channel defaults come
@@ -182,7 +210,7 @@ To reproduce the package and private software proofs:
 
 ```sh
 python3 -B sdk/drafts/midi-cc-slots/build_runtime.py --profile --output /private/local/cc.mwrm --receipt /private/local/cc-symbols.json
-python3 -B sdk/drafts/midi-cc-slots/verify_runtime.py --profile --package /private/local/cc.mwrm --stock /private/local/MAIN.bin --output /private/local/cc-runtime-proof
+python3 -B sdk/drafts/midi-cc-slots/verify_runtime.py --profile --external --package /private/local/cc.mwrm --stock /private/local/MAIN.bin --output /private/local/cc-runtime-proof
 python3 -B sdk/drafts/midi-cc-slots/verify_loader.py --package /private/local/cc.mwrm --main /private/local/MAIN.bin
 python3 -B sdk/drafts/midi-cc-slots/verify_persistence.py --package /private/local/cc.mwrm --main /private/local/MAIN.bin
 ```
@@ -232,3 +260,13 @@ reproduces the earlier 0.0.5 volatile-naming package. Run the core test with
 probe accepts `--emulator`, `--candidate`, `--receipt`, `--origin`, `--stock`
 and a new private `--output` directory; use an origin from reconstruction.
 It creates its own scratch card and never accesses a connected instrument.
+
+
+Version 0.0.7 exceeds the small stock firmware zero cave. Its private native
+probe therefore boots stock, verifies an unused RAM region and all site guards,
+then publishes the exact relocated module image and sites from the reconstruction
+fixture. Pass `--fixture /private/.../fixture-47e00000.private.json` and
+`--origin 0x47e00000` to the native verifiers, using stock MAIN as `--candidate`.
+The fixture contains initialization/publication only; name and channel edits
+still use panel input. It is an isolated runtime publication simulation, not the
+resident loader or hardware. The actual C-loader lifecycle is tested separately.

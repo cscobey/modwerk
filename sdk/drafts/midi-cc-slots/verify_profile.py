@@ -20,6 +20,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     for name in ['emulator', 'candidate', 'receipt', 'output', 'stock']:
         p.add_argument('--'+name, type=Path, required=True)
+    p.add_argument('--fixture',type=Path)
     p.add_argument('--origin', type=lambda n:int(n,0), required=True)
     a = p.parse_args()
     out = a.output.resolve()
@@ -35,7 +36,7 @@ def main():
     # The stock reconstruction has no runtime registry. An authored, private
     # UI-tick shim supplies only the base's ordinary hook-0 scheduling; file
     # routines, engine service and name/channel edits still execute unchanged.
-    stub_at=0x400d7c00
+    stub_at=a.origin+0x8000 if a.fixture else 0x400d7c00
     stub_source=out/'tick.private.s'
     stub_source.write_text('''.text
 jsr 0x4005213c
@@ -55,11 +56,18 @@ jmp 0x40052228
     original=a.candidate.read_bytes();native=bytearray(original);stub=(out/'tick.private.bin').read_bytes()
     stock=a.stock.read_bytes()
     assert hashlib.sha256(stock).hexdigest()=='164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e'
-    expect_empty=native[stub_at-0x40000400:stub_at-0x40000400+len(stub)]
-    assert not any(expect_empty) and a.origin+json.loads(a.receipt.read_text())['imageBytes']<=stub_at
-    native[stub_at-0x40000400:stub_at-0x40000400+len(stub)]=stub
-    native[0x4005221e-0x40000400:0x40052228-0x40000400]=struct.pack('>HIHH',0x4ef9,stub_at,0x4e71,0x4e71)
-    candidate=out/'scheduled.private.bin';candidate.write_bytes(native)
+    fixture=None
+    if a.fixture:
+        import emulator_fixture
+        fixture=emulator_fixture.load(a.fixture,stock)
+        assert fixture['origin']==a.origin
+        candidate=a.candidate
+    else:
+        expect_empty=native[stub_at-0x40000400:stub_at-0x40000400+len(stub)]
+        assert not any(expect_empty) and a.origin+json.loads(a.receipt.read_text())['imageBytes']<=stub_at
+        native[stub_at-0x40000400:stub_at-0x40000400+len(stub)]=stub
+        native[0x4005221e-0x40000400:0x40052228-0x40000400]=struct.pack('>HIHH',0x4ef9,stub_at,0x4e71,0x4e71)
+        candidate=out/'scheduled.private.bin';candidate.write_bytes(native)
     checks=[]
     def expect(condition,message):
         if not condition:raise AssertionError(message)
@@ -107,10 +115,29 @@ jmp 0x40052228
         def bank(index):
             press(0x32);key(0x2f,True);press(index);key(0x2f,False);press(0);run(1500)
             expect(read(0x100b14ce,1)==bytes([index]),f'{phase}: panel selects bank {index+1}')
-        def stored(index):return read(a.origin+symbols['names_store']+index*16,16).split(b'\0',1)[0]
+        def stored(index,bank_index=0):
+            at=a.origin+symbols['names_store']+index*16
+            if bank_index and read(a.origin+symbols['state']+528+bank_index,1)[0]&(1<<index):
+                at=a.origin+symbols['state']+544+(bank_index-1)*128+index*16
+            return read(at,16).split(b'\0',1)[0]
+        def rename_first(character):
+            setup();press(0x3d)
+            expect(any(read(0x460e7612,4)),'native F opens bank name editor')
+            for _ in range(10):press(0x34)
+            for _ in range(96):
+                if read(0x460e743c,1)==character:break
+                press(0x33)
+            else:raise AssertionError('character not reached')
+            press(0x31);run(1500)
         def profile_channels():return read(a.origin+symbols['state']+8,512)
         try:
-            response(b'ready ');press(0x32);press(0x31);run(500);press(0x35);press(0x22);run(1500)
+            response(b'ready ')
+            if fixture:
+                emulator_fixture.publish(fixture,cmd,read)
+                assert not any(read(stub_at,len(stub)))
+                cmd(f'poke {hex(stub_at)} '+stub.hex())
+                cmd('poke 0x4005221e '+struct.pack('>HIHH',0x4ef9,stub_at,0x4e71,0x4e71).hex())
+            press(0x32);press(0x31);run(500);press(0x35);press(0x22);run(1500)
             expect(read(a.origin+symbols['loaded'],4)==b'\0\0\0\1',phase+': engine loads project profile')
             if phase=='create':
                 setup();press(0x3d)
@@ -120,22 +147,31 @@ jmp 0x40052228
                 setup();channel(2);expect(profile_channels()[0]==2,'Bank 1 supplies channel 2 default')
                 bank(1);expect(profile_channels()[32]==2,'Bank 2 inherits Bank 1 channel')
                 setup();channel(5);expect(profile_channels()[32]==5,'Bank 2 accepts channel 5 override')
+                rename_first(b'1');expect(stored(0,1)==b'1','Bank 2 accepts name override')
+                expect(stored(0)==b'0','Bank 2 rename leaves Bank 1 unchanged')
                 bank(2);expect(profile_channels()[64]==2,'Bank 3 inherits Bank 1 rather than Bank 2 override')
-                expect(stored(0)==b'0','same name follows bank changes')
+                expect(stored(0,2)==b'0','Bank 3 inherits Bank 1 name')
+                bank(0);rename_first(b'2')
+                expect(stored(0)==b'2','Bank 1 default can change')
+                bank(1);expect(stored(0,1)==b'1','Bank 2 retains override after default change')
+                bank(2);expect(stored(0,2)==b'2','unoverridden Bank 3 follows new Bank 1 default')
             else:
-                expect(stored(0)==b'0','fresh native process restores name from card')
+                expect(stored(0)==b'2','fresh native process restores Bank 1 name from card')
                 expect(profile_channels()[0]==2,'fresh native process restores Bank 1 default')
-                bank(1);expect(profile_channels()[32]==5,'fresh native process restores Bank 2 override')
+                bank(1);expect(stored(0,1)==b'1','fresh native process restores Bank 2 name override');expect(profile_channels()[32]==5,'fresh native process restores Bank 2 override')
                 setup();expect(int.from_bytes(read(0x460d5cb4,4),'big')==5,'stock SRC setup reads restored channel 5')
-                bank(2);expect(profile_channels()[64]==2,'fresh native process preserves Bank 3 default')
+                press(0x3d);expect(read(0x460e743c,1)==b'1','stock editor reads restored Bank 2 name override');press(0x32)
+                bank(2);expect(stored(0,2)==b'2','fresh process restores inherited Bank 3 name');expect(profile_channels()[64]==2,'fresh native process preserves Bank 3 default')
             expect('errors=0' in cmd('card flush'),phase+': card writes flushed without errors')
             # Restore all package sites, retire its image and the private tick
             # shim while the stock editor is open. Its destination and callback
             # must remain safe for either close path after complete removal.
             setup();press(0x3d)
             expect(any(read(0x460e7612,4)),phase+': retirement starts with editor open')
+            expect(read(0x460e743c,1)==b'2',phase+': stock editor reads inherited Bank 3 name')
             skip_lo=a.origin-0x40000400;skip_hi=skip_lo+json.loads(a.receipt.read_text())['imageBytes']
-            i=0
+            i=len(stock) if fixture else 0
+            if fixture:emulator_fixture.restore(fixture,cmd)
             while i<len(stock):
                 if skip_lo<=i<skip_hi:i=skip_hi;continue
                 if stock[i]==original[i]:i+=1;continue
@@ -155,12 +191,13 @@ jmp 0x40052228
             if port.poll() is None:port.kill();port.wait()
             selector.close();log.close()
         files=card.extract_image(image.read_bytes())
-        records=[v for k,v in files.items() if k.startswith('TEST/PROFILE/MIDI2_')]
+        records=[v for k,v in files.items() if k.startswith('TEST/PROFILE/MIDI3_')]
         expect(len(records)==2,phase+': both project-local checkpoints exist')
         for record in records:
-            expect(len(record)==1024 and int.from_bytes(record[-4:],'big')==zlib.crc32(record[:-4]),phase+': checkpoint checksum matches card contents')
+            expect(len(record)==4096 and int.from_bytes(record[-4:],'big')==zlib.crc32(record[:-4]),phase+': checkpoint checksum matches card contents')
     report={'candidateSha256':hashlib.sha256(a.candidate.read_bytes()).hexdigest(),
         'scheduledCandidateSha256':hashlib.sha256(native).hexdigest(),
+        'runtimeFixtureSha256':hashlib.sha256(a.fixture.read_bytes()).hexdigest() if a.fixture else None,
         'uiTickShim':{'site':'0x4005221e','stub':hex(stub_at),'sha256':hashlib.sha256(stub).hexdigest()},
         'packageSha256':json.loads(a.receipt.read_text())['packageSha256'],'origin':hex(a.origin),
         'checks':checks,'hardware':'not tested','fixture':'Empty FAT16 card; stock firmware initializes missing working banks. No name/channel/project-file injection; explicit retirement-site restoration and code poisoning.'}

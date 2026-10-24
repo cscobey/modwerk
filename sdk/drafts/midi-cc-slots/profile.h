@@ -2,11 +2,15 @@
 #ifndef MIDI_MODE_PROFILE_H
 #define MIDI_MODE_PROFILE_H
 #include <stdint.h>
-#define MM_PROFILE_BYTES 1024u
+#define MM_PROFILE_BYTES 4096u
 extern char names_store[8][16];
 void mm_profile_service(void);
 void mm_profile_tick(void *api);
 void mm_profile_changed(void);
+char *mm_profile_name(unsigned track);
+char *mm_profile_edit(unsigned track);
+void mm_profile_name_changed(char *slot);
+unsigned mm_profile_bank(void);
 unsigned mm_profile_status(void);
 unsigned mm_profile_ready(void);
 /* Platform boundary: file access is called only by the engine service. */

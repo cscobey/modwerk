@@ -94,3 +94,12 @@ reconstruction has no runtime registry; declare any private scheduling shim and
 bind both image hashes rather than treating it as the complete installed base.
 Sidecar files require explicit backup/copy/reload semantics and separate physical
 qualification; successful module-set Keep does not prove entered data was saved.
+
+
+Bank name templates need explicit per-track override flags: an empty name may
+be a deliberate local override, while an unedited track still inherits. Bind a
+name editor's commit to its captured destination, rather than a bank selected
+later by an engine poll. When a larger private runtime no longer fits a firmware
+zero cave, publish its verified relocation/site fixture into verified-unused RAM
+after emulator boot; record that simulation and its hashes explicitly. Never
+claim that a stock/shim or manual publication probe exercised the resident loader.

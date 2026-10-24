@@ -39,6 +39,7 @@ int mm_profile_file(unsigned write,const char *path,uint8_t *data,unsigned size)
     int closed=((int (*)(void *))0x4001677cu)(&file);
     return result==1&&closed>=0?(partial?2:1):-1;
 }
+unsigned mm_profile_bank(void) {return U8(0x100b14ceu);}
 void mm_profile_context(unsigned *bank,unsigned *part,uint8_t channels[8]) {
     *bank=U8(0x100b14ceu);*part=U8(0x100b14cfu);
     uint32_t base=U32(0x46c82456u);

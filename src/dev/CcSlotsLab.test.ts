@@ -15,7 +15,7 @@ afterEach(async () => { await dispose?.(); vi.unstubAllGlobals(); vi.restoreAllM
 async function setup(installed = false) {
   const data = new Uint8Array(72), view = new DataView(data.buffer)
   view.setUint32(0, 0x4d57524d); view.setUint16(4, 7); view.setUint32(28, parseInt(CC_SLOTS_ID, 16))
-  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ version: '0.0.6-experimental', sha256: sha(data), hex: Array.from(data,b=>b.toString(16).padStart(2,'0')).join('') }) })))
+  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ version: '0.0.7-experimental', sha256: sha(data), hex: Array.from(data,b=>b.toString(16).padStart(2,'0')).join('') }) })))
   const other: MissingModule = { name: 'Existing module', module: '12345678', layout: 3, handle: 1 }
   const cc: MissingModule = { name: 'MIDI CC Slots', module: CC_SLOTS_ID, layout: 1, handle: 2 }
   let modules = installed ? [other,cc] : [other]
@@ -105,8 +105,10 @@ it('does not offer Keep when a legacy base passes without reporting a completed 
 
 it('explicitly trials an updated same-ID draft with project profile saving guidance', async () => {
   const t=await setup(true)
-  expect(t.container.textContent).toContain('0.0.6-experimental')
+  expect(t.container.textContent).toContain('0.0.7-experimental')
   expect(t.container.textContent).toContain('MIDI PROFILE SAVED')
+  expect(t.container.textContent).toContain('overrides only that bank')
+  expect(t.container.textContent).toContain('Existing MIDI2_*.DAT profiles')
   await t.click('Build draft and read installed modules')
   expect(t.update).not.toHaveBeenCalled()
   await t.click('Try updated module')

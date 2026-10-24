@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--installed-main', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--profile', action='store_true')
+    parser.add_argument('--external', action='store_true', help='Private after-boot RAM fixture for larger profiles')
     args = parser.parse_args()
     output = args.output.resolve()
     if any((p / '.git').exists() for p in [output, *output.parents]):
@@ -72,17 +73,25 @@ def main():
             assert not (address < at+n and at < address+len(code)), f'base overlap at {hex(address)}'
     output.mkdir(parents=True, exist_ok=False)
     images = []
-    for origin in ((0x400d64e0,0x400d65e0) if args.profile else (0x400d6b20, 0x400d7000)):
+    for origin in ((0x47e00000,0x47e10000) if args.external else (0x400d64e0,0x400d65e0) if args.profile else (0x400d6b20, 0x400d7000)):
         patched = bytearray(stock); instance = bytearray(image)
-        assert not any(stock[origin-BASE:origin-BASE+length])
+        if not args.external: assert origin-BASE+length<=len(stock) and not any(stock[origin-BASE:origin-BASE+length])
         for offset in offsets:
             struct.pack_into('>I', instance, offset, struct.unpack_from('>I', instance, offset)[0]+origin)
-        patched[origin-BASE:origin-BASE+length] = instance
+        if not args.external: patched[origin-BASE:origin-BASE+length] = instance
+        patches=[]
         for address, code, reloc in records:
             code = bytearray(code)
             for offset in reloc:
                 struct.pack_into('>I', code, offset, struct.unpack_from('>I', code, offset)[0]+origin)
-            patched[address-BASE:address-BASE+len(code)] = code
+            if args.external: patches.append({'address':address,'data':code.hex(),'stock':stock[address-BASE:address-BASE+len(code)].hex()})
+            else: patched[address-BASE:address-BASE+len(code)] = code
+        if args.external:
+            module_file=f'module-{origin:x}.private.bin'
+            (output/module_file).write_bytes(instance)
+            fixture={'origin':origin,'moduleFile':module_file,'moduleSha256':hashlib.sha256(instance).hexdigest(),
+                     'stockSha256':STOCK,'packageSha256':hashlib.sha256(data).hexdigest(),'sites':patches}
+            (output/f'fixture-{origin:x}.private.json').write_text(json.dumps(fixture,indent=2)+'\n')
         (output/f'reconstructed-{origin:x}.private.bin').write_bytes(patched)
         images.append({'origin':hex(origin),'sha256':hashlib.sha256(patched).hexdigest()})
     report = {'packageSha256':hashlib.sha256(data).hexdigest(), 'sites':sites, 'copies':copies,

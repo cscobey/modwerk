@@ -18,7 +18,7 @@ describe('local CC trial review', () => {
     expect(ccTrialProblem(ready, [], review, 'remove')).toContain('not installed')
   })
   it('refuses damaged or substituted local packages', () => {
-    expect(() => ccPackage({ version: '0.0.6-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
+    expect(() => ccPackage({ version: '0.0.7-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
     expect(() => ccPackage({ version: 'wrong', sha256: '', hex: '' })).toThrow('Invalid')
   })
 })

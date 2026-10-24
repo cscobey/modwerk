@@ -10,6 +10,9 @@
 char names_store[8][16];
 static char root[240],project[8]="A";
 static unsigned bank,part,fail_write,playing;
+unsigned mm_profile_bank(void) {return bank;}
+static const char *name(unsigned t) {return mm_profile_name(t);}
+static void rename_track(unsigned t,const char *text) {char *slot=mm_profile_edit(t);strcpy(slot,text);mm_profile_name_changed(slot);}
 static uint8_t channels[8];
 static unsigned failures,writes;
 #define CHECK(c) do {if(!(c)){fprintf(stderr,"line %d: %s\n",__LINE__,#c);++failures;}} while(0)
@@ -36,38 +39,47 @@ int main(int argc,char **argv) {
     if(!strcmp(argv[2],"create")) {
         for(unsigned t=0;t<8;t++)channels[t]=(uint8_t)(t+1);
         mm_profile_service();CHECK(mm_profile_ready());
-        for(unsigned t=0;t<8;t++)snprintf(names_store[t],16,"TRACK%u",t+1);
+        for(unsigned t=0;t<8;t++){char label[16];snprintf(label,16,"TRACK%u",t+1);rename_track(t,label);}
         mm_profile_changed();mm_profile_service();CHECK(mm_profile_status()==2);
         select_bank(1);for(unsigned t=0;t<8;t++)CHECK(channels[t]==t+1);
-        channels[0]=12;channels[1]=0;mm_profile_service();
-        select_bank(0);CHECK(channels[0]==1);channels[0]=3;mm_profile_service();
-        select_bank(1);CHECK(channels[0]==12&&channels[1]==0);
+        channels[0]=12;channels[1]=0;rename_track(0,"BANKTWO");rename_track(1,"");mm_profile_service();
+        CHECK(!strcmp(name(0),"BANKTWO"));CHECK(!name(1)[0]);
+        strcpy(mm_profile_edit(3),"CANCELLED");CHECK(!strcmp(name(3),"TRACK4"));
+        select_bank(0);CHECK(!strcmp(name(0),"TRACK1"));CHECK(!strcmp(name(1),"TRACK2"));rename_track(2,"NEW");mm_profile_service();CHECK(channels[0]==1);channels[0]=3;mm_profile_service();
+        select_bank(1);CHECK(channels[0]==12&&channels[1]==0);CHECK(!strcmp(name(0),"BANKTWO"));CHECK(!name(1)[0]);CHECK(!strcmp(name(2),"NEW"));
         select_bank(2);CHECK(channels[0]==3&&channels[1]==2);
         part=1;memset(channels,0,8);mm_profile_service();CHECK(channels[0]==3);
         strcpy(project,"B");memset(channels,0,8);mm_profile_service();CHECK(!names_store[0][0]);
-        strcpy(names_store[0],"OTHER");mm_profile_changed();mm_profile_service();
+        rename_track(0,"OTHER");mm_profile_service();
         strcpy(project,"A");mm_profile_service();CHECK(!strcmp(names_store[0],"TRACK1"));
     } else if(!strcmp(argv[2],"restart")) {
-        mm_profile_service();for(unsigned t=0;t<8;t++) {char want[16];snprintf(want,sizeof want,"TRACK%u",t+1);CHECK(!strcmp(names_store[t],want));}
-        CHECK(channels[0]==3);select_bank(1);CHECK(channels[0]==12&&channels[1]==0);
-        strcpy(names_store[0],"UNSAVED");mm_profile_changed();fail_write=1;mm_profile_service();CHECK(mm_profile_status()==3);
+        mm_profile_service();for(unsigned t=0;t<8;t++) {char want[16];snprintf(want,sizeof want,"TRACK%u",t+1);CHECK(!strcmp(name(t),t==2?"NEW":want));}
+        CHECK(channels[0]==3);select_bank(1);CHECK(channels[0]==12&&channels[1]==0);CHECK(!strcmp(name(0),"BANKTWO"));CHECK(!name(1)[0]);CHECK(!strcmp(name(2),"NEW"));
+        select_bank(0);rename_track(0,"UNSAVED");fail_write=1;mm_profile_service();CHECK(mm_profile_status()==3);
     } else if(!strcmp(argv[2],"fallback")) {
         mm_profile_service();CHECK(!strcmp(names_store[0],"TRACK1"));
-        playing=1;strcpy(names_store[0],"PENDING");mm_profile_changed();unsigned before=writes;mm_profile_service();CHECK(writes==before);
+        playing=1;rename_track(0,"PENDING");unsigned before=writes;mm_profile_service();CHECK(writes==before);
         playing=0;mm_profile_service();CHECK(mm_profile_status()==2);
     } else if(!strcmp(argv[2],"pending")) {
         mm_profile_service();CHECK(!strcmp(names_store[0],"PENDING"));
     } else if(!strcmp(argv[2],"shorten")) {
-        mm_profile_service();strcpy(names_store[0],"S");mm_profile_changed();mm_profile_service();CHECK(mm_profile_status()==2);
+        mm_profile_service();rename_track(0,"S");mm_profile_service();CHECK(mm_profile_status()==2);
     } else if(!strcmp(argv[2],"shortened")) {
         mm_profile_service();CHECK(!strcmp(names_store[0],"S"));
     } else if(!strcmp(argv[2],"torn")) {
-        mm_profile_service();strcpy(names_store[0],"BROKEN");mm_profile_changed();fail_write=2;mm_profile_service();CHECK(mm_profile_status()==3);
+        mm_profile_service();rename_track(0,"BROKEN");fail_write=2;mm_profile_service();CHECK(mm_profile_status()==3);
     } else if(!strcmp(argv[2],"recovered")) {
         mm_profile_service();CHECK(!strcmp(names_store[0],"S"));
-        strcpy(names_store[0],"REPAIRED");mm_profile_changed();mm_profile_service();CHECK(mm_profile_status()==2);
+        rename_track(0,"REPAIRED");mm_profile_service();CHECK(mm_profile_status()==2);
     } else if(!strcmp(argv[2],"repaired")) {
         mm_profile_service();CHECK(!strcmp(names_store[0],"REPAIRED"));
+    } else if(!strcmp(argv[2],"migration")) {
+        mm_profile_service();CHECK(!strcmp(name(0),"LEGACY1"));
+        select_bank(1);CHECK(channels[0]==12&&channels[1]==0);CHECK(!strcmp(name(0),"LEGACY1"));rename_track(0,"LOCAL");mm_profile_service();
+        select_bank(0);CHECK(!strcmp(name(0),"LEGACY1"));
+    } else if(!strcmp(argv[2],"migrated")) {
+        mm_profile_service();CHECK(!strcmp(name(0),"LEGACY1"));select_bank(1);CHECK(!strcmp(name(0),"LOCAL"));
+        part=1;mm_profile_service();CHECK(!strcmp(name(0),"LOCAL"));
     } else if(!strcmp(argv[2],"foreign")) {
         mm_profile_service();CHECK(mm_profile_status()==3);CHECK(writes==0);
     } else return 2;

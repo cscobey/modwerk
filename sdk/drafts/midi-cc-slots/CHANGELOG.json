@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.0.7-experimental",
+    "date": "2026-10-24",
+    "changes": [
+      "Use Bank 1 as the default MIDI track-name template.",
+      "Rename tracks independently in Banks 2\u201316 without changing Bank 1; names are shared across each bank\u2019s Parts.",
+      "Keep unedited names following Bank 1; save explicit bank overrides, including blank names.",
+      "Import existing saved names and channels while preserving the original 0.0.6 checkpoint files."
+    ]
+  },
+  {
     "version": "0.0.6-experimental",
     "date": "2026-10-24",
     "changes": [

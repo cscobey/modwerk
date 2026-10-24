@@ -311,3 +311,46 @@ Part copy/clear semantics, card-removal races, physical boot timing, real storag
 latency, receiver MIDI and full companion coexistence remain unqualified.
 Keep saves the module package; MIDI PROFILE SAVED reports the entered profile's
 separate verified checkpoint. No device writes or public release performed.
+
+## Bank name defaults/overrides 0.0.7 — 24 October 2026
+
+Exact package: 10,536 bytes, 8,324-byte initialized image, ABI7, 21 guarded
+sites, 16 hash-backed copies, 105 relocations. SHA-256:
+`5db4164bb52849497e93f0dc5fc3c42b755626bbc5065eb44baab010fb3b4244`.
+
+- Portable C core tests confirm Bank 2 can rename one track and explicitly
+  blank another without changing Bank 1; unedited names follow later Bank 1
+  changes. Names are shared across Parts within a bank. NO-style preparation
+  without commit creates no override. Fresh processes restore the defaults,
+  local names, blanks and channel profiles. Existing write-failure, truncated
+  peer repair, foreign-file and project-isolation cases continue to pass.
+- Migration reads both original 0.0.6 checkpoints and writes the newer format
+  in MIDI3_*.DAT. Shared names become Bank 1 defaults; channel defaults and
+  bank/Part overrides (including OFF) remain intact. A second fresh process
+  reads the new names/overrides; both old files remain byte-identical.
+- Native ColdFire/card checks pass 48 assertions at each of two placements,
+  each with two fresh processes. Panel edits name Bank 1, rename Bank 2, change
+  Bank 1 again, and verify Bank 3 follows the default while Bank 2 retains its
+  local name. A fresh process reloads both checkpoints and the actual stock
+  editor reads the restored override and inherited name. Both checksums match.
+  Site restoration plus full image poisoning with an editor open passes YES
+  and NO close paths and subsequent stock SRC access.
+- This larger profile no longer fits the earlier firmware zero cave. The probe
+  boots stock, checks unused scratch RAM and every site guard, then publishes
+  the exact relocated image and site fixture. A private UI shim supplies the
+  ordinary module tick. Publication initializes the module only: names/channels
+  are edited with panel events. Evidence binds stock, package, relocated image,
+  fixture, shim and verifier hashes. It does not execute the resident loader.
+- All 398 existing CC/menu/label/sequencer assertions pass after the same exact
+  runtime publication. Shared ColdFire code-generation checks, 16-byte stock
+  scan, original/supplied MAIN guards and direct current-base overlap checks
+  pass. Actual C-loader host tests pass install/Undo/removal/reclamation,
+  exact 0.0.6-to-0.0.7 upgrade/Undo, and simulated module-set save/restore/
+  removal/failed-save recovery with a companion.
+
+The user reported names working and observed the earlier shared-name behavior
+between Banks 1 and 2; device/build identity was not independently read. Those
+reports do not qualify the new overrides. No 0.0.7 device writes were performed.
+Physical restart, actual USB lifecycle/companion coexistence and native project
+Save As/copy/reload remain unqualified. Old MIDI2 files are retained for rollback;
+0.0.6 cannot display the newer bank overrides. Copy both MIDI3 files for backups.

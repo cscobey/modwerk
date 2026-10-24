@@ -17,6 +17,7 @@ p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--emulator', type=Path, required=True)
 p.add_argument('--candidate', type=Path, required=True)
 p.add_argument('--output', type=Path, required=True)
+p.add_argument('--fixture', type=Path, help='Private after-boot runtime fixture')
 p.add_argument('--labels-symbols', type=Path, help='private candidate receipt for label tracing')
 p.add_argument('--sequencer', action='store_true', help='also attempt the unqualified lock fixture')
 a = p.parse_args()
@@ -224,6 +225,10 @@ def contains(channel, cc, value, before, label):
 
 try:
     response(b'ready ')
+    if a.fixture:
+        import emulator_fixture
+        fixture=emulator_fixture.load(a.fixture,a.candidate.read_bytes())
+        emulator_fixture.publish(fixture,command,lambda at,n:bytes.fromhex(command(f'peek {hex(at)} {n}').split()[1]))
     advance()
     press('YES')
     press('NO')
@@ -353,6 +358,7 @@ try:
         checks.append('audio FX pages preserve stock captions')
         press('MIDI')
     report = {'status': 'passed' , 'checks': checks, 'checkCount': len(checks),
+        'runtimeFixtureSha256': hashlib.sha256(a.fixture.read_bytes()).hexdigest() if a.fixture else None,
         'candidateSha256': hashlib.sha256(a.candidate.read_bytes()).hexdigest(),
         'emulatorSha256': hashlib.sha256(a.emulator.read_bytes()).hexdigest(),
         'adaptersSha256': hashlib.sha256(Path(__file__).with_name('slots.s').read_bytes()).hexdigest(),

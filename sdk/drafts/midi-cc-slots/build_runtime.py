@@ -24,6 +24,7 @@ def main():
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--profile', action='store_true', help='Build the persistent project-profile experiment')
     p.add_argument('--receipt', type=Path)
+    p.add_argument('--review-image', type=Path, help='Private authored image for reviewing copy-guard offsets')
     args = p.parse_args()
     guards = json.loads(args.guards.read_text())
     spec = importlib.util.spec_from_file_location('runtime_build', ROOT / 'sdk/runtime/loader/build.py')
@@ -60,6 +61,9 @@ def main():
         image = bytearray(images[0])
         offsets = builder.relocations(image, images[1], len(image))
         sym = symbols[0]
+        if args.review_image:
+            args.review_image.parent.mkdir(parents=True,exist_ok=True)
+            args.review_image.write_bytes(image)
         copies = [(sym['replay_' + ('slot_' if name.startswith('sequence_') else '') + name], address, length, bytes.fromhex(guards[hex(address)])) for name, address, length in REPLAYS]
         copies += [(sym['replay_'+name], address, length, bytes.fromhex(guards[hex(address)])) for name,address,length,_ in NAME_REPLAYS]
         # Authored instruction runs that coincide with stock use the same hash-copy
