@@ -2,8 +2,8 @@
 // Copyright (c) 2026 Jannik Aßfalg (repeat98)
 // Copyright (c) 2026 Cooper Scobey
 // Opt-in development catalogue overlay. Never a published catalogue or bundled firmware asset.
-import document from '../../sdk/drafts/midi-cc-slots/local-module.json'
-import pin from '../../sdk/drafts/midi-cc-slots/local-build.json'
+import document from '../../sdk/drafts/midi-cc-slots/local-module.json' with { type: 'json' }
+import pin from '../../sdk/drafts/midi-cc-slots/local-build.json' with { type: 'json' }
 
 export const LOCAL_CC_ENABLED = import.meta.env?.DEV === true && import.meta.env.MODE !== 'test' && import.meta.env.VITE_LOCAL_CC_SLOTS === '1'
 export const LOCAL_CC_ID = 'midi-cc-slots'
