@@ -19,7 +19,7 @@ class MidiProfileTests(unittest.TestCase):
                             str(DRAFT/'profile.c'), str(DRAFT/'test_profile.c'), '-o', str(executable)], check=True)
             for project in ['A', 'B']:
                 (root/project).mkdir()
-            for mode in ['create', 'restart', 'fallback', 'pending', 'shorten', 'shortened', 'torn', 'recovered']:
+            for mode in ['create', 'restart', 'fallback', 'pending', 'shorten', 'shortened', 'torn', 'recovered', 'repaired']:
                 subprocess.run([str(executable), str(root), mode], check=True, capture_output=True)
             foreign = root/'foreign'
             (foreign/'A').mkdir(parents=True)

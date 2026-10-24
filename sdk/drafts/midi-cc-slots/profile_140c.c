@@ -16,6 +16,9 @@ int mm_profile_directory(char *out,unsigned size) {
 }
 int mm_profile_gate(void) {
     if(U32(0x800068fcu)!=0x460ddde4u||U32(0x460d1cb8u)!=1||U32(0x460e76a0u))return 0;
+    /* Drain pending engine commands (including project loads) before observing
+     * their resulting bank/channel state. Our own sentinel drains normally. */
+    if(U32(0x460d17d2u))return 0;
     for(unsigned i=0;i<16;i++)if(U8(0x80006500u+i)||U8(0x80004f1eu+84*i))return 0;
     return U32(0x800065b8u)==0;
 }
@@ -23,13 +26,18 @@ int mm_profile_file(unsigned write,const char *path,uint8_t *data,unsigned size)
     struct file_object file;
     int result=((int (*)(void *,const char *,const char *,void *,unsigned))0x40016864u)(&file,path,write?"w":"r",io,sizeof io);
     if(result<0)return result==-12?0:-1;
+    unsigned partial=0,amount=size;
     if(!write) {
         int bytes=((int (*)(uint32_t))(uintptr_t)U32(0x46c8241eu))(file.word[0]);
-        if(bytes!=(int)size){((int (*)(void *))0x4001677cu)(&file);return -1;}
+        if(bytes<8||bytes>(int)size){((int (*)(void *))0x4001677cu)(&file);return -1;}
+        if(bytes<(int)size) {
+            partial=1;amount=(unsigned)bytes;
+            for(unsigned i=amount;i<size;i++)data[i]=0;
+        }
     }
-    result=((int (*)(void *,void *,unsigned))(write?0x400166b8u:0x40016564u))(&file,data,size);
+    result=((int (*)(void *,void *,unsigned))(write?0x400166b8u:0x40016564u))(&file,data,amount);
     int closed=((int (*)(void *))0x4001677cu)(&file);
-    return result==1&&closed>=0?1:-1;
+    return result==1&&closed>=0?(partial?2:1):-1;
 }
 void mm_profile_context(unsigned *bank,unsigned *part,uint8_t channels[8]) {
     *bank=U8(0x100b14ceu);*part=U8(0x100b14cfu);

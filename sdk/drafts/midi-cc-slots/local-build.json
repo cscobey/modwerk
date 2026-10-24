@@ -1,8 +1,8 @@
 {
   "version": "0.0.6-experimental",
-  "sha256": "fbde5be0c3de030cd05bca051deeac0c0c24a57a2402f86e9c97b4671a6be027",
-  "bytes": 7688,
-  "imageBytes": 5572,
+  "sha256": "8b3c10ad5e670da3eca6eba7094dbf1be95fefcb4313e8f48f1df9a7e2da920e",
+  "bytes": 7732,
+  "imageBytes": 5616,
   "abi": 7,
   "features": 3,
   "sites": 21,

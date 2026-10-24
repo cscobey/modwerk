@@ -89,7 +89,7 @@ static void save(void) {
     if(!path(file,peer)){announce(3);return;}
     /* Refuse a foreign file even when a stale peer can otherwise be replaced. */
     int exists=mm_profile_file(0,file,data,sizeof data);
-    if(exists<0||(exists==1&&!owned(data))){announce(3);return;}
+    if(exists<0||(exists>0&&!owned(data))){announce(3);return;}
     uint32_t next=generation+1;
     uint32_t snapshot=revision;
     pack(data,next);

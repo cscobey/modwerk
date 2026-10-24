@@ -35,7 +35,7 @@ def main():
     # The stock reconstruction has no runtime registry. An authored, private
     # UI-tick shim supplies only the base's ordinary hook-0 scheduling; file
     # routines, engine service and name/channel edits still execute unchanged.
-    stub_at=0x400d7be0
+    stub_at=0x400d7c00
     stub_source=out/'tick.private.s'
     stub_source.write_text('''.text
 jsr 0x4005213c

@@ -10,7 +10,7 @@ async function local(enabled = true, dev = true) {
 it('requires both an explicit local opt-in and a development build', async () => {
   expect((await local(false)).localCcDocuments).toEqual([])
   expect((await local(true, false)).localCcPackages).toEqual([])
-  expect((await local()).localCcPackages[0]).toMatchObject({ id: 'midi-cc-slots', name: 'Midi Mode 2', bytes: 7688, abi: 7, sites: 21, copies: 16 })
+  expect((await local()).localCcPackages[0]).toMatchObject({ id: 'midi-cc-slots', name: 'Midi Mode 2', bytes: 7732, abi: 7, sites: 21, copies: 16 })
 })
 it('registers the local listing, source, artwork, real screenshots and installed runtime identity together', async () => {
   await local()

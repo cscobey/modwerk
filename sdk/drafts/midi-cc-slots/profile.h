@@ -11,6 +11,8 @@ unsigned mm_profile_status(void);
 unsigned mm_profile_ready(void);
 /* Platform boundary: file access is called only by the engine service. */
 int mm_profile_directory(char *out, unsigned size);
+/* Read: 0 missing, 1 exact record, 2 truncated record with >=8-byte header,
+ * -1 I/O/unsafe size. Only owned truncated peers may be replaced. */
 int mm_profile_file(unsigned write, const char *path, uint8_t *data, unsigned size);
 int mm_profile_gate(void);
 void mm_profile_context(unsigned *bank, unsigned *part, uint8_t channels[8]);

@@ -23,10 +23,11 @@ int mm_profile_file(unsigned write,const char *path,uint8_t *data,unsigned size)
     if(write&&fail_write==1)return -1;
     FILE *f=fopen(path,write?"wb":"rb");if(!f)return write?-1:0;
     if(write&&fail_write==2){fwrite(data,1,16,f);fclose(f);return -1;}
-    if(!write){fseek(f,0,SEEK_END);long n=ftell(f);rewind(f);if(n!=(long)size){fclose(f);return -1;}}
-    unsigned n=write?fwrite(data,1,size,f):fread(data,1,size,f);int close=fclose(f);
+    unsigned amount=size;
+    if(!write){fseek(f,0,SEEK_END);long n=ftell(f);rewind(f);if(n<8||n>(long)size){fclose(f);return -1;}amount=(unsigned)n;memset(data+amount,0,size-amount);}
+    unsigned n=write?fwrite(data,1,size,f):fread(data,1,amount,f);int close=fclose(f);
     if(write)++writes;
-    return n==size&&!close?1:-1;
+    return n==amount&&!close?(amount<size?2:1):-1;
 }
 static void select_bank(unsigned b) {bank=b;memset(channels,0,8);mm_profile_service();}
 int main(int argc,char **argv) {
@@ -64,6 +65,9 @@ int main(int argc,char **argv) {
         mm_profile_service();strcpy(names_store[0],"BROKEN");mm_profile_changed();fail_write=2;mm_profile_service();CHECK(mm_profile_status()==3);
     } else if(!strcmp(argv[2],"recovered")) {
         mm_profile_service();CHECK(!strcmp(names_store[0],"S"));
+        strcpy(names_store[0],"REPAIRED");mm_profile_changed();mm_profile_service();CHECK(mm_profile_status()==2);
+    } else if(!strcmp(argv[2],"repaired")) {
+        mm_profile_service();CHECK(!strcmp(names_store[0],"REPAIRED"));
     } else if(!strcmp(argv[2],"foreign")) {
         mm_profile_service();CHECK(mm_profile_status()==3);CHECK(writes==0);
     } else return 2;

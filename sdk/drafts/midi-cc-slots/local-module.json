@@ -137,8 +137,8 @@
     "recorded": "24 October 2026: exact package footprint and authored-source estimates; chip timing unmeasured",
     "storage": {
       "label": "Runtime package",
-      "display": "7,688 bytes · 5,572-byte image",
-      "value": 7688,
+      "display": "7,732 bytes · 5,616-byte image",
+      "value": 7732,
       "unit": "bytes",
       "method": "static",
       "conditions": "Package bytes and image size measured from the verified relocatable package. Runtime loader metadata and copied stock spans add allocation overhead.",
@@ -170,7 +170,7 @@
       "memory": {
         "level": "minimal",
         "basis": "source-estimate",
-        "rationale": "A 5,572-byte image includes eight names, channel profiles and card buffering. Two 1,024-byte project checkpoint files store profiles. Package size is 7,688 bytes; loader metadata adds overhead.",
+        "rationale": "A 5,616-byte image includes eight names, channel profiles and card buffering. Two 1,024-byte project checkpoint files store profiles. Package size is 7,732 bytes; loader metadata adds overhead.",
         "source": "TESTING.md"
       }
     }
@@ -187,7 +187,7 @@
       "Fresh-process saved-set simulation",
       "Five reviewed real emulator LCD captures",
       "Persistent C profile core: fresh-process defaults/overrides/OFF/project isolation/short names/torn-write recovery/foreign-file protection",
-      "33 native card/profile/removal assertions across two fresh processes; 27 card assertions at a second placement",
+      "33 native card/profile/removal assertions across two fresh processes at each of two placements",
       "Exact 0.0.5 -> 0.0.6 loader upgrade and Undo"
     ]
   },

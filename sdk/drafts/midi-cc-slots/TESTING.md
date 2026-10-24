@@ -268,9 +268,9 @@ captions and provenance. No public release or native card-composer support.
 
 ## Persistent project-profile test 0.0.6 — 24 October 2026
 
-Exact package: 7,688 bytes, 5,572-byte authored image, ABI7, 21 guarded sites,
+Exact package: 7,732 bytes, 5,616-byte authored image, ABI7, 21 guarded sites,
 16 hash-backed copies, 81 relocations. SHA-256:
-`fbde5be0c3de030cd05bca051deeac0c0c24a57a2402f86e9c97b4671a6be027`.
+`8b3c10ad5e670da3eca6eba7094dbf1be95fefcb4313e8f48f1df9a7e2da920e`.
 The package's ordinary hook 0 schedules the UI work. Card operations run only
 in the stopped engine task through a separate guarded stock receive callsite;
 the blocking receive retains a stock return address and the wake queue retains
@@ -280,7 +280,7 @@ ColdFire code-generation guard.
 - Real profile C core, host filesystem/platform: separate processes restore all
   eight names, Bank 1 defaults, independent bank/Part channels and OFF; projects
   remain separate. Playing defers writes. Shortening a name normalizes stale
-  trailing bytes; failed and truncated writes retain the prior checkpoint.
+  trailing bytes; failed and truncated writes retain the prior checkpoint. An owned truncated peer is repaired on a subsequent save; unrelated files remain protected.
   Foreign files are refused without being overwritten. CI runs this core test.
 - Native ColdFire/card test starts with an empty scratch FAT16 card; stock
   firmware initializes missing working banks. Every name/channel edit uses
@@ -297,7 +297,7 @@ ColdFire code-generation guard.
 - 33 native assertions across two fresh lower-placement processes include
   restoring all package sites and poisoning the entire image with an editor
   open. YES and NO close safely; reopening SRC finds no retired callbacks.
-  Another placement passes 27 card/default/override/restart assertions.
+  A second placement repeats these 33 checks, including both editor retirement paths.
 - The existing 398 CC/menu/label/sequencer assertions pass on the exact lower
   image. Actual C-loader host checks pass install/Undo/repeat/removal/recovery,
   exact 0.0.5-to-0.0.6 upgrade/Undo, and module-set Keep/fresh-process restore/
