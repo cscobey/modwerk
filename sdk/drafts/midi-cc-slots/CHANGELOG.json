@@ -1,5 +1,16 @@
 [
   {
+    "version": "0.0.13-experimental",
+    "date": "2026-10-25",
+    "changes": [
+      "Allow valid working and saved bank files with different MIDI channel values.",
+      "Record both original maps so cancellation and interrupted recovery restore each file exactly.",
+      "Keep checksum, unrelated-data and unsaved working-channel checks.",
+      "Show CHECK FAILED with a bank code instead of repeatedly asking to save.",
+      "Keep this update installed before INIT so it can recover its new pending journal after restart."
+    ]
+  },
+  {
     "version": "0.0.12-experimental",
     "date": "2026-10-25",
     "changes": [

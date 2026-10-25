@@ -27,6 +27,7 @@ static uint32_t get32(const uint8_t*p){return (uint32_t)p[0]<<24|(uint32_t)p[1]<
 static void put32(uint8_t*p,uint32_t v){p[0]=v>>24;p[1]=v>>16;p[2]=v>>8;p[3]=v;}
 static uint32_t crc(const uint8_t*p,unsigned n){uint32_t c=~0u;for(unsigned i=0;i<n-4;i++){c^=p[i];for(unsigned b=0;b<8;b++)c=(c>>1)^(0xedb88320u&(0u-(c&1u)));}return ~c;}
 static void seal(uint8_t*p){put32(p+4092,crc(p,4096));}
+static int mapped(const uint8_t*p){return get32(p+32)==0x4d415031u||get32(p+32)==0x4d415032u;}
 static int checked(const uint8_t*p,uint32_t magic){return get32(p)==magic&&get32(p+4)==1&&get32(p+4092)==crc(p,4096);}
 static void announce(unsigned v){status=v;redraw=1;}
 static int current(char*out){return mm_profile_directory(out,260)&&out[0];}
@@ -95,9 +96,12 @@ static void load_profile(void){
     loaded=1;++revision;
 }
 static int valid_journal(const uint8_t*p){
-    if(!checked(p,0x4d4d344au)||get32(p+12)<1||get32(p+12)>3)return 0;
-    if(get32(p+32)==0x4d415031u&&(get32(p+28)&0xffff0000u))return 0;
+    unsigned version=get32(p+4);
+    if(get32(p)!=0x4d4d344au||(version!=1&&version!=2)||get32(p+4092)!=crc(p,4096)||get32(p+12)<1||get32(p+12)>3)return 0;
+    if(version==2&&get32(p+32)!=0x4d415032u)return 0;
+    if(mapped(p)&&(get32(p+28)&0xffff0000u))return 0;
     for(unsigned i=0;i<1024;i++)if(p[64+i]>16)return 0;
+    if(get32(p+32)==0x4d415032u)for(unsigned i=0;i<2048;i++)if(p[MT_DISK_CHANNELS+i]>16)return 0;
     return 1;
 }
 static int read_journal(void){
@@ -114,7 +118,10 @@ static int read_journal(void){
 static int write_journal(unsigned phase){
     const char*name=jpeer?"MIDI4_J1.DAT":"MIDI4_J0.DAT";
     int r=file(0,name,mt_work);
-    if(r<0||(r>0&&(get32(mt_work)!=0x4d4d344au||get32(mt_work+4)!=1)))return 0;
+    if(r<0||(r>0&&(get32(mt_work)!=0x4d4d344au||(get32(mt_work+4)!=1&&get32(mt_work+4)!=2))))return 0;
+    /* Old modules must refuse pending split-map recovery. Once every bank
+     * is committed/restored, a v1 terminal record is safe for old readers. */
+    if(phase!=1){put32(journal+4,1);if(get32(journal+32)==0x4d415032u)put32(journal+32,0x4d415031u);}
     put32(journal+8,jsequence+1);put32(journal+12,phase);seal(journal);
     if(file(1,name,journal)!=1||file(0,name,mt_work)!=1||!valid_journal(mt_work)||!equal(journal,mt_work,4096))return 0;
     ++jsequence;jpeer^=1u;return 1;
@@ -134,23 +141,23 @@ static int recover(void){
     /* Schedule recovery one bank per engine turn. A live failure restores
      * RAM in place; only boot recovery needs a native reload of other data. */
     if(!mt_channels(1,journal+64)){announce(12);return 0;}
-    if(get32(journal+32)==0x4d415031u)failure=get32(journal+36);
+    if(mapped(journal))failure=get32(journal+36);
     step=3;cursor=0;busy=recovery=1;announce(16);return 2;
 }
 static void failed(unsigned code){
     failure=code;step=0;
-    if(get32(journal+32)==0x4d415031u){put32(journal+36,code);(void)write_journal(1);}
+    if(mapped(journal)){put32(journal+36,code);(void)write_journal(1);}
     load_profile();rollback_reload=0;
     int result=recover();if(result==0){busy=1;announce(12);}
 }
 static void initialize(void){
     if(!mt_writable()){busy=0;announce(15);return;}
     if(dirty||!generation){if(!store()){busy=0;announce(3);return;}}
-    clear(journal,4096);put32(journal,0x4d4d344au);put32(journal+4,1);
+    clear(journal,4096);put32(journal,0x4d4d344au);put32(journal+4,2);
     put32(journal+16,generation+1);put32(journal+20,generation);pack(mt_work,generation);put32(journal+24,get32(mt_work+4092));
-    /* MAP1 makes the touched-bank bitmap explicit. Old journals without the
-     * tag conservatively recover all sixteen bank pairs. */
-    put32(journal+32,0x4d415031u);
+    /* MAP2 adds separate working/stored disk maps. MAP1 remains readable;
+     * untagged old journals conservatively recover all sixteen pairs. */
+    put32(journal+32,0x4d415032u);
     if(!mt_channels(0,journal+64)){busy=0;failure=400;announce(17);return;}
     for(unsigned b=0;b<16;b++)for(unsigned p=0;p<4;p++)for(unsigned t=0;t<8;t++){
         unsigned at=b*4+p;
@@ -165,11 +172,13 @@ static void initialize(void){
 static void advance(void){
     if(step==1){
         if(cancelled){cancelled=step=busy=0;announce(11);return;}
-        if(!mt_preflight_bank(journal+64,journal+1088,cursor)){
+        if(!mt_preflight_bank(journal+64,journal+1088,journal+MT_DISK_CHANNELS,cursor)){
             failure=100+cursor;step=busy=0;announce(14);return;
         }
         if(++cursor==16){
-            if(!write_journal(1)){step=0;recovery=busy=1;announce(3);return;}
+            /* Retire both old journal peers before ANY bank mutation. An
+             * older module then fails closed instead of using one RAM map. */
+            if(!write_journal(1)||!write_journal(1)){step=0;recovery=busy=1;announce(3);return;}
             recovery=1;cursor=0;step=2;
         }
         announce(6);return;
@@ -195,10 +204,11 @@ static void advance(void){
         return;
     }
     if(step==3){
-        unsigned touched=get32(journal+32)==0x4d415031u?get32(journal+28):65535u;
+        unsigned touched=mapped(journal)?get32(journal+28):65535u;
         while(cursor<16&&!(touched&(1u<<cursor)))++cursor;
         if(cursor<16){
-            if(!mt_persist_bank(journal+64,journal+1088,cursor)){announce(12);return;}
+            int restored=get32(journal+32)==0x4d415032u?mt_restore_bank(journal+MT_DISK_CHANNELS,journal+1088,cursor):mt_persist_bank(journal+64,journal+1088,cursor);
+            if(!restored){announce(12);return;}
             ++cursor;announce(16);return;
         }
         if(!write_journal(3)){announce(3);return;}

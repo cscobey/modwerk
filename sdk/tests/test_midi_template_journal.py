@@ -34,7 +34,17 @@ class TemplateJournalTests(unittest.TestCase):
             for cut in range(1,7):
                 directory,_=fixture(f'cut-{cut}')
                 run(directory,'init',cut)
+                if cut==2:
+                    journals=list((directory/'A').glob('MIDI4_J*.DAT'));self.assertEqual(len(journals),2)
+                    for p in journals:
+                        data=p.read_bytes();self.assertEqual(data[4:8],b'\0\0\0\2');self.assertEqual(data[32:36],b'MAP2')
                 run(directory,'recover-old' if cut<4 else 'recover-new')
+            for tag in [b'MAP1',bytes(4)]:
+                directory,_=fixture('legacy-'+tag.hex());run(directory,'init',2)
+                for p in (directory/'A').glob('MIDI4_J*.DAT'):
+                    data=bytearray(p.read_bytes());data[4:8]=b'\0\0\0\1';data[32:36]=tag;data[1216:3264]=bytes(2048)
+                    data[-4:]=zlib.crc32(data[:-4]).to_bytes(4,'big');p.write_bytes(data)
+                run(directory,'recover-old')
             directory,_=fixture('replace');run(directory,'init');run(directory,'replace');run(directory,'replace-recover-new')
             directory,_=fixture('replace-cancel');run(directory,'init');run(directory,'replace-cancel');run(directory,'replace-recover-old')
             for cut in range(1,7):

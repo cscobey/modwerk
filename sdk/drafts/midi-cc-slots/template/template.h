@@ -7,8 +7,11 @@ extern char mt_command[16];
 int mt_channels(unsigned write,uint8_t values[1024]);
 int mt_preflight(const uint8_t values[1024],uint8_t fingerprints[128]);
 int mt_persist(const uint8_t values[1024],const uint8_t fingerprints[128]);
-int mt_preflight_bank(const uint8_t values[1024],uint8_t fingerprints[128],unsigned bank);
+/* MAP2 journals retain each disk copy separately after the native RAM map. */
+#define MT_DISK_CHANNELS 1216
+int mt_preflight_bank(const uint8_t values[1024],uint8_t fingerprints[128],uint8_t disk_channels[2048],unsigned bank);
 int mt_persist_bank(const uint8_t values[1024],const uint8_t fingerprints[128],unsigned bank);
+int mt_restore_bank(const uint8_t disk_channels[2048],const uint8_t fingerprints[128],unsigned bank);
 void mt_request(void);
 unsigned mt_progress(void);
 unsigned mt_failure(void);

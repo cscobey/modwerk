@@ -24,7 +24,7 @@ int mt_cancel_held(void){return 0;}
 unsigned mt_confirm_held(void){return confirm_keys;}
 int mt_view_key(int code){return !modifier&&code>=0x22&&code<=0x26;}
 int mt_channels(unsigned write,uint8_t values[1024]){if(write){memcpy(native,values,1024);++apply_calls;}else memcpy(values,native,1024);return 1;}
-int mt_preflight_bank(const uint8_t values[1024],uint8_t hashes[128],unsigned b){(void)values;memset(hashes+b*8,0x53,8);return 1;}
+int mt_preflight_bank(const uint8_t values[1024],uint8_t hashes[128],uint8_t disk[2048],unsigned b){memset(hashes+b*8,0x53,8);memcpy(disk+b*64,values+b*64,64);memcpy(disk+1024+b*64,values+b*64,64);return 1;}
 void mt_reload_project(void){++reloads;}
 int mt_persist_bank(const uint8_t values[1024],const uint8_t hashes[128],unsigned b){
     (void)hashes;++persist_calls;if(fail_persist)return 0;
@@ -34,6 +34,7 @@ int mt_persist_bank(const uint8_t values[1024],const uint8_t hashes[128],unsigne
     unsigned n=cut==2?32:64;if(fwrite(values+b*64,1,n,f)!=n||fclose(f))abort();
     if(cut==2)exit(0);return 1;
 }
+int mt_restore_bank(const uint8_t disk[2048],const uint8_t hashes[128],unsigned b){return mt_persist_bank(disk,hashes,b);}
 void mm_profile_context(unsigned*b,unsigned*p,uint8_t values[8]){(void)b;(void)p;(void)values;abort();}
 void mm_profile_apply(const uint8_t values[8]){(void)values;abort();}
 int mm_profile_wake(void){return 1;}

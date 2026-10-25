@@ -40,7 +40,7 @@ static int inspect_bank(const char*name,struct bank_info*info){
     return mt_bank_close(&f)&&valid;
 }
 static void hash_init(void){if(crc_table[1])return;for(unsigned i=0;i<256;i++){uint32_t c=i;for(unsigned b=0;b<8;b++)c=(c>>1)^(0xedb88320u&(0u-(c&1u)));crc_table[i]=c;}}
-int mt_preflight_bank(const uint8_t values[1024],uint8_t fingerprints[128],unsigned b){
+int mt_preflight_bank(const uint8_t values[1024],uint8_t fingerprints[128],uint8_t disk_channels[2048],unsigned b){
     hash_init();char folder[260],name[300];if(!mt_stopped()||!mm_profile_directory(folder,260))return 0;
     if(b>=16)return 0;
     {
@@ -48,7 +48,10 @@ int mt_preflight_bank(const uint8_t values[1024],uint8_t fingerprints[128],unsig
         for(unsigned saved=0;saved<2;saved++){
             struct bank_info info;bank_path(name,folder,b,saved);
             if(!inspect_bank(name,&info)||(info.sum&65535)!=info.stored)return 0;
-            for(unsigned i=0;i<64;i++)if(info.channels[i]!=values[b*64+i])return 0;
+            for(unsigned i=0;i<64;i++){
+                if(info.channels[i]>16||(!saved&&info.channels[i]!=values[b*64+i]))return 0;
+                if(disk_channels)disk_channels[saved*1024+b*64+i]=info.channels[i];
+            }
             if(saved&&first!=info.hash)return 0;first=info.hash;
             write_be(fingerprints+(b*2+saved)*4,info.hash);
         }
@@ -99,7 +102,7 @@ static int patch_bank(const char*name,const uint8_t values[64],const struct bank
     return 1;
 }
 
-int mt_persist_bank(const uint8_t values[1024],const uint8_t fingerprints[128],unsigned b){
+static int persist_bank(const uint8_t work[1024],const uint8_t stored[1024],const uint8_t fingerprints[128],unsigned b){
     hash_init();char folder[260],name[2][300];if(!mt_stopped()||!mm_profile_directory(folder,260))return 0;
     if(b>=16)return 0;
     {
@@ -110,15 +113,18 @@ int mt_persist_bank(const uint8_t values[1024],const uint8_t fingerprints[128],u
             if(read_be(fingerprints+b*8)!=read_be(fingerprints+b*8+4)||!restore_peer(name[s^1],name[s])||!inspect_bank(name[s],&info[s])||info[s].hash!=read_be(fingerprints+(b*2+s)*4))return 0;
         }
         for(unsigned s=0;s<2;s++){
+            const uint8_t*values=s?stored:work;
             if(!patch_bank(name[s],values+b*64,&info[s])||!inspect_bank(name[s],&info[s])||info[s].hash!=read_be(fingerprints+(b*2+s)*4)||(info[s].sum&65535)!=info[s].stored)return 0;
             for(unsigned i=0;i<64;i++)if(info[s].channels[i]!=values[b*64+i])return 0;
         }
     }
     return 1;
 }
+int mt_persist_bank(const uint8_t values[1024],const uint8_t fingerprints[128],unsigned b){return persist_bank(values,values,fingerprints,b);}
+int mt_restore_bank(const uint8_t disk_channels[2048],const uint8_t fingerprints[128],unsigned b){return persist_bank(disk_channels,disk_channels+1024,fingerprints,b);}
 
 int mt_preflight(const uint8_t values[1024],uint8_t fingerprints[128]){
-    for(unsigned b=0;b<16;b++)if(!mt_preflight_bank(values,fingerprints,b))return 0;return 1;
+    for(unsigned b=0;b<16;b++)if(!mt_preflight_bank(values,fingerprints,0,b))return 0;return 1;
 }
 int mt_persist(const uint8_t values[1024],const uint8_t fingerprints[128]){
     for(unsigned b=0;b<16;b++)if(!mt_persist_bank(values,fingerprints,b))return 0;return 1;

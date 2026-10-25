@@ -50,7 +50,7 @@ static void corrupt(const char*suffix,unsigned offset){
 }
 int main(int argc,char**argv){
     if(argc!=3)return 2;snprintf(directory,sizeof directory,"%s",argv[1]);
-    uint8_t old[1024],desired[1024],hashes[128];
+    uint8_t old[1024],desired[1024],hashes[128],disk[2048];
     for(unsigned b=0;b<16;b++)for(unsigned p=0;p<8;p++)for(unsigned t=0;t<8;t++){
         old[b*64+p*8+t]=(uint8_t)((b+p+t)%17);desired[b*64+p*8+t]=(uint8_t)(t+1);
     }
@@ -58,7 +58,16 @@ int main(int argc,char**argv){
     if(!strcmp(argv[2],"unsaved")||!strcmp(argv[2],"missing")||!strcmp(argv[2],"newedit")){
         CHECK(!mt_preflight(old,hashes));CHECK(writes==0);return 0;
     }
-    CHECK(mt_preflight(old,hashes));CHECK(writes==0);
+    for(unsigned b=0;b<16;b++)CHECK(mt_preflight_bank(old,hashes,disk,b));CHECK(writes==0);
+    if(!strncmp(argv[2],"split",5)){
+        CHECK(disk[1024+2]!=disk[2]);
+        if(!strcmp(argv[2],"split-apply")){CHECK(mt_persist(desired,hashes));return 0;}
+        if(!strcmp(argv[2],"split-work")||!strcmp(argv[2],"split-strd")){
+            snprintf(fault_suffix,sizeof fault_suffix,".%s",argv[2]+6);
+            CHECK(!mt_persist(desired,hashes));CHECK(injected);fault_suffix[0]=0;
+        }else CHECK(mt_persist(desired,hashes));
+        for(unsigned b=0;b<16;b++)CHECK(mt_restore_bank(disk,hashes,b));return 0;
+    }
     if(!strcmp(argv[2],"apply")){CHECK(mt_persist(desired,hashes));return 0;}
     if(!strcmp(argv[2],"both-bad")){
         corrupt("work",42);corrupt("strd",42);CHECK(!mt_persist(old,hashes));CHECK(writes==0);return 0;

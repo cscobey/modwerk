@@ -105,7 +105,6 @@ void mm_profile_redraw(unsigned value){
     case 11:message="MIDI SETUP CANCELLED";break;
     case 12:message="MIDI RECOVERY REQUIRED";break;
     case 13:message="PROJECT CHANGED";break;
-    case 14:message="SAVE PROJECT FIRST";break;
     case 15:message="PROJECT IS PROTECTED";break;
     case 18:message="REPLACE ALL? YES/NO";break;
     }
@@ -116,8 +115,8 @@ void mm_profile_redraw(unsigned value){
         unsigned n=0;while(text[n]){progress[n]=text[n];++n;}
         progress[n++]=(char)('0'+bank/10);progress[n++]=(char)('0'+bank%10);
         progress[n++]='/';progress[n++]='1';progress[n++]='6';progress[n]=0;message=progress;
-    }else if(value==17){
-        const char*text="APPLY FAILED ";unsigned n=0,v=mt_failure();
+    }else if(value==17||value==14){
+        const char*text=value==14?"CHECK FAILED ":"APPLY FAILED ";unsigned n=0,v=mt_failure();
         while(text[n]){progress[n]=text[n];++n;}
         progress[n++]=(char)('0'+v/100%10);progress[n++]=(char)('0'+v/10%10);progress[n++]=(char)('0'+v%10);progress[n]=0;message=progress;
     }
