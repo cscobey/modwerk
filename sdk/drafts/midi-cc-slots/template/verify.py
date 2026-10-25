@@ -41,7 +41,9 @@ def main():
                 b.press(0x3b);expect(not any(b.read(0x460e7612,4)) and b.number('requested')==0,'plain D only shows the FUNC hint; no text editor or initialization')
                 b.save_project()
                 b.cmd('card flush');before_init=card.extract_image(image.read_bytes(),out/'before-init')
-                b.apply();b.press(0x32);wait(b,0)
+                b.apply();b.press(0x25)
+                expect(not any(b.read(0x400bc6c0,4)),'bare FX1 page navigation remains usable during Apply')
+                b.press(0x32);wait(b,0)
                 expect(b.number('status')==11,'actual NO cancels cooperative Apply')
                 b.apply()
                 for _ in range(1000):

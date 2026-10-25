@@ -252,7 +252,7 @@ int mt_runtime_key(int code,int pressed){
     /* NO cancels at a bank boundary; always deliver STOP and FUNC releases. */
     if(mt_busy()){
         if(code==0x32){if(pressed&&step!=3)cancelled=1;return 1;}
-        if(code!=0x27&&code!=0x2d)return 1;
+        if(code!=0x27&&code!=0x2d&&!mt_view_key(code))return 1;
     }
     if(code==0x28&&pressed&&!mm_profile_ready()){announce(12);return 1;}return 0;
 }

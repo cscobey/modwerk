@@ -13,6 +13,7 @@ void mt_request(void);
 unsigned mt_progress(void);
 unsigned mt_failure(void);
 int mt_cancel_held(void);
+int mt_view_key(int code);
 void mt_reload_project(void);
 int mt_stopped(void);
 int mt_writable(void);

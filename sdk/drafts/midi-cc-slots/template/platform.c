@@ -14,6 +14,16 @@ int mt_stopped(void){
 }
 int mt_writable(void){return U32(0x100f847cu)==0;}
 int mt_cancel_held(void){return !!(U8(0x46100b18u+(0x32u>>3))&(1u<<(0x32u&7u)));}
+int mt_view_key(int code){
+    if(code<0x22||code>0x26||U32(0x46c7c730u))return 0;
+    /* Only a bare page key is read-only. A held modifier/track could turn
+     * that key into a different stock command, so keep that chord blocked. */
+    for(unsigned row=0;row<8;row++){
+        unsigned allowed=row==(unsigned)code/8?1u<<((unsigned)code&7u):0;
+        if(U8(0x46100b18u+row)&~allowed)return 0;
+    }
+    return 1;
+}
 int mt_ui_context(void){return U32(0x400bcd14u)==0x400bc6b8u&&U32(0x80000012u)!=0;}
 extern uint32_t names_window,names_pending;
 static unsigned claimed,armed;

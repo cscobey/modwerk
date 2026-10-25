@@ -3,7 +3,7 @@
  */
 #include "template.h"
 #include "banks.h"
-static uint32_t nibble[16];
+static uint32_t crc_table[256];
 struct bank_info {uint32_t hash;unsigned sum,stored;uint8_t channels[64];};
 static uint32_t read_be(const uint8_t*p){return (uint32_t)p[0]<<24|(uint32_t)p[1]<<16|(uint32_t)p[2]<<8|p[3];}
 static void write_be(uint8_t*p,uint32_t v){p[0]=v>>24;p[1]=v>>16;p[2]=v>>8;p[3]=v;}
@@ -32,14 +32,14 @@ static int inspect_bank(const char*name,struct bank_info*info){
         }
         for(unsigned i=0;i<n;i++){
             unsigned pos=at+i;uint8_t v=pos>=636111?0:mt_work[i];
-            hash^=v;hash=(hash>>4)^nibble[hash&15];hash=(hash>>4)^nibble[hash&15];
+            hash=(hash>>8)^crc_table[(hash^v)&255];
         }
         at+=n;
     }
     info->hash=~hash;
     return mt_bank_close(&f)&&valid;
 }
-static void hash_init(void){if(nibble[1])return;for(unsigned i=0;i<16;i++){uint32_t c=i;for(unsigned b=0;b<4;b++)c=(c>>1)^(0xedb88320u&(0u-(c&1u)));nibble[i]=c;}}
+static void hash_init(void){if(crc_table[1])return;for(unsigned i=0;i<256;i++){uint32_t c=i;for(unsigned b=0;b<8;b++)c=(c>>1)^(0xedb88320u&(0u-(c&1u)));crc_table[i]=c;}}
 int mt_preflight_bank(const uint8_t values[1024],uint8_t fingerprints[128],unsigned b){
     hash_init();char folder[260],name[300];if(!mt_stopped()||!mm_profile_directory(folder,260))return 0;
     if(b>=16)return 0;

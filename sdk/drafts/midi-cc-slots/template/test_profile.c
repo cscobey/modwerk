@@ -8,7 +8,7 @@
 char names_store[8][16];
 static char root[260],project[32]="A";
 static uint8_t native[1024];
-static unsigned bank,playing,apply_calls,persist_calls,cut,fail_persist,protected,reads,writes,reloads;
+static unsigned bank,playing,apply_calls,persist_calls,cut,fail_persist,protected,reads,writes,reloads,modifier;
 #define CHECK(c) do{if(!(c)){fprintf(stderr,"line %d: %s\n",__LINE__,#c);return 1;}}while(0)
 static void native_file(unsigned write,unsigned n){
     char path[320];snprintf(path,sizeof path,"%s/%s/channels.bin",root,project);
@@ -21,6 +21,7 @@ int mm_profile_gate(void){return !playing;}
 int mt_stopped(void){return !playing;}
 int mt_writable(void){return !protected;}
 int mt_cancel_held(void){return 0;}
+int mt_view_key(int code){return !modifier&&code>=0x22&&code<=0x26;}
 int mt_channels(unsigned write,uint8_t values[1024]){if(write){memcpy(native,values,1024);++apply_calls;}else memcpy(values,native,1024);return 1;}
 int mt_preflight_bank(const uint8_t values[1024],uint8_t hashes[128],unsigned b){(void)values;memset(hashes+b*8,0x53,8);return 1;}
 void mt_reload_project(void){++reloads;}
@@ -91,6 +92,8 @@ int main(int argc,char**argv){
         mm_profile_service();fail_persist=1;request();CHECK(!mm_profile_ready());CHECK(mt_busy());
         CHECK(mt_runtime_key(0x28,1));CHECK(mt_runtime_key(0x2f,1));CHECK(mt_runtime_key(0x2f,0));
         CHECK(!mt_runtime_key(0x27,1)&&!mt_runtime_key(0x27,0));CHECK(mt_runtime_enc(48,4));
+        for(int key=0x22;key<=0x26;key++)CHECK(!mt_runtime_key(key,1)&&!mt_runtime_key(key,0));
+        modifier=1;CHECK(mt_runtime_key(0x22,1));modifier=0;
         fail_persist=0;mm_profile_service();drain();CHECK(mm_profile_ready());CHECK(!mt_initialized());CHECK(native[192]==0);
         CHECK(!mt_runtime_key(0x2f,1)&&!mt_runtime_enc(48,4));
     }else if(!strcmp(argv[2],"cancel-before-write")){
