@@ -85,9 +85,10 @@ class Bench:
     def run(self,ms=100):return self.cmd('run '+str(ms))
     def read(self,at,n):return bytes.fromhex(self.cmd(f'peek {hex(at)} {n}').split()[1])
     def number(self,name):return int.from_bytes(self.read(self.origin+self.symbols[name],4),'big')
-    def key(self,code,down):
+    def key(self,code,down,ms=50):
         row,bit=code>>3,1<<(code&7);self.rows[row]=self.rows[row]|bit if down else self.rows[row]&~bit
-        self.cmd(f'key {32|row} {self.rows[row]}');self.run(50)
+        self.cmd(f'key {32|row} {self.rows[row]}')
+        if ms:self.run(ms)
     def press(self,code):self.key(code,True);self.key(code,False)
     def setup(self):
         self.press(0x22);self.run(500)
@@ -113,6 +114,12 @@ class Bench:
                 self.press(0x33 if up else 0x20)
             else:raise AssertionError('Stock editor character not reached.')
             if i+1<len(text):self.press(0x21)
+    def apply(self):
+        self.setup();self.key(0x2d,True);self.key(0x3b,True);self.key(0x3b,False,1)
+        for _ in range(100):
+            if self.number('busy') or self.number('status')==9:break
+            self.run(1)
+        self.key(0x2d,False,0)
     def rename(self,text):
         self.setup();self.press(0x3d);assert any(self.read(0x460e7612,4))
         self.text(text);self.press(0x31);self.run(1500)

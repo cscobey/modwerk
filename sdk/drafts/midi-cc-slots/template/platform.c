@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT
  * 1.40C adapter. All storage and bank mutation run in the stopped engine task.
  */
+#define MM_PROFILE_IO_ALIGN 16
 #define mm_profile_redraw mt_old_redraw
 #include "../profile_140c.c"
 #undef mm_profile_redraw
@@ -12,14 +13,19 @@ int mt_stopped(void){
     return 1;
 }
 int mt_writable(void){return U32(0x100f847cu)==0;}
+int mt_cancel_held(void){return !!(U8(0x46100b18u+(0x32u>>3))&(1u<<(0x32u&7u)));}
 int mt_ui_context(void){return U32(0x400bcd14u)==0x400bc6b8u&&U32(0x80000012u)!=0;}
 extern uint32_t names_window,names_pending;
-static unsigned claimed;
-int mt_key(int code,int released){
+static unsigned claimed,armed;
+int mt_key(int code,int down){
+    if(mt_runtime_key(code,down)){if(code==59&&!down)claimed=0;return 1;}
     if(code!=59)return 0;
-    if(released){unsigned previous=claimed;claimed=0;return (int)previous;}
-    if(!mt_ui_context())return 0;
-    claimed=1;
+    if(down){
+        if(!mt_ui_context())return 0;
+        claimed=1;armed=!!(U8(0x46100b18u+(0x2du>>3))&(1u<<(0x2du&7u)));return 1;
+    }
+    if(!claimed)return 0;claimed=0;
+    if(!mt_ui_context())return 1;
     if(!mt_writable()){
         ((void(*)(const char*,unsigned))0x4005a2b8u)("PROJECT IS PROTECTED",80);return 1;
     }
@@ -27,14 +33,12 @@ int mt_key(int code,int released){
         ((void(*)(const char*,unsigned))0x4005a2b8u)("STOP FOR MIDI SETUP",80);return 1;
     }
     if(mt_initialized()){
-        ((void(*)(const char*,unsigned))0x4005a2b8u)("MIDI SETUP ALREADY SET",80);return 1;
+        mt_request();return 1;
     }
-    for(unsigned i=0;i<16;i++)mt_command[i]=0;
-    ((void(*)(void))0x40056808u)();
-    ((void(*)(unsigned,const char*,char*,unsigned,void*))0x4007e664u)(10,"ALL BANKS: TYPE APPLY",mt_command,1,(void*)0x4004e978u);
-    U32(0x460e761eu)=0x460e743cu;
-    names_window=U32(0x460e7612u);names_pending=(uint32_t)(uintptr_t)mt_command;
-    return 1;
+    if(!armed||!(U8(0x46100b18u+(0x2du>>3))&(1u<<(0x2du&7u)))){
+        ((void(*)(const char*,unsigned))0x4005a2b8u)("HOLD FUNC + PUSH D",100);return 1;
+    }
+    mt_request();return 1;
 }
 int mt_channels(unsigned write,uint8_t values[1024]){
     unsigned bank=U8(0x100b14ceu),part=U8(0x100b14cfu);
@@ -65,7 +69,7 @@ int mt_channels(unsigned write,uint8_t values[1024]){
     return 1;
 }
 #include "banks.h"
-static uint8_t write_io[512] __attribute__((aligned(4)));
+static uint8_t write_io[512] __attribute__((aligned(16)));
 int mt_bank_open(struct mt_bank_file*f,const char*name,unsigned write){return ((int(*)(void*,const char*,const char*,void*,unsigned))0x40016864u)(f,name,write?"w":"r",write?write_io:io,512)>=0;}
 int mt_bank_close(struct mt_bank_file*f){return ((int(*)(void*))0x4001677cu)(f)>=0;}
 int mt_bank_seek(struct mt_bank_file*f,unsigned at){return ((int(*)(void*,unsigned))0x4001660cu)(f,at)>=0;}
@@ -93,6 +97,18 @@ void mm_profile_redraw(unsigned value){
     case 13:message="PROJECT CHANGED";break;
     case 14:message="SAVE PROJECT FIRST";break;
     case 15:message="PROJECT IS PROTECTED";break;
+    }
+    char progress[26];
+    if(value==6||value==16){
+        unsigned p=mt_progress(),bank=p%100+1;if(bank>16)bank=16;
+        const char*text=value==16?"RESTORE MIDI ":p/100==1?"CHECK MIDI ":"APPLY MIDI ";
+        unsigned n=0;while(text[n]){progress[n]=text[n];++n;}
+        progress[n++]=(char)('0'+bank/10);progress[n++]=(char)('0'+bank%10);
+        progress[n++]='/';progress[n++]='1';progress[n++]='6';progress[n]=0;message=progress;
+    }else if(value==17){
+        const char*text="APPLY FAILED ";unsigned n=0,v=mt_failure();
+        while(text[n]){progress[n]=text[n];++n;}
+        progress[n++]=(char)('0'+v/100%10);progress[n++]=(char)('0'+v/10%10);progress[n++]=(char)('0'+v%10);progress[n]=0;message=progress;
     }
     if(message)((void(*)(const char*,unsigned))0x4005a2b8u)(message,100);
 }

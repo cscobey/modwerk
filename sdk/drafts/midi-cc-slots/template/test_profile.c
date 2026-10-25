@@ -8,7 +8,7 @@
 char names_store[8][16];
 static char root[260],project[32]="A";
 static uint8_t native[1024];
-static unsigned bank,playing,apply_calls,persist_calls,cut,fail_persist,protected,reads,writes;
+static unsigned bank,playing,apply_calls,persist_calls,cut,fail_persist,protected,reads,writes,reloads;
 #define CHECK(c) do{if(!(c)){fprintf(stderr,"line %d: %s\n",__LINE__,#c);return 1;}}while(0)
 static void native_file(unsigned write,unsigned n){
     char path[320];snprintf(path,sizeof path,"%s/%s/channels.bin",root,project);
@@ -20,14 +20,17 @@ int mm_profile_directory(char*out,unsigned n){return snprintf(out,n,"%s/%s",root
 int mm_profile_gate(void){return !playing;}
 int mt_stopped(void){return !playing;}
 int mt_writable(void){return !protected;}
+int mt_cancel_held(void){return 0;}
 int mt_channels(unsigned write,uint8_t values[1024]){if(write){memcpy(native,values,1024);++apply_calls;}else memcpy(values,native,1024);return 1;}
-int mt_preflight(const uint8_t values[1024],uint8_t hashes[128]){(void)values;memset(hashes,0x53,128);return 1;}
-void mt_reload_project(void){}
-int mt_persist(const uint8_t values[1024],const uint8_t hashes[128]){
-    (void)values;(void)hashes;++persist_calls;
-    if(cut==2){native_file(1,256);exit(0);}
-    if(fail_persist)return 0;
-    native_file(1,1024);return 1;
+int mt_preflight_bank(const uint8_t values[1024],uint8_t hashes[128],unsigned b){(void)values;memset(hashes+b*8,0x53,8);return 1;}
+void mt_reload_project(void){++reloads;}
+int mt_persist_bank(const uint8_t values[1024],const uint8_t hashes[128],unsigned b){
+    (void)hashes;++persist_calls;if(fail_persist)return 0;
+    char path[320];snprintf(path,sizeof path,"%s/%s/channels.bin",root,project);
+    FILE*f=fopen(path,"r+b");if(!f)abort();
+    if(fseek(f,(long)b*64,SEEK_SET))abort();
+    unsigned n=cut==2?32:64;if(fwrite(values+b*64,1,n,f)!=n||fclose(f))abort();
+    if(cut==2)exit(0);return 1;
 }
 void mm_profile_context(unsigned*b,unsigned*p,uint8_t values[8]){(void)b;(void)p;(void)values;abort();}
 void mm_profile_apply(const uint8_t values[8]){(void)values;abort();}
@@ -52,7 +55,8 @@ int mm_profile_file(unsigned write,const char*path,uint8_t*data,unsigned size){
     return amount==size?1:2;
 }
 static void rename_track(const char*text){char*s=mm_profile_edit(0);if(!s)abort();strcpy(s,text);mm_profile_name_changed(s);}
-static void request(void){strcpy(mt_command,"APPLY");mm_profile_name_changed(mt_command);mm_profile_service();}
+static void drain(void){for(unsigned i=0;i<100&&mt_busy();i++)mm_profile_service();if(!mt_busy())mm_profile_service();}
+static void request(void){mt_request();mm_profile_service();drain();}
 int main(int argc,char**argv){
     if(argc<3)return 2;snprintf(root,sizeof root,"%s",argv[1]);native_file(0,1024);
     if(!strcmp(argv[2],"init")){
@@ -66,9 +70,9 @@ int main(int argc,char**argv){
         unsigned before=apply_calls;request();CHECK(apply_calls==before);CHECK(mm_profile_status()==9);
         rename_track("AEDIT");mm_profile_service();bank=2;CHECK(!strcmp(mm_profile_name(0),"BASS"));
     }else if(!strcmp(argv[2],"recover-old")){
-        mm_profile_service();mm_profile_service();CHECK(mm_profile_ready());CHECK(!mt_initialized());
+        mm_profile_service();drain();CHECK(mm_profile_ready());CHECK(!mt_initialized());
         CHECK(native[0]==1&&native[64]==5&&native[65]==0&&native[128]==12&&native[192]==0);
-        mm_profile_service();CHECK(apply_calls==1);CHECK(mm_profile_status()==8);CHECK(persist_calls==1);
+        mm_profile_service();CHECK(apply_calls==1);CHECK(mm_profile_status()==8);CHECK(persist_calls<=16);CHECK(reloads==1);
         unsigned before=apply_calls;mm_profile_service();CHECK(apply_calls==before);
     }else if(!strcmp(argv[2],"recover-new")){
         mm_profile_service();CHECK(mm_profile_ready());CHECK(mt_initialized());CHECK(apply_calls==0);
@@ -87,8 +91,19 @@ int main(int argc,char**argv){
         mm_profile_service();fail_persist=1;request();CHECK(!mm_profile_ready());CHECK(mt_busy());
         CHECK(mt_runtime_key(0x28,1));CHECK(mt_runtime_key(0x2f,1));CHECK(mt_runtime_key(0x2f,0));
         CHECK(!mt_runtime_key(0x27,1)&&!mt_runtime_key(0x27,0));CHECK(mt_runtime_enc(48,4));
-        fail_persist=0;mm_profile_service();mm_profile_service();CHECK(mm_profile_ready());CHECK(!mt_initialized());CHECK(native[192]==0);
+        fail_persist=0;mm_profile_service();drain();CHECK(mm_profile_ready());CHECK(!mt_initialized());CHECK(native[192]==0);
         CHECK(!mt_runtime_key(0x2f,1)&&!mt_runtime_enc(48,4));
+    }else if(!strcmp(argv[2],"cancel-before-write")){
+        mm_profile_service();mt_request();mm_profile_service();CHECK(mt_busy());
+        CHECK(mt_progress()==100);CHECK(mt_runtime_key(0x32,1));drain();
+        CHECK(mm_profile_ready());CHECK(!mt_initialized());CHECK(persist_calls==0&&apply_calls==0&&reloads==0);
+        CHECK(mm_profile_status()==11);
+    }else if(!strcmp(argv[2],"cancel-after-bank")){
+        mm_profile_service();mt_request();
+        for(unsigned i=0;i<40&&mt_progress()!=201;i++)mm_profile_service();
+        CHECK(mt_progress()==201);CHECK(mt_runtime_key(0x32,1));drain();
+        CHECK(mm_profile_ready()&&!mt_initialized());CHECK(persist_calls==2&&reloads==0);
+        CHECK(mm_profile_status()==11);native_file(0,1024);CHECK(native[192]==0);
     }else if(!strcmp(argv[2],"foreign")){
         mm_profile_service();request();CHECK(apply_calls==0);CHECK(!mm_profile_ready());
     }else if(!strcmp(argv[2],"protected-copy")){

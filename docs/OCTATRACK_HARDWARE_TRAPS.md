@@ -628,6 +628,16 @@ overload, not the peak (finding 59 in the beta test plan).
 
 ## Cold starts and card writes
 
+**A valid saved name does not prove a project-wide channel update committed.**
+Names can save before an initialization attempt that later rolls back. Inspect
+the checked intent/terminal journal and native bank checksums before blaming a
+UI cache or retrying. Preserve a stage/bank failure code, yield between bank
+pairs, allow cancellation at safe boundaries, and restore a live failed attempt
+in place when only channel fields changed. Reserve a full native reload for
+boot recovery that may have loaded damaged unrelated bank data. A long stopped
+engine operation with every key consumed looks like a frozen instrument even
+when its storage verification is still running.
+
 **Buffered write-mode close uses the logical end recorded in its file object.**
 An in-place bank edit must preserve the original logical length on every error
 path as well as success; a failed seek or partial update must not make close

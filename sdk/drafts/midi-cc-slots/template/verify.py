@@ -38,12 +38,17 @@ def main():
             if phase=='create':
                 b.channel(3);b.rename('BASS3');b.setup()
                 shutil.copyfile(b.out/'lcd.bin',out/'init-control.lcd.bin')
-                b.press(0x3b);expect(any(b.read(0x460e7612,4)),'D INIT opens stock confirmation editor')
-                b.press(0x32);b.run(500);expect(b.number('requested')==0,'NO cancels initialization')
+                b.press(0x3b);expect(not any(b.read(0x460e7612,4)) and b.number('requested')==0,'plain D only shows the FUNC hint; no text editor or initialization')
                 b.save_project()
                 b.cmd('card flush');before_init=card.extract_image(image.read_bytes(),out/'before-init')
-                b.setup();b.press(0x3b);expect(any(b.read(0x460e7612,4)),'saved project opens INIT confirmation')
-                b.text('APPLY');shutil.copyfile(b.out/'lcd.bin',out/'init-confirm.lcd.bin');b.press(0x31)
+                b.apply();b.press(0x32);wait(b,0)
+                expect(b.number('status')==11,'actual NO cancels cooperative Apply')
+                b.apply()
+                for _ in range(1000):
+                    b.run(100)
+                    if b.number('step')==2 and b.number('cursor')>0:
+                        shutil.copyfile(b.out/'lcd.bin',out/'apply-progress.lcd.bin');break
+                    if b.number('busy')==0:break
                 wait(b,1);expect(b.number('status')==7,'native action confirms MIDI SETUP SAVED')
                 b.cmd('card flush');bankfiles=card.extract_image(image.read_bytes())
                 for bank in range(1,17):
@@ -66,7 +71,7 @@ def main():
                 b.bank(0);b.channel(4);b.rename('BASS4');b.bank(3)
                 expect(b.channels()[0]==3,'later Bank A channel edit does not change Bank D')
                 expect(b.name()==b'BASS3','later Bank A name edit does not change Bank D')
-                b.setup();b.press(0x3b);expect(not any(b.read(0x460e7612,4)),'initialized project refuses second INIT')
+                b.apply();expect(b.number('status')==9,'initialized project refuses second Apply')
                 b.save_project();b.press(0x32)
             elif phase=='restart':
                 wait(b,1);b.bank(0);expect(b.channels()[0]==4,'fresh process retains later Bank A channel edit')
@@ -94,8 +99,8 @@ def main():
                 expect(b.channels()[0]==4,'copied project restores Bank A native channel')
                 b.bank(3);expect(b.name()==b'BASS3','copied project restores Bank D snapshot')
                 expect(b.channels()[0]==3,'copied project restores Bank D native channel')
-                b.rename('COPY4');b.setup();b.press(0x3b)
-                expect(not any(b.read(0x460e7612,4)),'copied initialization marker prevents reapplication')
+                b.rename('COPY4');b.apply()
+                expect(b.number('status')==9,'copied initialization marker prevents reapplication')
             expect('errors=0' in b.cmd('card flush'),phase+': card flush clean')
         finally:b.close()
     files=card.extract_image(image.read_bytes(),out/'saved')
@@ -104,7 +109,7 @@ def main():
     expect(newest('COPYTEST')[16+3*128:32+3*128].split(b'\0',1)[0]==b'COPY4','copy owns new name checkpoint')
     for name,data in old.items():
         if name.startswith('TEST/PROFILE/MIDI3_'):expect(files['TEST/TRIAL/'+Path(name).name]==data,'old v7 profile remains byte-identical')
-    report={'checks':checks,'packageSha256':hashlib.sha256((a.build/'trial.mwrm').read_bytes()).hexdigest(),'stockSha256':hashlib.sha256(a.stock.read_bytes()).hexdigest(),'emulatorSha256':hashlib.sha256(a.emulator.read_bytes()).hexdigest(),'initialization':'Actual D encoder and stock confirmation; native engine persistence','copy':'Actual source-capture/destination package hooks; no injected project identity','limitations':['Private runtime publication, UI tick shim and separately recorded first-sector IRQ fixture, not full resident base.','Hardware and shared lifecycle admission not qualified.']}
+    report={'checks':checks,'packageSha256':hashlib.sha256((a.build/'trial.mwrm').read_bytes()).hexdigest(),'stockSha256':hashlib.sha256(a.stock.read_bytes()).hexdigest(),'emulatorSha256':hashlib.sha256(a.emulator.read_bytes()).hexdigest(),'initialization':'Actual FUNC + D; cooperative native engine persistence','copy':'Actual source-capture/destination package hooks; no injected project identity','limitations':['Private runtime publication, UI tick shim and separately recorded first-sector IRQ fixture, not full resident base.','Hardware and shared lifecycle admission not qualified.']}
     (out/'report.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({'assertions':len(checks),'report':str(out/'report.json')}))
 
 

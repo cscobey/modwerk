@@ -19,7 +19,7 @@ def main():
     assert len(original)==32
     b=Bench(a.emulator,a.stock,a.build,image,out/'interrupt')
     try:
-        b.setup();b.press(0x3b);assert any(b.read(0x460e7612,4));b.text('APPLY');b.press(0x31)
+        b.apply()
         for _ in range(1200):
             b.run(500)
             b.cmd('card flush');files=card.extract_image(image.read_bytes())
@@ -45,7 +45,7 @@ def main():
         assert b.channels()[0]==3,'Native reload did not restore the captured Bank A channel.'
         b.bank(3);assert b.channels()[0]==0,'Recovery reapplied Bank A to an uninitialized bank.'
         b.run(4000);assert b.channels()[0]==0
-        (out/'report.json').write_text(json.dumps({'packageSha256':hashlib.sha256((a.build/'trial.mwrm').read_bytes()).hexdigest(),'checks':['Actual encoder confirmation starts INIT','Interrupted after native bank writes and before committed metadata','Fresh VM restores every bank byte to the pre-INIT snapshot','Native project reload completes','Marker remains uninitialized','Uninitialized Bank D remains OFF and is not remapped'],'limitations':['Private publication, tick and first-sector IRQ fixtures; not full base or physical power loss.']},indent=2)+'\n')
+        (out/'report.json').write_text(json.dumps({'packageSha256':hashlib.sha256((a.build/'trial.mwrm').read_bytes()).hexdigest(),'checks':['Actual FUNC + D starts Apply','Interrupted after native bank writes and before committed metadata','Fresh VM restores every bank byte to the pre-INIT snapshot','Native project reload completes','Marker remains uninitialized','Uninitialized Bank D remains OFF and is not remapped'],'limitations':['Private publication, tick and first-sector IRQ fixtures; not full base or physical power loss.']},indent=2)+'\n')
         print(json.dumps({'report':str(out/'report.json')}))
     finally:b.close()
 

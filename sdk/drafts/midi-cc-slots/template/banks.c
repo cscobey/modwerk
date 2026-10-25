@@ -40,9 +40,10 @@ static int inspect_bank(const char*name,struct bank_info*info){
     return mt_bank_close(&f)&&valid;
 }
 static void hash_init(void){if(nibble[1])return;for(unsigned i=0;i<16;i++){uint32_t c=i;for(unsigned b=0;b<4;b++)c=(c>>1)^(0xedb88320u&(0u-(c&1u)));nibble[i]=c;}}
-int mt_preflight(const uint8_t values[1024],uint8_t fingerprints[128]){
+int mt_preflight_bank(const uint8_t values[1024],uint8_t fingerprints[128],unsigned b){
     hash_init();char folder[260],name[300];if(!mt_stopped()||!mm_profile_directory(folder,260))return 0;
-    for(unsigned b=0;b<16;b++){
+    if(b>=16)return 0;
+    {
         uint32_t first=0;
         for(unsigned saved=0;saved<2;saved++){
             struct bank_info info;bank_path(name,folder,b,saved);
@@ -69,26 +70,39 @@ static int restore_peer(const char*good,const char*bad){
 static int patch_bank(const char*name,const uint8_t values[64],const struct bank_info*before){
     unsigned sum=before->sum;
     for(unsigned i=0;i<64;i++)sum=sum-before->channels[i]+values[i];sum&=65535;
-    struct mt_bank_file input,output;if(!mt_bank_open(&input,name,0))return 0;
-    if(!mt_bank_open(&output,name,1)){mt_bank_close(&input);return 0;}output.word[4]=636113;
     unsigned sectors[65],count=0,previous=~0u;
-    for(unsigned i=0;i<64;i++){unsigned s=cell(i)&~511u;if(s!=previous)sectors[count++]=s;previous=s;}
-    sectors[count++]=636111u&~511u;unsigned valid=1;
-    for(unsigned s=0;valid&&s<count;s++){
-        unsigned at=sectors[s],n=636113-at;if(n>512)n=512;
-        if(!mt_bank_seek(&input,at)||!mt_bank_read(&input,mt_work,n)){valid=0;break;}
-        for(unsigned i=n;i<512;i++)mt_work[i]=0;
-        for(unsigned i=0;i<64;i++){unsigned pos=cell(i);if(pos>=at&&pos<at+512){volatile unsigned relative=pos-at;mt_work[relative]=values[i];}}
-        if(at==(636111u&~511u)){mt_work[636111u&511u]=(uint8_t)(sum>>8);mt_work[636112u&511u]=(uint8_t)sum;}
-        if(!mt_bank_seek(&output,at)||!mt_bank_write(&output,mt_work,512))valid=0;
-        output.word[4]=636113;
+    for(unsigned i=0;i<64;i++){unsigned sector=cell(i)&~511u;if(sector!=previous)sectors[count++]=sector;previous=sector;}
+    sectors[count++]=636111u&~511u;
+    /* Never keep a read descriptor open while writing the SAME file. Read
+     * up to eight sectors, close, then write that batch and close again. */
+    for(unsigned first=0;first<count;first+=8){
+        unsigned amount=count-first;if(amount>8)amount=8;
+        struct mt_bank_file input;if(!mt_bank_open(&input,name,0))return 0;
+        unsigned valid=1;
+        for(unsigned s=0;valid&&s<amount;s++){
+            unsigned at=sectors[first+s],n=636113-at;if(n>512)n=512;
+            uint8_t*buffer=mt_work+s*512;
+            if(!mt_bank_seek(&input,at)||!mt_bank_read(&input,buffer,n)){valid=0;break;}
+            for(unsigned i=n;i<512;i++)buffer[i]=0;
+            for(unsigned i=0;i<64;i++){unsigned pos=cell(i);if(pos>=at&&pos<at+512){volatile unsigned relative=pos-at;buffer[relative]=values[i];}}
+            if(at==(636111u&~511u)){buffer[636111u&511u]=(uint8_t)(sum>>8);buffer[636112u&511u]=(uint8_t)sum;}
+        }
+        if(!mt_bank_close(&input)||!valid)return 0;
+        struct mt_bank_file output;if(!mt_bank_open(&output,name,1))return 0;output.word[4]=636113;
+        for(unsigned s=0;valid&&s<amount;s++){
+            if(!mt_bank_seek(&output,sectors[first+s])||!mt_bank_write(&output,mt_work+s*512,512))valid=0;
+            output.word[4]=636113;
+        }
+        output.word[3]=0;output.word[4]=636113;
+        int out_ok=mt_bank_close(&output);if(!valid||!out_ok)return 0;
     }
-    output.word[3]=0;output.word[4]=636113;
-    int out_ok=mt_bank_close(&output),in_ok=mt_bank_close(&input);return valid&&out_ok&&in_ok;
+    return 1;
 }
-int mt_persist(const uint8_t values[1024],const uint8_t fingerprints[128]){
+
+int mt_persist_bank(const uint8_t values[1024],const uint8_t fingerprints[128],unsigned b){
     hash_init();char folder[260],name[2][300];if(!mt_stopped()||!mm_profile_directory(folder,260))return 0;
-    for(unsigned b=0;b<16;b++){
+    if(b>=16)return 0;
+    {
         struct bank_info info[2];unsigned valid[2];
         for(unsigned s=0;s<2;s++){bank_path(name[s],folder,b,s);valid[s]=inspect_bank(name[s],&info[s])&&info[s].hash==read_be(fingerprints+(b*2+s)*4);}
         if(!valid[0]&&!valid[1])return 0;
@@ -101,4 +115,11 @@ int mt_persist(const uint8_t values[1024],const uint8_t fingerprints[128]){
         }
     }
     return 1;
+}
+
+int mt_preflight(const uint8_t values[1024],uint8_t fingerprints[128]){
+    for(unsigned b=0;b<16;b++)if(!mt_preflight_bank(values,fingerprints,b))return 0;return 1;
+}
+int mt_persist(const uint8_t values[1024],const uint8_t fingerprints[128]){
+    for(unsigned b=0;b<16;b++)if(!mt_persist_bank(values,fingerprints,b))return 0;return 1;
 }

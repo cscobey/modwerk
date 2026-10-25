@@ -69,6 +69,8 @@ def main():
             args.review_image.with_suffix('.symbols.json').write_text(json.dumps(symbols[0],indent=2)+'\n')
         offsets = builder.relocations(image, images[1], len(image))
         sym = symbols[0]
+        if args.project_template and any(sym[name] % 16 for name in ['io','write_io','mt_work','journal']):
+            raise ValueError('Card transfer buffers must retain 16-byte alignment.')
         if args.review_image:
             args.review_image.parent.mkdir(parents=True,exist_ok=True)
             args.review_image.write_bytes(image)

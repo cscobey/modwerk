@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Retire and poison the exact package while the INIT stock editor is open."""
+"""Retire and poison the exact package while the NAME stock editor is open."""
 import argparse
 import hashlib
 import json
@@ -20,10 +20,10 @@ def main():
         image=folder/'card.private.img';image.write_bytes(card_tools().build_image(tree,size_mb=64))
         b=Bench(a.emulator,a.stock,a.build,image,folder/'native')
         try:
-            b.setup();b.press(0x3b);assert any(b.read(0x460e7612,4))
-            # Confirm with APPLY after retirement, so a stale confirmation
+            b.setup();b.press(0x3d);assert any(b.read(0x460e7612,4))
+            # Confirm a name after retirement, so a stale confirmation
             # handler or module-owned destination would actually be exercised.
-            b.text('APPLY')
+            b.text('BASS3')
             assert b.read(0x460e761e,4)==bytes.fromhex('460e743c')
             emulator_fixture.restore(b.fixture,b.cmd)
             b.cmd('poke 0x4005221e '+stock[0x51e1e:0x51e28].hex())
@@ -32,8 +32,8 @@ def main():
                 b.cmd(f'poke {hex(b.origin+at)} '+('4afc'*(n//2)))
             b.cmd(f'poke {hex(b.origin+0x10000)} '+('4afc'*24))
             b.press(action);b.run(500);assert not any(b.read(0x460e7612,4))
-            b.setup();b.press(0x3b);assert not any(b.read(0x460e7612,4))
-            checks.append(('YES' if action==0x31 else 'NO')+' closes safely after every module site is restored and module RAM is poisoned')
+            b.setup();b.press(0x3d);assert not any(b.read(0x460e7612,4))
+            checks.append(('YES' if action==0x31 else 'NO')+' closes NAME safely after every module site is restored and module RAM is poisoned')
         finally:b.close()
     (out/'report.json').write_text(json.dumps({'packageSha256':hashlib.sha256((a.build/'trial.mwrm').read_bytes()).hexdigest(),'checks':checks,'hardware':'not tested'},indent=2)+'\n')
     print(json.dumps({'report':str(out/'report.json')}))

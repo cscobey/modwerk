@@ -16,6 +16,7 @@ static struct {FILE*f;unsigned write;char path[320];} handles[8];
 int mm_profile_directory(char*out,unsigned n){return snprintf(out,n,"%s",directory)<(int)n;}
 int mt_stopped(void){return 1;}
 int mt_bank_open(struct mt_bank_file*object,const char*path,unsigned write){
+    for(unsigned i=1;i<8;i++)if(handles[i].f&&!strcmp(handles[i].path,path))abort();
     for(unsigned i=1;i<8;i++)if(!handles[i].f){
         FILE*f=fopen(path,write?"r+b":"rb");if(!f&&write)f=fopen(path,"w+b");if(!f)return 0;
         memset(object,0,sizeof *object);object->word[0]=i;handles[i].f=f;handles[i].write=write;

@@ -34,6 +34,8 @@ class TemplateJournalTests(unittest.TestCase):
                 run(directory,'init',cut)
                 run(directory,'recover-old' if cut<4 else 'recover-new')
             directory,_=fixture('write-failure');run(directory,'failed-save')
+            for mode in ['cancel-before-write','cancel-after-bank']:
+                directory,_=fixture(mode);run(directory,mode)
             directory,_=fixture('protected-copy');run(directory,'protected-copy')
             directory,_=fixture('foreign')
             foreign=directory/'A/MIDI4_J0.DAT';foreign.write_bytes(b'foreign'.ljust(4096,b'\0'))

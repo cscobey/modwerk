@@ -1,14 +1,22 @@
 # On-device project initialization experiment
 
-The local site selects this opt-in 0.0.8 experimental implementation. Its exact
-native workflow, interruption recovery and removal checks passed. Emulator
-results do not qualify hardware or public catalogue admission.
+The local site currently pins 0.0.8; the next 0.0.9 candidate is under test.
+0.0.8 aborted initialization on the reported physical project. Its card journal
+confirmed rollback and valid original bank copies. The low-level cause remains
+unconfirmed: the same project succeeds in the private emulator. Do not treat
+that emulator result as a hardware fix qualification.
 
 ## Player behavior
 
 On an unprotected, stopped test project, set Bank A / Part 1 names and MIDI
 channels, then save the project normally. In MIDI SRC SETUP, encoder D shows
-INIT / PUSH. Push D and type APPLY in the stock confirmation editor. NO cancels.
+APPLY / FUNC. Hold FUNC and push D; a plain push only shows the gesture hint.
+There is no text confirmation editor. NAME on F retains its stock text editor.
+Progress identifies the bank being checked, applied or restored. NO requests
+cancellation at the next safe bank boundary; STOP remains available. Navigation
+and parameter edits are held during the transaction, not while using the module
+normally. FUNC releases always pass through.
+
 The completed operation initializes native current and saved Parts once and
 freezes inherited names as independent bank names. Existing legacy initialized
 channel profiles (including OFF) and explicit name overrides are retained.
@@ -37,10 +45,15 @@ the map. A verified journal (`MIDI4_J0.DAT` / `MIDI4_J1.DAT`) records the previo
 channel map and channel-neutral fingerprints before mutation. Only sectors
 containing channel cells or the bank checksum are rewritten; unrelated bytes
 are preserved. Every bank copy is read back and verified before its peer is
-changed.
+changed. Sector batches close the read descriptor before opening the same file
+for writing; transfer buffers retain checked 16-byte alignment.
 
-An interrupted, uncommitted initialization restores the recorded previous map,
-then reloads the native project. It never recalculates Bank A defaults. A torn
+Apply and rollback perform one bank pair per engine turn. A tagged bitmap in
+the intent records each bank before it can be touched; older intents without
+the tag conservatively recover all sixteen pairs. An interrupted, uncommitted
+initialization restores the recorded previous map. Boot recovery reloads the
+native project afterward. A live failure or cancellation restores in place and
+unlocks the panel without an automatic project reload. It never recalculates Bank A defaults. A torn
 sector can be repaired from the other verified saved copy. If neither copy
 matches its recorded fingerprint, recovery stops rather than inventing data.
 A completed metadata checkpoint retires the intent without reapplying channels.
@@ -82,3 +95,20 @@ recorded fixture for the documented first-sector card-write interrupt race
 (`TRAPS.md#trap-first-sector-irq`); neither fixture ships in the module. Generic
 resident key/encoder dispatch, exact hardware timing and power loss remain
 separate qualifications. Record observed results, not intended results.
+
+
+## Failure codes
+
+A live failure retains a stage/bank code in the checked journal and shows
+APPLY FAILED followed by three digits. Codes 100–115 identify preflight banks
+A–P, 200–215 intent writes, 300–315 native bank persistence, 400 resident channel
+application, and 401 name/marker storage. NO cancellation records zero. A
+failure restoring a touched bank leaves recovery required; it must not silently
+unlock or write a completed marker. A preflight rejection performs no bank writes.
+
+The physical 0.0.8 report was bound to its exact saved package. Both name
+checkpoints remained uninitialized; its pending/aborted journal pair and all
+32 current bank checksums/fingerprints were valid. Bank A had the eight channels,
+Bank B remained OFF, and the sixth MIDI name was saved separately. This proves
+rollback, not which low-level I/O check failed. Personal project files and card
+logs stay private and are never test fixtures committed to this repository.

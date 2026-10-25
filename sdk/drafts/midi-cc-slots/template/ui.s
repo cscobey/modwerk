@@ -26,7 +26,7 @@ names_template_draw:
  clrl %sp@-
  pea 1
  pea \y
- pea 50
+ pea 47
  moveal 0x400bc6c0,%a0
  pea %a0@(36)
  pea 0x400ba876
@@ -34,10 +34,11 @@ names_template_draw:
  lea %sp@(36),%sp
  .endm
  mt_text mt_init_caption,21
- mt_text names_push,9
+ mt_text mt_func_caption,9
 mt_draw_done:
  rts
-mt_init_caption: .asciz "INIT"
+mt_init_caption: .asciz "APPLY"
+mt_func_caption: .asciz "FUNC"
 .align 2
 mt_clone_start_site:
  jsr mt_clone_begin

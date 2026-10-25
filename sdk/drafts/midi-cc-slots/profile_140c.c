@@ -6,7 +6,10 @@
 #define U8(a) (*(volatile uint8_t *)(uintptr_t)(a))
 #define U32(a) (*(volatile uint32_t *)(uintptr_t)(a))
 struct file_object {uint32_t word[6];};
-static uint8_t io[512] __attribute__((aligned(4)));
+#ifndef MM_PROFILE_IO_ALIGN
+#define MM_PROFILE_IO_ALIGN 4
+#endif
+static uint8_t io[512] __attribute__((aligned(MM_PROFILE_IO_ALIGN)));
 int mm_profile_directory(char *out,unsigned size) {
     const char *p=((const char *(*)(unsigned,unsigned))0x40025230u)(0,0);
     if(!p)return 0;
