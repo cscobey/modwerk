@@ -1,5 +1,16 @@
 [
   {
+    "version": "0.0.9-experimental",
+    "date": "2026-10-25",
+    "changes": [
+      "Apply Bank A setup with FUNC + encoder D in SRC SETUP; no typed confirmation.",
+      "Show bank progress and allow NO to cancel safely.",
+      "Restore a failed live attempt in place without automatically reloading the project.",
+      "Keep a stage/bank failure code and close each bank read before writing.",
+      "Experimental retest for the reported 0.0.8 hardware failure; physical fix qualification remains pending."
+    ]
+  },
+  {
     "version": "0.0.8-experimental",
     "date": "2026-10-25",
     "changes": [

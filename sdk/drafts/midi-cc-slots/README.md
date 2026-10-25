@@ -29,6 +29,33 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed CC and naming emulator gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
+## Version 0.0.9: FUNC + D, progress and cancellation
+
+The reported physical 0.0.8 initialization failed and rolled back. A read-only
+card inspection found an aborted journal, uninitialized marker, and valid bank
+checksums and original non-channel fingerprints. The saved set contained the
+exact 0.0.8 package. Its low-level physical failure cause is not confirmed;
+the same project succeeds privately in the emulator.
+
+For this experimental retest, save a backed-up test project normally, then
+hold FUNC and push encoder D at APPLY in MIDI SRC SETUP. No typed confirmation.
+Keep FUNC held through the encoder click/release. Progress identifies the bank
+being checked, applied or restored. NO cancels at the next safe boundary;
+STOP remains available. Wait for MIDI SETUP SAVED before testing banks.
+
+Apply and rollback yield between bank pairs. A live failure restores in place
+without automatically reloading the project and retains a stage/bank failure
+code. Interrupted boot recovery can still reload the native project after
+repair. Sector batches close the read descriptor before writing the same file.
+Finish or cancel Apply before Undo/removal or another module change.
+
+The exact private project-copy check includes the sixth MIDI name, all eight
+Bank B channels, current/saved Parts on card, and actual outgoing controls on
+MIDI channel 6. The local 0.0.9 package is software-tested, not a hardware-qualified
+fix. Report any APPLY FAILED code before retrying. [Details](template/README.md).
+
+The remaining version sections are historical behavior and evidence.
+
 ## Version 0.0.8: initialize once, then save native channels
 
 Back up a disposable project before testing. Set Bank A / Part 1 names and

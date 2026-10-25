@@ -1,6 +1,6 @@
 # On-device project initialization experiment
 
-The local site currently pins 0.0.8; the next 0.0.9 candidate is under test.
+The local site now pins the software-tested 0.0.9 candidate for a hardware retest.
 0.0.8 aborted initialization on the reported physical project. Its card journal
 confirmed rollback and valid original bank copies. The low-level cause remains
 unconfirmed: the same project succeeds in the private emulator. Do not treat
@@ -88,7 +88,7 @@ python3 -B -m unittest sdk.tests.test_midi_template_journal \
 
 Build privately with `build_runtime.py --profile --project-template`, then run
 `verify_runtime.py --profile --project-template --external` with private stock.
-`verify.py` drives the real D encoder, stock text editor, native Save to New and
+`verify.py` drives actual FUNC + D and NO, the NAME text editor, native Save to New and
 fresh emulator processes. Its card and firmware outputs stay outside Git.
 The private publication supplies the normal UI tick callback and a separately
 recorded fixture for the documented first-sector card-write interrupt race

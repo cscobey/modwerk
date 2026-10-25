@@ -466,3 +466,68 @@ full base execution, physical install/Keep/Undo/power loss/restart, protected
 physical template copy, CF/FAT failure modes and timing remain unqualified.
 The UI names old screenshot versions explicitly instead of relabeling their
 captures as 0.0.8. No physical device was driven for these checks.
+
+
+## 0.0.9 hardware-report follow-up and Apply gesture
+
+The user reported that 0.0.8 held the controls until an automatic project
+reload, and that a name appeared in the next bank but its channel did not.
+With permission, the test project and fixed module-set/log files were copied
+read-only from CF into a private directory; the card was not edited.
+
+Observed on that snapshot: the newest saved set body hash is valid and contains
+exact 0.0.8 (`876e3aa9…`, 29,434 bytes), base configuration
+`0c5934e1bea411fc43143a75ee2a0fcf1c09a71b8c386732ed7526517d3b0846`.
+Both MIDI4 name checkpoints are uninitialized, the pending/aborted journal
+pair has valid CRCs, and all 32 bank copies have valid checksums and match the
+journal's non-channel fingerprints. Bank A has channels 1–8; Bank B is OFF.
+The sixth name saved independently. This confirms rollback, not which I/O
+check failed. Active RAM identity/model and the reported reload message were
+not independently read. The same project succeeds in the isolated emulator;
+its low-level physical failure cause remains unconfirmed.
+
+Candidate firmware source: `bc8871f1d05fc38a436532f78696f89b03d1f115`.
+Exact 0.0.9 package SHA-256:
+`04d883c23abc0831e99e802cd30647098a0ae6eb57aa8cda384958c4c6856360`.
+31,266 bytes, 27,092-byte image, 492 relocations, 24 sites, 22 copies, ABI 8,
+feature bits 3. Default historical `--profile` still rebuilds 0.0.7 identically.
+
+Observed on this exact private package:
+
+- 352 native Apply/cancel/independent edit/Save to New/fresh-process assertions.
+  Plain D opens no editor or request; FUNC + D applies on its clean release.
+  The real panel's NO key cancels a running check. Progress is captured from
+  the native LCD. The encoder handler's event polarity was traced as 1 down,
+  0 up; the bench keeps FUNC held through the encoder's release.
+- 398 CC/menu/header/sequencer regressions pass.
+- The private reported-project copy retains its sixth name, applies channels
+  1–8 to Bank B, verifies channel 6 in every current/saved Part of both native
+  bank files, and transmits actual controller output on MIDI channel 6.
+- Actual interrupted Apply after native bank writes begin recovers in a fresh
+  VM; the touched-bank bitmap limits repair, all original bank bytes restore,
+  the marker remains uninitialized, and Bank D stays OFF without remapping.
+- NAME's stock editor closes on YES and NO after every package site is restored
+  and module RAM is poisoned. Apply itself retains no text editor.
+- Host tests cover cancellation before writes and after one touched bank,
+  failed persistence followed by in-place restore with zero reload calls,
+  six fresh-process interruption boundaries, protected source copying,
+  foreign files, migration and no sidecar I/O on ordinary bank changes.
+  The sector adapter aborts if the same file is concurrently open for read
+  and write. Torn-sector peer repair, exact unrelated-byte preservation and
+  double-corruption/unsaved/missing-file refusal still pass.
+- Exact host C loader install/Undo/reinstall/removal/reclamation against the
+  supplied private user MAIN, two-placement reconstruction, codegen checks
+  and strict 16-byte stock-overlap scan pass. Card transfer buffers are
+  16-byte aligned and the builder rejects drift; this is defensive alignment,
+  not a demonstrated cause of the physical failure.
+
+Private reports live under `template-v9-native-4`, `template-v9-panel-1`,
+`template-v9-reported-4`, `template-v9-recovery-4` and
+`template-v9-removal-1` in the private MIDI draft folder. The read-only physical
+inspection report, personal project and card logs stay private. Public capture
+provenance is `media/capture-apply.json`; older images keep their old versions.
+The native bench still uses private publication, UI tick and first-sector IRQ
+fixtures. NO cancellation is also polled from the actual held-key row on the UI
+tick. Full resident event dispatch, physical writer behavior, latency and a
+physical fix/restart remain unqualified. This is a test candidate, not a claim
+that the hardware failure has been resolved.

@@ -19,15 +19,15 @@ describe('local CC trial review', () => {
     expect(ccTrialProblem(ready, [], review, 'remove')).toContain('not installed')
   })
   it('refuses damaged or substituted local packages', () => {
-    expect(() => ccPackage({ version: '0.0.8-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
+    expect(() => ccPackage({ version: '0.0.9-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
     expect(() => ccPackage({ version: 'wrong', sha256: '', hex: '' })).toThrow('Invalid')
   })
 })
 
 it('accepts the larger initialized-project package and bounds it by the reviewed size', () => {
-  const data=new Uint8Array(29434),view=new DataView(data.buffer)
+  const data=new Uint8Array(31266),view=new DataView(data.buffer)
   view.setUint32(0,0x4d57524d);view.setUint16(4,8);view.setUint32(28,parseInt(CC_SLOTS_ID,16))
-  const document={version:'0.0.8-experimental',sha256:sha(data),hex:Buffer.from(data).toString('hex')}
+  const document={version:'0.0.9-experimental',sha256:sha(data),hex:Buffer.from(data).toString('hex')}
   expect(ccPackage(document)).toEqual(data)
   expect(()=>ccPackage({...document,hex:document.hex+'00'})).toThrow('Invalid')
 })
