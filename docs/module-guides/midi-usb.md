@@ -103,3 +103,13 @@ later by an engine poll. When a larger private runtime no longer fits a firmware
 zero cave, publish its verified relocation/site fixture into verified-unused RAM
 after emulator boot; record that simulation and its hashes explicitly. Never
 claim that a stock/shim or manual publication probe exercised the resident loader.
+
+For a one-time MIDI template, distinguish native bank/Part state, saved Part
+copies, UI caches and actual outgoing MIDI. A template written only into current
+Parts can be undone by Reload Part. A cached UI lane can lag the bank's valid
+channel even when a controller sends on the correct channel. Verify all these
+separately. Save to New needs a successful clone boundary with both project
+identities; folder-change polling cannot safely distinguish copying from loading
+an unrelated project. Stage disposable cards for serialization research before
+implementing an on-device transaction; staged files do not qualify interruption
+recovery or a production lifecycle event.

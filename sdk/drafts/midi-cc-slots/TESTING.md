@@ -381,3 +381,32 @@ The user reported the bank-specific naming behavior works after the 0.0.7
 instructions. Exact device/base/package identity and a fresh reboot were not
 independently read, so this remains reported behavior rather than complete
 release qualification. No firmware bytes or version changed for the gallery.
+# Isolated one-time template prototype (24 October 2026)
+
+The experiment in `prototype/` passed 222 native assertions over three fresh
+emulator processes using package SHA-256
+`edc9eab0b85d3a616e366a85d5317fb419c5f30f605707b97d3e02cac24d5e0a`.
+The staged template initializes all 16 banks' current and saved Part copies.
+Panel edits then change Bank A to channel 3 / BASS3 and Bank B to channel 5 /
+LEAD2, while Bank C retains channel 2 / BASS2. Reload Part retains initialized
+channels, Bank B sends a controller message on channel 5, and stock project
+save plus a fresh process retains independent native channels and names.
+
+Actual panel Save to New creates COPYTEST. A guarded private stock-call
+notification invokes the prototype's name-copy callback with an explicitly
+supplied source identity. A third fresh process restores the copied channels
+and names. Editing COPYTEST's Bank B name to COPY2 leaves TEMPLATE's LEAD2
+checkpoint unchanged. Native saved-bank checksums and channel fields across
+all current/saved Part copies are checked after the operations. Host C tests
+also refuse missing/wrong source identity and destination collisions, preserve
+foreign files, exercise write failure/retry, and abort if the names-only service
+tries to restore channels.
+
+Limits: initialization happens in a new disposable card tree on the host, not
+an on-device atomic operation. Scheduling, runtime publication and the proposed
+Save to New event are private fixtures, not the complete Modwerk base/loader.
+The source identity is supplied by the bench, not a public SDK event. No new
+UI action, interrupted-initialization recovery, production migration, physical
+timing, companion compatibility or hardware result is claimed. This prototype
+is not served by the local app. The normal 0.0.7 package was rebuilt and remains
+byte-identical (`5db4164bb52849497e93f0dc5fc3c42b755626bbc5065eb44baab010fb3b4244`).
