@@ -628,6 +628,16 @@ overload, not the peak (finding 59 in the beta test plan).
 
 ## Cold starts and card writes
 
+**Buffered write-mode close uses the logical end recorded in its file object.**
+An in-place bank edit must preserve the original logical length on every error
+path as well as success; a failed seek or partial update must not make close
+truncate the bank. Use complete aligned sectors, preserve neighboring bytes,
+and verify the full file afterward. A channel-only journal cannot recover
+unrelated data lost by a whole-bank rewrite. Keep a verified saved peer and
+fingerprints of all non-channel bytes before changing either bank copy.
+Host fault tests should model close-time truncation and torn neighboring data,
+not just a failed channel-byte write.
+
 **A cold start can stall at the logo where a quick restart does not.** An
 early-startup change passed emulator boots and quick power cycles on a
 tester's MKII, then stalled at the logo after several minutes powered off

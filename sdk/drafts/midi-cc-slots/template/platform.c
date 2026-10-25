@@ -1,0 +1,98 @@
+/* SPDX-License-Identifier: MIT
+ * 1.40C adapter. All storage and bank mutation run in the stopped engine task.
+ */
+#define mm_profile_redraw mt_old_redraw
+#include "../profile_140c.c"
+#undef mm_profile_redraw
+#include "template.h"
+
+int mt_stopped(void){
+    if(U32(0x800065b8u))return 0;
+    for(unsigned i=0;i<16;i++)if(U8(0x80006500u+i)||U8(0x80004f1eu+84*i))return 0;
+    return 1;
+}
+int mt_writable(void){return U32(0x100f847cu)==0;}
+int mt_ui_context(void){return U32(0x400bcd14u)==0x400bc6b8u&&U32(0x80000012u)!=0;}
+extern uint32_t names_window,names_pending;
+static unsigned claimed;
+int mt_key(int code,int released){
+    if(code!=59)return 0;
+    if(released){unsigned previous=claimed;claimed=0;return (int)previous;}
+    if(!mt_ui_context())return 0;
+    claimed=1;
+    if(!mt_writable()){
+        ((void(*)(const char*,unsigned))0x4005a2b8u)("PROJECT IS PROTECTED",80);return 1;
+    }
+    if(!mm_profile_ready()||!mt_stopped()){
+        ((void(*)(const char*,unsigned))0x4005a2b8u)("STOP FOR MIDI SETUP",80);return 1;
+    }
+    if(mt_initialized()){
+        ((void(*)(const char*,unsigned))0x4005a2b8u)("MIDI SETUP ALREADY SET",80);return 1;
+    }
+    for(unsigned i=0;i<16;i++)mt_command[i]=0;
+    ((void(*)(void))0x40056808u)();
+    ((void(*)(unsigned,const char*,char*,unsigned,void*))0x4007e664u)(10,"ALL BANKS: TYPE APPLY",mt_command,1,(void*)0x4004e978u);
+    U32(0x460e761eu)=0x460e743cu;
+    names_window=U32(0x460e7612u);names_pending=(uint32_t)(uintptr_t)mt_command;
+    return 1;
+}
+int mt_channels(unsigned write,uint8_t values[1024]){
+    unsigned bank=U8(0x100b14ceu),part=U8(0x100b14cfu);
+    if(bank>15||part>3||U32(0x46c82456u)!=0x400e21e0u+bank*0x9b340u||!mt_stopped())return 0;
+    /* Validate EVERY byte before any mutation. Saved Parts start two bytes
+     * after the four-current-Part area, not at a naive eight-Part stride. */
+    for(unsigned b=0;b<16;b++)for(unsigned p=0;p<8;p++)for(unsigned t=0;t<8;t++){
+        uint32_t at=0x400e21e0u+b*0x9b340u+(p<4?0x8ed80u+p*6322u:0x9504au+(p-4)*6322u)+0x4e2u+t*36u;
+        unsigned i=b*64+p*8+t;
+        if((write?values[i]:U8(at))>16)return 0;
+    }
+    for(unsigned b=0;b<16;b++)for(unsigned p=0;p<8;p++)for(unsigned t=0;t<8;t++){
+        uint32_t at=0x400e21e0u+b*0x9b340u+(p<4?0x8ed80u+p*6322u:0x9504au+(p-4)*6322u)+0x4e2u+t*36u;
+        unsigned i=b*64+p*8+t;
+        if(write){
+            U8(at)=values[i];
+            if(b==bank){
+                uint32_t mirror=(p<4?0x100a53b0u+p*6322u:0x100ab678u+(p-4)*6322u)+t*36u;
+                U8(mirror)=values[i];
+                if(p==part)U8(0x46c76de0u+t*68u)=values[i];
+            }
+        }else values[i]=U8(at);
+    }
+    if(write){
+        for(unsigned b=0;b<16;b++)U32(0x400e21e0u+b*0x9b340u+0x9b332u)=1;
+        U32(0x100f8598u)=1;
+    }
+    return 1;
+}
+#include "banks.h"
+static uint8_t write_io[512] __attribute__((aligned(4)));
+int mt_bank_open(struct mt_bank_file*f,const char*name,unsigned write){return ((int(*)(void*,const char*,const char*,void*,unsigned))0x40016864u)(f,name,write?"w":"r",write?write_io:io,512)>=0;}
+int mt_bank_close(struct mt_bank_file*f){return ((int(*)(void*))0x4001677cu)(f)>=0;}
+int mt_bank_seek(struct mt_bank_file*f,unsigned at){return ((int(*)(void*,unsigned))0x4001660cu)(f,at)>=0;}
+int mt_bank_read(struct mt_bank_file*f,uint8_t*p,unsigned n){return ((int(*)(void*,void*,unsigned))0x40016564u)(f,p,n)==1;}
+int mt_bank_write(struct mt_bank_file*f,const uint8_t*p,unsigned n){
+    int r=((int(*)(void*,const void*,unsigned))0x400166b8u)(f,p,n);
+    /* Only complete sectors are written. Preserve logical EOF on EVERY exit;
+     * stock write-mode close otherwise truncates a bank to the last seek. */
+    unsigned pending=f->word[3];f->word[3]=0;f->word[4]=636113;
+    return r==1&&pending==0;
+}
+int mt_bank_size(struct mt_bank_file*f){return ((int(*)(uint32_t))(uintptr_t)U32(0x46c8241eu))(f->word[0]);}
+void mt_reload_project(void){((void(*)(const char*))0x40023c7cu)((const char*)0x100f8378u);}
+void mm_profile_redraw(unsigned value){
+    mt_old_redraw(value);
+    const char*message=0;
+    switch(value){
+    case 6:message="SAVING MIDI SETUP";break;
+    case 7:message="MIDI SETUP SAVED";break;
+    case 8:message="MIDI SETUP RESTORED";break;
+    case 9:message="MIDI SETUP ALREADY SET";break;
+    case 10:message="STOP FOR MIDI SETUP";break;
+    case 11:message="MIDI SETUP CANCELLED";break;
+    case 12:message="MIDI RECOVERY REQUIRED";break;
+    case 13:message="PROJECT CHANGED";break;
+    case 14:message="SAVE PROJECT FIRST";break;
+    case 15:message="PROJECT IS PROTECTED";break;
+    }
+    if(message)((void(*)(const char*,unsigned))0x4005a2b8u)(message,100);
+}

@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--installed-main', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--profile', action='store_true')
+    parser.add_argument('--project-template', action='store_true')
     parser.add_argument('--external', action='store_true', help='Private after-boot RAM fixture for larger profiles')
     args = parser.parse_args()
     output = args.output.resolve()
@@ -32,12 +33,15 @@ def main():
     length, bss, count, hooks, sites, module = struct.unpack_from('>6I', data, 8)
     copies = struct.unpack_from('>I', data, 68)[0]
     assert bss == 0 and hooks == 4
-    assert sites == (21 if args.profile else 20) and (12 <= copies <= 128 if args.profile else copies == 16)
+    assert sites == (24 if args.project_template else 21 if args.profile else 20) and (12 <= copies <= 128 if args.profile else copies == 16)
     if abi==8: assert struct.unpack_from('>I',data,72)[0] == 0
     assert module == int(hashlib.sha256(b'midi-cc-slots').hexdigest()[:8], 16)
     header=76 if abi==8 else 72
     if args.profile:
-        assert struct.unpack_from('>I',data,header)[0]<length and data[header+4:header+16]==b'\xff'*12
+        assert struct.unpack_from('>I',data,header)[0]<length
+        if args.project_template:
+            assert struct.unpack_from('>I',data,header+8)[0]<length and struct.unpack_from('>I',data,header+12)[0]<length and data[header+4:header+8]==b'\xff'*4
+        else:assert data[header+4:header+16]==b'\xff'*12
     else: assert data[header:header+16] == b'\xff'*16
     cursor = header+16
     literal = data[cursor:cursor+length]; image = bytearray(literal); cursor += length

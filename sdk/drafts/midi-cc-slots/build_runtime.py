@@ -23,15 +23,18 @@ def main():
     p.add_argument('--guards', type=Path, default=HERE / 'runtime-guards.json')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--profile', action='store_true', help='Build the persistent project-profile experiment')
+    p.add_argument('--project-template', action='store_true', help='Build the one-time native bank setup experiment (requires --profile)')
     p.add_argument('--receipt', type=Path)
     p.add_argument('--review-image', type=Path, help='Private authored image for reviewing copy-guard offsets')
     args = p.parse_args()
+    if args.project_template and not args.profile:p.error('--project-template requires --profile')
     guards = json.loads(args.guards.read_text())
     spec = importlib.util.spec_from_file_location('runtime_build', ROOT / 'sdk/runtime/loader/build.py')
     builder = importlib.util.module_from_spec(spec); spec.loader.exec_module(builder)
     with tempfile.TemporaryDirectory(prefix='cc-runtime-') as folder:
         work = Path(folder)
         source = (HERE / 'slots.s').read_text()+'\n'+(HERE / ('profile_names.s' if args.profile else 'names.s')).read_text()
+        if args.project_template:source+='\n'+(HERE/'template/ui.s').read_text()
         for name, _, length in [*REPLAYS, *[(n,a,l) for n,a,l,_ in NAME_REPLAYS]]:
             source = source.replace(f'.incbin "{name}.private.bin"', f'replay_{name}: .space {length}')
         source = source.replace('.incbin "\\replay"', 'replay_\\name: .space 6')
@@ -41,8 +44,9 @@ def main():
         run('m68k-elf-as', '-mcpu=54455', '-o', 'slots.o', 'slots.s')
         units = ['slots.o']
         if args.profile:
-            for file in ['profile.c', 'profile_140c.c']:
+            for file in (['template/profile.c','template/platform.c','template/banks.c'] if args.project_template else ['profile.c', 'profile_140c.c']):
                 obj = file+'.o'
+                (work/obj).parent.mkdir(parents=True,exist_ok=True)
                 run('m68k-elf-gcc','-Os','-mcpu=54455','-msoft-float','-fno-builtin','-fno-common','-fno-late-combine-instructions','-ffreestanding','-c',str(HERE/file),'-o',obj)
                 units.append(obj)
             guard_spec = importlib.util.spec_from_file_location('codegen_guard', ROOT / 'sdk/runtime/m68k_codegen.py')
@@ -59,6 +63,10 @@ def main():
             images.append((work / f'{index}.bin').read_bytes())
             symbols.append({line.split()[2]: int(line.split()[0], 16) for line in run('m68k-elf-nm', '--defined-only', f'{index}.elf').splitlines()})
         image = bytearray(images[0])
+        if args.review_image:
+            args.review_image.parent.mkdir(parents=True,exist_ok=True)
+            args.review_image.write_bytes(image)
+            args.review_image.with_suffix('.symbols.json').write_text(json.dumps(symbols[0],indent=2)+'\n')
         offsets = builder.relocations(image, images[1], len(image))
         sym = symbols[0]
         if args.review_image:
@@ -66,10 +74,14 @@ def main():
             args.review_image.write_bytes(image)
         copies = [(sym['replay_' + ('slot_' if name.startswith('sequence_') else '') + name], address, length, bytes.fromhex(guards[hex(address)])) for name, address, length in REPLAYS]
         copies += [(sym['replay_'+name], address, length, bytes.fromhex(guards[hex(address)])) for name,address,length,_ in NAME_REPLAYS]
+        if args.project_template:
+            copies.append((sym['replay_template_load'],0x400905d4,8,bytes.fromhex(guards['0x400905d4'])))
         # Authored instruction runs that coincide with stock use the same hash-copy
         # mechanism; never ship a stock-overlap scanner exemption.
-        for copy in json.loads((HERE / ('runtime-copies-profile.json' if args.profile else 'runtime-copies.json')).read_text()):
-            at, n = copy['offset'], copy['length']
+        reviewed_copies=json.loads((HERE / ('runtime-copies-profile.json' if args.profile else 'runtime-copies.json')).read_text())
+        if args.project_template:reviewed_copies+=json.loads((HERE/'template/copies.json').read_text())
+        for copy in reviewed_copies:
+            at, n = copy['offset'] if 'offset' in copy else sym[copy['symbol']]+copy['relative'], copy['length']
             if hashlib.sha256(image[at:at+n]).hexdigest() != copy['sha256']:
                 raise ValueError('The reviewed authored copy changed; inspect the new source.')
             image[at:at+n] = bytes(n)
@@ -90,16 +102,22 @@ def main():
             site(descriptor + 0x112 + 4*index, struct.pack('>I', 0x400467a4))
         site(descriptor + 0x18e, struct.pack('>I', 0x11111111))
         for _, address, length, symbol in NAME_REPLAYS:
+            if args.project_template:symbol={'names_open':'names_template_open','names_setup_draw':'names_template_draw'}.get(symbol,symbol)
             site(address, struct.pack('>HI', 0x4ef9, sym[symbol])+(b'\x4e\x71' if length == 8 else b''), (2,))
         if args.profile:
             site(0x40084854, struct.pack('>HI',0x4eb9,sym['names_engine']), (2,))
+        if args.project_template:
+            for address,symbol,length in [(0x40084f44,'mt_clone_start_site',6),(0x4008505c,'mt_clone_end_site',6),(0x400905d4,'mt_load_site',8)]:
+                site(address,struct.pack('>HI',0x4eb9 if length==6 else 0x4ef9,sym[symbol])+b'\x4e\x71'*((length-6)//2),(2,))
         builder.unevented(sites, copies)
-        data = builder.package(image, 0, [sym['mm_profile_tick'] if args.profile else builder.NONE]+[builder.NONE]*3, offsets, sites, name='midi-cc-slots',
+        hooks=[sym['mm_profile_tick'] if args.profile else builder.NONE]+[builder.NONE]*3
+        if args.project_template:hooks[2],hooks[3]=sym['mt_runtime_key'],sym['mt_runtime_enc']
+        data = builder.package(image, 0, hooks, offsets, sites, name='midi-cc-slots',
                                hashed=True, title='MIDI CC SLOTS', copies=copies)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_bytes(data)
         if args.receipt:
-            args.receipt.write_text(json.dumps({'symbols':sym,'imageBytes':len(image),'profile':args.profile,'packageSha256':hashlib.sha256(data).hexdigest()},indent=2)+'\n')
+            args.receipt.write_text(json.dumps({'symbols':sym,'imageBytes':len(image),'profile':args.profile,'projectTemplate':args.project_template,'packageSha256':hashlib.sha256(data).hexdigest()},indent=2)+'\n')
         print(json.dumps({'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(), 'relocations': len(offsets), 'sites': len(sites), 'copies': len(copies)}))
 
 if __name__ == '__main__':
