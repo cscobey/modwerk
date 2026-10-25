@@ -15,10 +15,10 @@ mt_key_stock:
 names_template_draw:
  bsr names_setup_draw
  tstl 0x80000012
- beq.s mt_draw_done
+ beq mt_draw_done
  moveal 0x400bc6c0,%a0
  tstl %a0
- beq.s mt_draw_done
+ beq mt_draw_done
  .macro mt_text text,y
  pea \text
  pea 0x400b37cf
@@ -26,7 +26,8 @@ names_template_draw:
  clrl %sp@-
  pea 1
  pea \y
- pea 47
+ | Native text is centered in a 16-pixel field. D is 40 pixels left of F.
+ pea 62
  moveal 0x400bc6c0,%a0
  pea %a0@(36)
  pea 0x400ba876
@@ -34,11 +35,13 @@ names_template_draw:
  lea %sp@(36),%sp
  .endm
  mt_text mt_init_caption,21
- mt_text mt_func_caption,9
+ mt_text mt_func_caption,12
+ mt_text mt_push_caption,5
 mt_draw_done:
  rts
-mt_init_caption: .asciz "APPLY"
-mt_func_caption: .asciz "FUNC"
+mt_init_caption: .asciz "INIT"
+mt_func_caption: .asciz "FN+"
+mt_push_caption: .asciz "PUSH"
 .align 2
 mt_clone_start_site:
  jsr mt_clone_begin
