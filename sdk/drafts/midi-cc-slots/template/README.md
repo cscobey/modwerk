@@ -125,3 +125,11 @@ remain held. NO still requests safe cancellation. CRC verification now uses one
 lookup per byte instead of two; fingerprints and every original bank check are
 unchanged. No cached execution or new interrupt masking is introduced. Physical
 timing and full resident dispatch of this follow-up are unmeasured.
+
+
+## INIT layout (0.0.11)
+
+D shows INIT with FN+ / PUSH stacked beneath it. Native text centers in a
+16-pixel field: D starts at x=62, forty pixels left of F at x=102. Both hint
+lines fit within D’s cell. The FUNC + D gesture and all persistence logic
+are unchanged.

@@ -1,12 +1,12 @@
 {
-  "version": "0.0.10-experimental",
-  "sha256": "d738fce658e0c44eea5d959d5771654d302cae40d17419eaed7388b544f5c583",
-  "bytes": 32310,
-  "imageBytes": 28132,
+  "version": "0.0.11-experimental",
+  "sha256": "0b6bdf28444595fe4b8acb7e995bcd197f5fb5ee60d1b02448e901e3215a78a0",
+  "bytes": 32462,
+  "imageBytes": 28196,
   "abi": 8,
   "features": 3,
   "sites": 24,
-  "copies": 22,
+  "copies": 24,
   "profile": true,
   "projectTemplate": true,
   "fills": 0

@@ -29,6 +29,13 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed CC and naming emulator gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
+## Version 0.0.11: centered INIT and a visible gesture
+
+INIT now sits inside encoder D’s cell beneath CHAN, aligned with the neighboring
+SBnk and NAME captions. The two-line FN+ / PUSH hint means hold FUNC and click D.
+This changes only the setup drawing; storage, initialization and cancellation
+behavior are unchanged. An initialized project does not need Apply again.
+
 ## Version 0.0.10: page browsing during Apply
 
 The user clarified that 0.0.9 completed, copied MIDI channel 6 correctly into

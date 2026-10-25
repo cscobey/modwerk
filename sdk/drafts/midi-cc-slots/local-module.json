@@ -3,11 +3,11 @@
   "id": "midi-cc-slots",
   "key": "MIDI CC SLOTS",
   "name": "Midi Mode 2",
-  "version": "0.0.10-experimental",
+  "version": "0.0.11-experimental",
   "category": "midi-usb",
   "source": {
     "repository": "https://github.com/cscobey/modwerk",
-    "revision": "d0d55e296bed53911b9e0117a2cb74870865606e",
+    "revision": "344e48e428e1bb970e00905863c3b3c22a01ab9e",
     "path": "sdk/drafts/midi-cc-slots"
   },
   "author": {
@@ -23,7 +23,7 @@
     "label": "Two more MIDI CC controls",
     "family": "MIDI track control",
     "summary": "Two extra CC controls, numeric headers, saved track names, and a one-time Bank A project setup.",
-    "overview": "Midi Mode 2 adds two CC controls per MIDI track and numeric headers. F at NAME/PUSH opens the stock ten-character editor. Set Bank A / Part 1 names and channels, save the project normally, then hold FUNC and push D at APPLY. Progress shows the bank being checked or written; NO cancels safely. Initialization happens once, then each bank keeps independent names and native channels. Save to New carries names and the completed marker.",
+    "overview": "Midi Mode 2 adds two CC controls per MIDI track and numeric headers. F at NAME/PUSH opens the stock ten-character editor. Set Bank A / Part 1 names and channels, save the project normally, then hold FUNC and push D at INIT (FN+ / PUSH). Progress shows the bank being checked or written; NO cancels safely. Initialization happens once, then each bank keeps independent names and native channels. Save to New carries names and the completed marker.",
     "highlights": [
       "Two additional CC positions per MIDI track when PB and AT are both mapped.",
       "Independent CC0–127 assignments for the A and B positions.",
@@ -38,7 +38,7 @@
       "Click again in SETUP to restore native behavior. Entering CC mode starts at CC0.",
       "Double-tap SRC on a MIDI track, click F (NAME/PUSH), enter up to ten characters and confirm with YES or cancel with NO.",
       "Back up a disposable project. Set Bank A / Part 1 names and channels, stop transport and recorders, and save the project normally.",
-      "In MIDI SRC SETUP, hold FUNC and push D at APPLY. No typing is needed. Watch the bank progress and wait for MIDI SETUP SAVED; NO cancels at a safe boundary. Legacy saved name/channel overrides are retained.",
+      "In MIDI SRC SETUP, hold FUNC and push D at INIT (FN+ / PUSH). No typing is needed. Watch the bank progress and wait for MIDI SETUP SAVED; NO cancels at a safe boundary. Legacy saved name/channel overrides are retained.",
       "After INIT, name or channel edits stay in their own banks. Save channel edits normally; wait for MIDI PROFILE SAVED after name edits. Save to New carries names and the marker."
     ]
   },
@@ -98,7 +98,7 @@
       "default": 0,
       "count": 1,
       "labels": [
-        "APPLY"
+        "INIT"
       ],
       "doc": "Save the project first. Hold FUNC and click D in MIDI NOTE SETUP to apply Bank A / Part 1 once. Plain D shows a hint. NO cancels at a safe boundary; progress shows checking, applying or restoring. A failure retains a diagnostic code; completed projects refuse reapplication."
     }
@@ -112,11 +112,11 @@
       "Press FX1 to return to CONTROL 1. Enable its value with FUNC + encoder press, then turn it.",
       "Press FX2 for CONTROL 2; both pages show assigned controller numbers.",
       "Return to CONTROL 1 SETUP and click a mapped encoder again to restore its native PB or AT function.",
-      "Double-tap SRC: F opens NAME. Save the project normally, then hold FUNC and click D at APPLY. No typed confirmation. NO cancels safely; wait for MIDI SETUP SAVED."
+      "Double-tap SRC: F opens NAME. Save the project normally, then hold FUNC and click D at INIT (FN+ / PUSH). No typed confirmation. NO cancels safely; wait for MIDI SETUP SAVED."
     ],
     "screenshots": [
-      "media/14-apply-setup.png",
-      "media/15-apply-progress.png",
+      "media/16-init-gesture.png",
+      "media/17-init-progress.png",
       "media/07-name-editor.png",
       "media/08-bank1-name.png",
       "media/09-bank2-name.png",
@@ -131,12 +131,12 @@
     "location": "MIDI tracks",
     "conflicts": [],
     "limitations": [
-      "Local experimental USB draft. Requires loader ABI 8, at least 24 sites and 22 stock copies; public shared lifecycle events and hardware qualification remain pending.",
+      "Local experimental USB draft. Requires loader ABI 8, at least 24 sites and 24 stock copies; public shared lifecycle events and hardware qualification remain pending.",
       "Back up the full project before Apply. Save normally first; both saved bank copies must be valid and current. Initialize before new bank-specific migration edits because legacy saved overrides remain authoritative.",
       "Names and marker use MIDI4_0.DAT / MIDI4_1.DAT; recovery uses MIDI4_J0.DAT / MIDI4_J1.DAT. Keep all sidecars with backups. Existing MIDI3_*.DAT and MIDI2_*.DAT import read-only and remain unchanged.",
       "Apply changes native bank files once; Undo/removal does not reverse completed project edits. Progress yields between bank pairs. NO cancels at a safe boundary; live failure rolls back in place without automatic reload. Boot recovery may reload after restoring files. Loss of both verified peers requires backup recovery.",
       "After INIT, channel changes use normal project/bank saves; bank changes and restart never remap defaults. Names remain shared across Parts in a bank.",
-      "The user clarified that 0.0.9 completed Apply, Bank B MIDI track 6 used channel 6, and controls returned after more than ten seconds. This follow-up allows bare page browsing and reduces CRC work without dropping verification. Physical timing, full resident dispatch, restart and broader coexistence of 0.0.10 remain unqualified.",
+      "The user clarified that 0.0.9 completed Apply, Bank B MIDI track 6 used channel 6, and controls returned after more than ten seconds. This follow-up allows bare page browsing and reduces CRC work without dropping verification. Physical timing, full resident dispatch, restart and broader coexistence of 0.0.11 remain unqualified.",
       "Switching back into CC mode starts at CC0 rather than recalling its previous number."
     ],
     "uiClaims": [
@@ -155,8 +155,8 @@
     "recorded": "25 October 2026: exact experimental package footprint; physical timing unmeasured",
     "storage": {
       "label": "Runtime package",
-      "display": "32,310 bytes · 28,132-byte image",
-      "value": 32310,
+      "display": "32,462 bytes · 28,196-byte image",
+      "value": 32462,
       "unit": "bytes",
       "method": "static",
       "conditions": "Package bytes and image size measured from the verified relocatable package. Runtime loader metadata and copied stock spans add allocation overhead.",
@@ -188,27 +188,21 @@
       "memory": {
         "level": "minimal",
         "basis": "source-estimate",
-        "rationale": "A 28,132-byte image includes names, journal buffers, a runtime-generated byte CRC table and touched-bank recovery state. Package size is 32,310 bytes; loader metadata adds overhead. Four 4,096-byte sidecars hold names/marker and journal checkpoints.",
+        "rationale": "A 28,196-byte image includes names, journal buffers, a runtime-generated byte CRC table and touched-bank recovery state. Package size is 32,462 bytes; loader metadata adds overhead. Four 4,096-byte sidecars hold names/marker and journal checkpoints.",
         "source": "TESTING.md"
       }
     }
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "Exact 0.0.10: 353 native Apply/page-view/cancel/copy/restart assertions, 398 CC regressions, interrupted recovery, reported-project channel-6 output and poisoned-RAM NAME retirement. Host key policy permits bare page keys and blocks modified shortcuts. The user reports 0.0.9 applied correctly after a >10-second control hold; this version has no physical timing result.",
+    "summary": "Exact 0.0.11 UI capture and native Apply/cancel/copy/restart checks; INIT is centered under CHAN with FN+ / PUSH inside encoder D’s cell. This changes only setup drawing; prior 0.0.10 regression evidence remains version-bound. Physical timing and exact installed identity remain unmeasured.",
     "hardwareStatus": "untested",
-    "evidenceRevision": "d0d55e296bed53911b9e0117a2cb74870865606e",
+    "evidenceRevision": "344e48e428e1bb970e00905863c3b3c22a01ab9e",
     "gates": [
       "353 exact-build native Apply, bare FX1 page view, NO cancellation, checksum/non-channel preservation, independent edits, Save to New and fresh-process assertions",
-      "398 exact-build MKII CC/menu/label/sequencer assertions",
-      "Actual interrupted Apply recovers only intent-marked touched banks in a fresh VM; original files restore and uninitialized Bank D stays OFF",
-      "YES and NO close NAME after package sites restore and module RAM is poisoned; Apply retains no text editor",
-      "Host six-cut transaction/migration/protected-copy tests, cancel before writes and after one bank, in-place failure recovery with no project reload, and no profile I/O on normal bank changes; bare page down/up pass while modified page chords remain consumed",
-      "Actual sector writer closes input before opening the same file for output; exact neighboring-byte preservation, torn peer repair and damaged/missing/unsaved refusal",
-      "Exact C loader install, Undo, repeat install, removal and memory reclamation against private user MAIN; host glue only",
-      "Two-placement guarded reconstruction and strict 16-byte stock-overlap scan",
-      "Two exact-build native Apply/progress screenshots; older naming/CC images retain their original provenance",
-      "Private reported-project copy: all native Bank B channels, sixth MIDI name, current/saved file copies and actual outgoing MIDI channel 6"
+      "Exact-build two-placement guarded reconstruction and strict 16-byte stock-overlap scan",
+      "Two exact-build native INIT/progress screenshots; older naming/CC images retain their original provenance",
+      "Earlier 0.0.10 CC, recovery, channel-6 output, NAME retirement and loader evidence stays bound to that version in TESTING.md; storage, channel and key-handler sources are unchanged in 0.0.11"
     ]
   },
   "license": {
@@ -218,9 +212,9 @@
   },
   "media": [
     {
-      "path": "media/14-apply-setup.png",
-      "caption": "Save the project normally. In MIDI NOTE SETUP, hold FUNC and click encoder D at APPLY. A plain click shows the gesture hint; F still opens NAME/PUSH.",
-      "alt": "MIDI NOTE SETUP with APPLY and FUNC at encoder D, and NAME/PUSH at encoder F.",
+      "path": "media/16-init-gesture.png",
+      "caption": "Save the project normally. In MIDI NOTE SETUP, hold FUNC and click encoder D at INIT. FN+ / PUSH shows the gesture inside D’s cell; F still opens NAME/PUSH.",
+      "alt": "MIDI NOTE SETUP with INIT centered beneath CHAN, FN+ and PUSH underneath, and NAME/PUSH at encoder F.",
       "credit": "Cooper Scobey — local ot_emu framebuffer capture",
       "source": "original",
       "license": "LicenseRef-OT-UI-Documentation",
@@ -229,13 +223,13 @@
         "page": "MIDI NOTE SETUP",
         "shows": "location-and-controls",
         "firmware": "1.40C",
-        "moduleVersion": "0.0.10-experimental",
+        "moduleVersion": "0.0.11-experimental",
         "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
-        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-responsive-apply.json; native 128×64 LCD at integer scale 6."
+        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-init-layout.json; native 128×64 LCD at integer scale 6."
       }
     },
     {
-      "path": "media/15-apply-progress.png",
+      "path": "media/17-init-progress.png",
       "caption": "Progress identifies the current bank. Bare SRC/AMP/LFO/FX page keys remain available; editing and bank changes are held. NO cancels safely. Wait for MIDI SETUP SAVED.",
       "alt": "Native MIDI setup screen with an APPLY MIDI 02/16 progress popup.",
       "credit": "Cooper Scobey — local ot_emu framebuffer capture",
@@ -246,9 +240,9 @@
         "page": "MIDI setup progress",
         "shows": "controls",
         "firmware": "1.40C",
-        "moduleVersion": "0.0.10-experimental",
+        "moduleVersion": "0.0.11-experimental",
         "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
-        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-responsive-apply.json; native 128×64 LCD at integer scale 6."
+        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-init-layout.json; native 128×64 LCD at integer scale 6."
       }
     },
     {

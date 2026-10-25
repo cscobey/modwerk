@@ -60,3 +60,17 @@ Press FX2 to view CONTROL 2. Its headers show the assigned CC numbers, here 71â€
 
 Double-tap FX1 and click A again to restore native pitch bend. PB returns to STK while B keeps CC127, so the modes remain independent. Switching A back to CC later starts at CC0.
 
+
+
+## Initialize once (0.0.11)
+
+![MIDI NOTE SETUP showing centered INIT with FN+ / PUSH at encoder D.](16-init-gesture.png)
+
+Back up the project, set Bank A / Part 1 names and channels, stop transport
+and recorders, then save normally. Double-tap MIDI SRC. Hold FUNC and click D
+at INIT; FN+ / PUSH explains the gesture. NO cancels safely while work runs.
+Wait for MIDI SETUP SAVED. An initialized project does not need Apply again.
+
+This current capture is bound to 0.0.11 in capture-init-layout.json. Earlier
+naming images above retain their 0.0.7 behavior and provenance; the current
+template snapshots independent names into each bank and uses MIDI4 sidecars.

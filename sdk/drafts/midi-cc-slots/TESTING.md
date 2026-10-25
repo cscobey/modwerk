@@ -573,3 +573,31 @@ Private exact reports: `template-v10-native-1`, `template-v10-panel-1`,
 `template-v10-removal-1`. Captures: `media/capture-responsive-apply.json`.
 There is no physical 0.0.10 latency result and no claim that it finishes below
 ten seconds. An already initialized project is not remapped to measure it.
+
+
+## 0.0.11: INIT position and visible modifier hint
+
+Firmware source: `344e48e428e1bb970e00905863c3b3c22a01ab9e`.
+Exact package SHA-256:
+`0b6bdf28444595fe4b8acb7e995bcd197f5fb5ee60d1b02448e901e3215a78a0`.
+32,462 bytes, 28,196-byte image, 493 relocations, 24 sites, 24 checked stock
+copies, ABI 8, feature bits 3. Only template UI assembly and its reviewed
+copy spans changed; storage, channels, CRC and key-handler sources are unchanged.
+
+INIT is centered under CHAN in encoder D’s cell. FN+ and PUSH occupy two
+short lines below it, inside the cell borders. Both exact-build native LCD
+captures were visually inspected. Provenance is `media/capture-init-layout.json`;
+private report `template-v11-native-2/report.json` passes 353 Apply, page-view,
+NO cancellation, native bank/checksum preservation, independent edits, actual
+Save to New and fresh-process restore checks. Two-placement reconstruction,
+strict 16-byte stock-overlap scan and current-base direct overlap checks pass.
+The local HTTP endpoint serves the exact package and both PNG routes return
+200 image/png. All 19 focused local-app tests pass.
+
+Earlier 0.0.10 CC, recovery, outgoing channel-6, NAME retirement and loader
+results remain tied to their original version; they were not rerun for this
+UI-only change. The user reports that the latest trial seems to work and
+supplied a physical photo of INIT/PUSH, but the installed version was not
+independently identified. No physical 0.0.11 result or latency claim is made.
+The native bench retains private publication, UI tick and first-sector IRQ
+fixtures; this is not full resident-base or hardware qualification.

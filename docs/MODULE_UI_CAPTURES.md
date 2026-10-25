@@ -49,6 +49,11 @@ an illustration as an OT capture. A selection cursor alone does not prove that
 the module loaded: confirm it, then capture the resulting controls. Review
 every image for error popups, stale parameters and unrelated UI.
 
+For encoder-cell captions, check the rendered text against the native cell
+borders, not just the encoder's hardware position. Native text helpers may
+center inside a fixed-width field rather than around the supplied x coordinate.
+Keep modifier hints inside that same cell; stack short lines when needed.
+
 ## Manifest contract
 
 `octamod.module.json` schema 2 accepts this additive `access` section. It is
