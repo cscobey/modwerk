@@ -3,11 +3,11 @@
   "id": "midi-cc-slots",
   "key": "MIDI CC SLOTS",
   "name": "Midi Mode 2",
-  "version": "0.0.11-experimental",
+  "version": "0.0.12-experimental",
   "category": "midi-usb",
   "source": {
     "repository": "https://github.com/cscobey/modwerk",
-    "revision": "344e48e428e1bb970e00905863c3b3c22a01ab9e",
+    "revision": "d3212cca362a2d1411a4a304d552426fdd837e2e",
     "path": "sdk/drafts/midi-cc-slots"
   },
   "author": {
@@ -22,14 +22,14 @@
   "presentation": {
     "label": "Two more MIDI CC controls",
     "family": "MIDI track control",
-    "summary": "Two extra CC controls, numeric headers, saved track names, and a one-time Bank A project setup.",
-    "overview": "Midi Mode 2 adds two CC controls per MIDI track and numeric headers. F at NAME/PUSH opens the stock ten-character editor. Set Bank A / Part 1 names and channels, save the project normally, then hold FUNC and push D at INIT (FN+ / PUSH). Progress shows the bank being checked or written; NO cancels safely. Initialization happens once, then each bank keeps independent names and native channels. Save to New carries names and the completed marker.",
+    "summary": "Two extra CC controls, numeric headers, saved track names, and explicit Bank A setup for all banks.",
+    "overview": "Midi Mode 2 adds two CC controls per MIDI track and numeric headers. F at NAME/PUSH opens the stock ten-character editor. Set Bank A / Part 1 names and channels, save normally, then hold FUNC and push D at INIT. The first setup preserves legacy overrides. To replace an existing setup, choose YES at REPLACE ALL; it copies Bank A names and channels to every bank and Part, including empty names and OFF channels. NO cancels. Progress shows the bank; NO also cancels safely during work. Ordinary bank changes and restart never reapply defaults. Save to New carries names and the saved marker.",
     "highlights": [
       "Two additional CC positions per MIDI track when PB and AT are both mapped.",
       "Independent CC0–127 assignments for the A and B positions.",
       "Numeric CC headers on both MIDI CONTROL pages.",
       "Restore pitch bend or aftertouch with a click in SETUP.",
-      "Initialize a project once from Bank A, keep independent bank names and channels, and carry names through Save to New."
+      "Initialize from Bank A, keep independent bank edits, or explicitly confirm INIT again to replace all names and channels. Save to New carries the saved profile."
     ],
     "usage": [
       "Select a MIDI track and double-tap FX1 to open MIDI CONTROL 1 SETUP.",
@@ -38,8 +38,8 @@
       "Click again in SETUP to restore native behavior. Entering CC mode starts at CC0.",
       "Double-tap SRC on a MIDI track, click F (NAME/PUSH), enter up to ten characters and confirm with YES or cancel with NO.",
       "Back up a disposable project. Set Bank A / Part 1 names and channels, stop transport and recorders, and save the project normally.",
-      "In MIDI SRC SETUP, hold FUNC and push D at INIT (FN+ / PUSH). No typing is needed. Watch the bank progress and wait for MIDI SETUP SAVED; NO cancels at a safe boundary. Legacy saved name/channel overrides are retained.",
-      "After INIT, name or channel edits stay in their own banks. Save channel edits normally; wait for MIDI PROFILE SAVED after name edits. Save to New carries names and the marker."
+      "In MIDI SRC SETUP, hold FUNC and push D at INIT (FN+ / PUSH). On a previously initialized project, REPLACE ALL? YES/NO asks before replacing all bank names and channels with Bank A / Part 1. YES confirms; NO cancels. Wait for MIDI SETUP SAVED.",
+      "After INIT, name or channel edits stay in their own banks. Save channels normally; wait for MIDI PROFILE SAVED after names. Repeating INIT requires explicit YES to overwrite them; bank changes and restart never do that. Save to New carries names and the marker."
     ]
   },
   "controls": [
@@ -100,7 +100,7 @@
       "labels": [
         "INIT"
       ],
-      "doc": "Save the project first. Hold FUNC and click D in MIDI NOTE SETUP to apply Bank A / Part 1 once. Plain D shows a hint. NO cancels at a safe boundary; progress shows checking, applying or restoring. A failure retains a diagnostic code; completed projects refuse reapplication."
+      "doc": "Save the project first. Hold FUNC and click D at INIT. A saved setup asks REPLACE ALL? YES/NO: YES replaces every bank’s names and all current/saved Part channels with Bank A / Part 1, including blanks/OFF. NO cancels before replacement or safely during progress. Plain D only shows the gesture hint."
     }
   ],
   "access": {
@@ -112,17 +112,17 @@
       "Press FX1 to return to CONTROL 1. Enable its value with FUNC + encoder press, then turn it.",
       "Press FX2 for CONTROL 2; both pages show assigned controller numbers.",
       "Return to CONTROL 1 SETUP and click a mapped encoder again to restore its native PB or AT function.",
-      "Double-tap SRC: F opens NAME. Save the project normally, then hold FUNC and click D at INIT (FN+ / PUSH). No typed confirmation. NO cancels safely; wait for MIDI SETUP SAVED."
+      "Double-tap SRC: F opens NAME. Save normally, then hold FUNC and click D at INIT. A previous setup asks REPLACE ALL? YES/NO. YES replaces names and channels in all banks from Bank A / Part 1; NO cancels. Wait for MIDI SETUP SAVED."
     ],
     "screenshots": [
-      "media/16-init-gesture.png",
-      "media/17-init-progress.png",
+      "media/18-replace-init.png",
+      "media/20-replace-confirm.png",
+      "media/19-replace-progress.png",
       "media/07-name-editor.png",
       "media/08-bank1-name.png",
       "media/09-bank2-name.png",
       "media/03-control-1.png",
-      "media/02-cc-setup.png",
-      "media/04-control-2.png"
+      "media/02-cc-setup.png"
     ]
   },
   "compatibility": {
@@ -131,12 +131,12 @@
     "location": "MIDI tracks",
     "conflicts": [],
     "limitations": [
-      "Local experimental USB draft. Requires loader ABI 8, at least 24 sites and 24 stock copies; public shared lifecycle events and hardware qualification remain pending.",
-      "Back up the full project before Apply. Save normally first; both saved bank copies must be valid and current. Initialize before new bank-specific migration edits because legacy saved overrides remain authoritative.",
+      "Local experimental USB draft. Requires loader ABI 8, at least 24 sites and 25 stock copies; public shared lifecycle events and hardware qualification remain pending.",
+      "Back up the full project and save normally before INIT. Both saved bank copies must be valid and current. First initialization retains legacy saved overrides. A confirmed repeat replaces all names and current/saved Part channels in every bank from Bank A / Part 1, including blanks and OFF.",
       "Names and marker use MIDI4_0.DAT / MIDI4_1.DAT; recovery uses MIDI4_J0.DAT / MIDI4_J1.DAT. Keep all sidecars with backups. Existing MIDI3_*.DAT and MIDI2_*.DAT import read-only and remain unchanged.",
       "Apply changes native bank files once; Undo/removal does not reverse completed project edits. Progress yields between bank pairs. NO cancels at a safe boundary; live failure rolls back in place without automatic reload. Boot recovery may reload after restoring files. Loss of both verified peers requires backup recovery.",
-      "After INIT, channel changes use normal project/bank saves; bank changes and restart never remap defaults. Names remain shared across Parts in a bank.",
-      "The user clarified that 0.0.9 completed Apply, Bank B MIDI track 6 used channel 6, and controls returned after more than ten seconds. This follow-up allows bare page browsing and reduces CRC work without dropping verification. Physical timing, full resident dispatch, restart and broader coexistence of 0.0.11 remain unqualified.",
+      "Bank changes and restart never remap defaults. Names remain shared across Parts in a bank. Only explicitly repeating INIT and confirming YES replaces saved bank overrides.",
+      "The user reports the earlier trial works, but no independently identified 0.0.12 hardware result exists. Physical timing, full resident dispatch, restart and broader coexistence remain unqualified.",
       "Switching back into CC mode starts at CC0 rather than recalling its previous number."
     ],
     "uiClaims": [
@@ -148,15 +148,17 @@
       "screen:MIDI NOTE SETUP",
       "key:F@MIDI NOTE SETUP",
       "key:D@MIDI NOTE SETUP",
-      "key:FUNC+D@MIDI NOTE SETUP"
+      "key:FUNC+D@MIDI NOTE SETUP",
+      "key:YES@MIDI NOTE SETUP",
+      "key:NO@MIDI NOTE SETUP"
     ]
   },
   "resources": {
     "recorded": "25 October 2026: exact experimental package footprint; physical timing unmeasured",
     "storage": {
       "label": "Runtime package",
-      "display": "32,462 bytes · 28,196-byte image",
-      "value": 32462,
+      "display": "32,990 bytes · 28,580-byte image",
+      "value": 32990,
       "unit": "bytes",
       "method": "static",
       "conditions": "Package bytes and image size measured from the verified relocatable package. Runtime loader metadata and copied stock spans add allocation overhead.",
@@ -188,21 +190,22 @@
       "memory": {
         "level": "minimal",
         "basis": "source-estimate",
-        "rationale": "A 28,196-byte image includes names, journal buffers, a runtime-generated byte CRC table and touched-bank recovery state. Package size is 32,462 bytes; loader metadata adds overhead. Four 4,096-byte sidecars hold names/marker and journal checkpoints.",
+        "rationale": "A 28,580-byte image includes names, journal buffers, a runtime-generated byte CRC table and touched-bank recovery state. Package size is 32,990 bytes; loader metadata adds overhead. Four 4,096-byte sidecars hold names/marker and journal checkpoints.",
         "source": "TESTING.md"
       }
     }
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "Exact 0.0.11 UI capture and native Apply/cancel/copy/restart checks; INIT is centered under CHAN with FN+ / PUSH inside encoder D’s cell. This changes only setup drawing; prior 0.0.10 regression evidence remains version-bound. Physical timing and exact installed identity remain unmeasured.",
+    "summary": "634 exact 0.0.12 native checks: first setup, confirmed replacement, NO cancellation, copying and restart checks; host six-cut initial/replacement recovery, OFF/empty overwrite, old-name preservation on cancel, and stale YES refusal. Physical hardware qualification remains outstanding.",
     "hardwareStatus": "untested",
-    "evidenceRevision": "344e48e428e1bb970e00905863c3b3c22a01ab9e",
+    "evidenceRevision": "d3212cca362a2d1411a4a304d552426fdd837e2e",
     "gates": [
-      "353 exact-build native Apply, bare FX1 page view, NO cancellation, checksum/non-channel preservation, independent edits, Save to New and fresh-process assertions",
-      "Exact-build two-placement guarded reconstruction and strict 16-byte stock-overlap scan",
-      "Two exact-build native INIT/progress screenshots; older naming/CC images retain their original provenance",
-      "Earlier 0.0.10 CC, recovery, channel-6 output, NAME retirement and loader evidence stays bound to that version in TESTING.md; storage, channel and key-handler sources are unchanged in 0.0.11"
+      "Native first Apply and explicit YES replacement: all bank names and current/saved Part channels, cancellation, copy and fresh-process persistence",
+      "Interrupted native first initialization and replacement restore every original bank byte; old initialization marker and independent bank names are retained",
+      "Host transaction cuts before/after metadata commit for both first and repeated setup; stale held YES, NO cancel, empty-name and OFF overwrite checks",
+      "Two-placement guarded reconstruction, strict 16-byte stock scan and host C loader install/Undo/removal/reclamation",
+      "Current native INIT, progress and replacement confirmation captures; older naming/CC provenance retained"
     ]
   },
   "license": {
@@ -212,8 +215,8 @@
   },
   "media": [
     {
-      "path": "media/16-init-gesture.png",
-      "caption": "Save the project normally. In MIDI NOTE SETUP, hold FUNC and click encoder D at INIT. FN+ / PUSH shows the gesture inside D’s cell; F still opens NAME/PUSH.",
+      "path": "media/18-replace-init.png",
+      "caption": "Save normally, then hold FUNC and click D at INIT. FN+ / PUSH shows the gesture. The first setup retains legacy overrides; a saved setup asks for YES before replacement. F opens NAME/PUSH.",
       "alt": "MIDI NOTE SETUP with INIT centered beneath CHAN, FN+ and PUSH underneath, and NAME/PUSH at encoder F.",
       "credit": "Cooper Scobey — local ot_emu framebuffer capture",
       "source": "original",
@@ -223,14 +226,31 @@
         "page": "MIDI NOTE SETUP",
         "shows": "location-and-controls",
         "firmware": "1.40C",
-        "moduleVersion": "0.0.11-experimental",
+        "moduleVersion": "0.0.12-experimental",
         "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
-        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-init-layout.json; native 128×64 LCD at integer scale 6."
+        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-replace-setup.json; native 128×64 LCD at integer scale 6."
       }
     },
     {
-      "path": "media/17-init-progress.png",
-      "caption": "Progress identifies the current bank. Bare SRC/AMP/LFO/FX page keys remain available; editing and bank changes are held. NO cancels safely. Wait for MIDI SETUP SAVED.",
+      "path": "media/20-replace-confirm.png",
+      "caption": "On a saved setup, REPLACE ALL? YES/NO appears before any replacement. YES copies Bank A / Part 1 names and channels into every bank and Part, including empty names and OFF. NO keeps the previous setup.",
+      "alt": "MIDI NOTE SETUP with a REPLACE ALL? YES/NO confirmation popup.",
+      "credit": "Cooper Scobey — local ot_emu framebuffer capture",
+      "source": "original",
+      "license": "LicenseRef-OT-UI-Documentation",
+      "captureType": "emulator",
+      "otUi": {
+        "page": "MIDI setup replacement confirmation",
+        "shows": "controls",
+        "firmware": "1.40C",
+        "moduleVersion": "0.0.12-experimental",
+        "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
+        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-replace-setup.json; native 128×64 LCD at integer scale 6."
+      }
+    },
+    {
+      "path": "media/19-replace-progress.png",
+      "caption": "Progress identifies the bank being checked or written. NO cancels safely and restores the previous snapshot; wait for MIDI SETUP SAVED before using bank edits.",
       "alt": "Native MIDI setup screen with an APPLY MIDI 02/16 progress popup.",
       "credit": "Cooper Scobey — local ot_emu framebuffer capture",
       "source": "original",
@@ -240,9 +260,9 @@
         "page": "MIDI setup progress",
         "shows": "controls",
         "firmware": "1.40C",
-        "moduleVersion": "0.0.11-experimental",
+        "moduleVersion": "0.0.12-experimental",
         "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
-        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-init-layout.json; native 128×64 LCD at integer scale 6."
+        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-replace-setup.json; native 128×64 LCD at integer scale 6."
       }
     },
     {
@@ -322,23 +342,6 @@
       "license": "LicenseRef-OT-UI-Documentation",
       "otUi": {
         "page": "MIDI CTRL 1 SETUP",
-        "shows": "controls",
-        "firmware": "1.40C",
-        "moduleVersion": "0.0.4-experimental",
-        "imageSha256": "c00ddf1ca5e6abca8efca968c4b33a38b2149701ca5bb0574d9b2fb3bd818404",
-        "setup": "Headless ot_emu; MKII panel; stopped transport; 128×64 LCD at integer scale 6."
-      },
-      "captureType": "emulator"
-    },
-    {
-      "path": "media/04-control-2.png",
-      "caption": "Earlier 0.0.4 CC walkthrough (these controls are unchanged): Press FX2 to view CONTROL 2. Its headers show the assigned CC numbers, here 71–76, instead of slot names. All six values are OFF in this capture; enable a value before sending it.",
-      "alt": "MIDI CONTROL 2 with controller numbers 71, 72, 73, 74, 75 and 76; all six values are OFF.",
-      "credit": "Cooper Scobey — local ot_emu framebuffer capture",
-      "source": "original",
-      "license": "LicenseRef-OT-UI-Documentation",
-      "otUi": {
-        "page": "MIDI CONTROL 2",
         "shows": "controls",
         "firmware": "1.40C",
         "moduleVersion": "0.0.4-experimental",

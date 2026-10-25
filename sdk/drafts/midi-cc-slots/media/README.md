@@ -74,3 +74,18 @@ Wait for MIDI SETUP SAVED. An initialized project does not need Apply again.
 This current capture is bound to 0.0.11 in capture-init-layout.json. Earlier
 naming images above retain their 0.0.7 behavior and provenance; the current
 template snapshots independent names into each bank and uses MIDI4 sidecars.
+
+
+## Replace a saved setup (0.0.12)
+
+![INIT with FN+ / PUSH in MIDI NOTE SETUP.](18-replace-init.png)
+
+Back up the project, set Bank A / Part 1 and save normally. Hold FUNC and click D.
+
+![REPLACE ALL? YES/NO confirmation on MIDI NOTE SETUP.](20-replace-confirm.png)
+
+An initialized project asks before overwriting bank edits. YES copies Bank A’s
+names and channels into every bank and Part, including empty names and OFF.
+NO keeps the saved setup. Wait for MIDI SETUP SAVED; NO cancels safely during
+progress. Ordinary bank changes and restart never perform this replacement.
+The current images are version-bound in capture-replace-setup.json.

@@ -638,6 +638,13 @@ boot recovery that may have loaded damaged unrelated bank data. A long stopped
 engine operation with every key consumed looks like a frozen instrument even
 when its storage verification is still running.
 
+For an explicit repeat, keep the previous initialized checkpoint as the
+rollback baseline; do not clear its marker to bypass a first-run guard. A
+completed old marker is not proof that the new transaction committed: compare
+the journal's target generation. Exercise interrupted repeats as well as first
+initialization, and require a fresh confirmation key press before replacing
+independent bank edits.
+
 **Buffered write-mode close uses the logical end recorded in its file object.**
 An in-place bank edit must preserve the original logical length on every error
 path as well as success; a failed seek or partial update must not make close

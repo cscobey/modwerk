@@ -601,3 +601,44 @@ supplied a physical photo of INIT/PUSH, but the installed version was not
 independently identified. No physical 0.0.11 result or latency claim is made.
 The native bench retains private publication, UI tick and first-sector IRQ
 fixtures; this is not full resident-base or hardware qualification.
+
+
+## 0.0.12: explicit replacement of a saved setup
+
+Firmware source: `d3212cca` (full pin in local-module.json and capture record).
+Exact package SHA-256:
+`50e162828c2665a3212b11bf7269a685b8f45b1866aebd30f5a5acdf1fd6244c`.
+32,990 bytes, 28,580-byte image, 518 relocations, 24 sites, 25 checked copies,
+ABI 8, feature bits 3. First initialization preserves legacy overrides. An
+initialized project instead asks REPLACE ALL? YES/NO after FUNC + D. Only a fresh
+YES starts the repeat; NO or STOP dismisses it. The repeat copies Bank A / Part 1
+into all bank names and all current/saved Part channels, including blanks/OFF.
+Normal bank changes/project loads never request replacement.
+
+Observed exact-package software results:
+
+- 634 native assertions (`template-v12-native-1/report.json`) cover first Apply,
+  page browsing, NO cancel, independent edits, native Save to New, replacement
+  confirmation/cancel, YES replacement in every bank and both native copies of
+  all Parts, and restoration in a fourth fresh VM. Subsequent Bank A edits do
+  not remap Bank D. Older project/checkpoint data remains unchanged.
+- Native interrupted first Apply and interrupted replacement each restore
+  every original bank byte in a fresh VM. Repeat recovery keeps marker 1 and
+  the old independent Bank D name/channel. Private reports:
+  `template-v12-recovery-first-1` and `template-v12-recovery-replace-1`.
+- Host journal/bank suites pass: six interruption points on first setup and
+  repeat (before/after metadata commit), cancellation after a bank write, stale
+  held YES refusal, empty-name and OFF overwrite, old-name preservation on
+  rollback, independent ordinary bank changes and existing file fault checks.
+- Host C loader prepare/publish/Undo/reinstall/removal/reclamation passes against
+  local stock MAIN. Two-placement reconstruction, codegen guard, strict 16-byte
+  stock-overlap scan and current-base direct-overlap checks pass.
+- Nineteen focused local app tests pass. HTTP serves exact 0.0.12/hash/size and
+  the confirmation PNG route returns 200 image/png. Three native LCD captures
+  were visually inspected; provenance is `media/capture-replace-setup.json`.
+
+These native runs retain private publication, UI tick and first-sector IRQ
+fixtures. They are software evidence, not full resident dispatch, hardware
+latency, physical power-loss or CF/FAT qualification. Earlier CC/output/NAME
+retirement results remain tied to their recorded versions. No physical 0.0.12
+result is claimed, and these tests did not write a physical card or unit.

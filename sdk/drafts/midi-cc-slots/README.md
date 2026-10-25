@@ -29,6 +29,17 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed CC and naming emulator gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
+## Version 0.0.12: explicitly replace a previous setup
+
+INIT now works on an initialized project. Set Bank A / Part 1 names and channels,
+back up and save normally, then hold FUNC and click D at INIT. The prompt
+**REPLACE ALL? YES/NO** asks before replacing every bank’s names and all current
+and saved Part channels. YES uses Bank A / Part 1 exactly, including empty names
+and OFF channels; NO leaves the previous setup. NO also cancels safely during
+progress. Wait for MIDI SETUP SAVED. Ordinary bank changes and restart still
+never reapply defaults. The first initialization retains legacy overrides;
+only a deliberately confirmed repeat replaces them.
+
 ## Version 0.0.11: centered INIT and a visible gesture
 
 INIT now sits inside encoder D’s cell beneath CHAN, aligned with the neighboring

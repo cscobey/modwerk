@@ -1,6 +1,6 @@
 # On-device project initialization experiment
 
-The local site now pins the software-tested 0.0.10 responsiveness candidate.
+The local site pins the 0.0.12 explicit-replacement candidate.
 0.0.8 aborted initialization on the reported physical project. Its card journal
 confirmed rollback and valid original bank copies. The low-level cause remains
 unconfirmed: the same project succeeds in the private emulator. Do not treat
@@ -10,18 +10,26 @@ that emulator result as a hardware fix qualification.
 
 On an unprotected, stopped test project, set Bank A / Part 1 names and MIDI
 channels, then save the project normally. In MIDI SRC SETUP, encoder D shows
-APPLY / FUNC. Hold FUNC and push D; a plain push only shows the gesture hint.
+INIT with FN+ / PUSH. Hold FUNC and push D; a plain push only shows the gesture hint.
 There is no text confirmation editor. NAME on F retains its stock text editor.
 Progress identifies the bank being checked, applied or restored. NO requests
-cancellation at the next safe bank boundary; STOP remains available. Navigation
-and parameter edits are held during the transaction, not while using the module
-normally. FUNC releases always pass through.
+cancellation at the next safe bank boundary; STOP remains available. Bare page browsing remains available during progress; parameter edits and
+bank/project changes stay held. FUNC releases always pass through.
 
-The completed operation initializes native current and saved Parts once and
+The first operation initializes native current and saved Parts and
 freezes inherited names as independent bank names. Existing legacy initialized
 channel profiles (including OFF) and explicit name overrides are retained.
 Initialize before making new bank-specific edits during migration: an old
 saved profile remains authoritative for an already initialized legacy Part.
+
+On a previously initialized project, deliberate FUNC + D asks REPLACE ALL?
+YES/NO. YES replaces all bank names and all current/saved Part channels with
+Bank A / Part 1, including empty names and OFF. NO dismisses the prompt without
+writes, and can cancel safely during bank progress. A YES already held when the
+prompt opens cannot accept it: release it, then press YES. STOP dismisses the
+prompt. Replacement records the existing initialized checkpoint as its baseline;
+uncommitted recovery preserves that marker and restores previous independent
+names/channels. A confirmed replacement never happens during project load.
 
 Afterward, bank and pattern changes never read or apply a sidecar channel map.
 Channels belong to normal project/bank storage. Save channel edits normally.
