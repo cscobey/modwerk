@@ -19,7 +19,7 @@ export function localCcSlots(): Plugin {
     const mediaRoot = '/module-media/midi-cc-slots/' + pin.version
     const media = new Map<string, string>([
       ['presentation/thumbnail.svg', 'image/svg+xml'],
-      ...['01-native-setup.png', '02-cc-setup.png', '03-control-1.png', '04-control-2.png', '05-native-restored.png', '06-name-setup.png', '07-name-editor.png', '08-bank1-name.png', '09-bank2-name.png', '10-init-setup.png', '11-init-confirm.png', '12-apply-setup.png', '13-apply-progress.png'].map(file => ['media/' + file, 'image/png'] as const),
+      ...['01-native-setup.png', '02-cc-setup.png', '03-control-1.png', '04-control-2.png', '05-native-restored.png', '06-name-setup.png', '07-name-editor.png', '08-bank1-name.png', '09-bank2-name.png', '10-init-setup.png', '11-init-confirm.png', '12-apply-setup.png', '13-apply-progress.png', '14-apply-setup.png', '15-apply-progress.png'].map(file => ['media/' + file, 'image/png'] as const),
     ])
     server.middlewares.use(mediaRoot, async (req, res) => {
       const path = new URL(req.url ?? '/', 'http://localhost').pathname.slice(1), type = media.get(path)

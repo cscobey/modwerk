@@ -1,6 +1,6 @@
 # On-device project initialization experiment
 
-The local site now pins the software-tested 0.0.9 candidate for a hardware retest.
+The local site now pins the software-tested 0.0.10 responsiveness candidate.
 0.0.8 aborted initialization on the reported physical project. Its card journal
 confirmed rollback and valid original bank copies. The low-level cause remains
 unconfirmed: the same project succeeds in the private emulator. Do not treat
@@ -112,3 +112,16 @@ checkpoints remained uninitialized; its pending/aborted journal pair and all
 Bank B remained OFF, and the sixth MIDI name was saved separately. This proves
 rollback, not which low-level I/O check failed. Personal project files and card
 logs stay private and are never test fixtures committed to this repository.
+
+
+## Reported completion and responsiveness follow-up
+
+The user clarified that 0.0.9 completed, Bank B's sixth MIDI track used channel
+6, and controls returned after more than ten seconds. This is a reported
+successful application with excessive control blocking, not a permanent freeze.
+0.0.10 allows bare SRC/AMP/LFO/FX page keys while busy; held modifiers or other
+keys keep those shortcuts blocked. Editing, playback and bank/project changes
+remain held. NO still requests safe cancellation. CRC verification now uses one
+lookup per byte instead of two; fingerprints and every original bank check are
+unchanged. No cached execution or new interrupt masking is introduced. Physical
+timing and full resident dispatch of this follow-up are unmeasured.

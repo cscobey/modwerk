@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.0.10-experimental",
+    "date": "2026-10-25",
+    "changes": [
+      "Browse ordinary SRC/AMP/LFO/FX pages while Apply runs; editing and bank changes stay held.",
+      "Reduce CRC verification work without dropping bank checks or rollback protection.",
+      "Keep FUNC + D Apply, progress and safe NO cancellation.",
+      "Follow-up to the reported 0.0.9 success with a control hold over ten seconds; new physical timing remains unmeasured."
+    ]
+  },
+  {
     "version": "0.0.9-experimental",
     "date": "2026-10-25",
     "changes": [

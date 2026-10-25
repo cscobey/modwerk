@@ -29,6 +29,16 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed CC and naming emulator gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
+## Version 0.0.10: page browsing during Apply
+
+The user clarified that 0.0.9 completed, copied MIDI channel 6 correctly into
+Bank B, and returned control after more than ten seconds. The follow-up permits
+bare SRC/AMP/LFO/FX page browsing while Apply runs; editing, modified shortcuts,
+playback and bank changes remain held. NO still cancels safely. Bank CRC work
+uses one lookup per byte instead of two, retaining all verification and rollback
+checks. Physical timing of 0.0.10 remains unmeasured. An already initialized
+project does not need Apply again.
+
 ## Version 0.0.9: FUNC + D, progress and cancellation
 
 The reported physical 0.0.8 initialization failed and rolled back. A read-only

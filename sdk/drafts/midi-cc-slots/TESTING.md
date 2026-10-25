@@ -531,3 +531,45 @@ fixtures. NO cancellation is also polled from the actual held-key row on the UI
 tick. Full resident event dispatch, physical writer behavior, latency and a
 physical fix/restart remain unqualified. This is a test candidate, not a claim
 that the hardware failure has been resolved.
+
+
+## Clarified physical 0.0.9 result and 0.0.10 responsiveness follow-up
+
+The user first described another freeze, then clarified that Apply completed,
+Bank B MIDI track 6 used channel 6, and controls returned after more than ten
+seconds. Record this as a reported successful application with excessive
+blocking, not a permanent freeze. Active RAM identity and elapsed time were
+not instrumented; the served 0.0.9 hash was independently checked by HTTP.
+The earlier 0.0.8 card snapshot still documents a real aborted initialization.
+
+The physical card is MS-DOS FAT32 (512-byte device blocks, about 16 GB).
+Additional disposable 64 MB FAT32 emulator images round-tripped the private
+reported project and both exact 0.0.8 and 0.0.9 completed Apply (native backend
+0x40018a84). FAT32 alone therefore did not reproduce the physical 0.0.8 abort
+in the port. Card timing/cache/DMA and the physical geometry remain unmodeled.
+The FAT32 fixture and personal data stayed private.
+
+0.0.10 firmware source: `d0d55e296bed53911b9e0117a2cb74870865606e`.
+Exact package SHA-256:
+`d738fce658e0c44eea5d959d5771654d302cae40d17419eaed7388b544f5c583`.
+32,310 bytes, 28,132-byte image, 493 relocations, 24 sites, 22 copies, ABI 8,
+feature bits 3. Bank CRC uses a generated 256-entry byte table (one lookup per
+byte rather than two). Host golden file/fingerprint tests pass unchanged;
+no file verification was removed, and no cache alias or interrupt-mask change
+was introduced.
+
+Observed exact-build gates: 353 native Apply/page-view/NO/copy/restart
+assertions, 398 CC regressions, interrupted recovery, reported-project names
+and actual channel-6 output, NAME editor retirement with poisoned RAM, host C
+loader lifecycle and two-placement stock-free reconstruction. Host key-policy
+checks allow all five bare page down/up events and consume modified page
+shortcuts while bank/project changes and encoders remain held. The real FX1
+page can open during the private native Apply/cancel scenario. Full resident
+key dispatch and physical responsiveness remain unqualified; emulator input
+coverage is not a timed hardware result.
+
+Private exact reports: `template-v10-native-1`, `template-v10-panel-1`,
+`template-v10-recovery-1`, `template-v10-reported-1`, and
+`template-v10-removal-1`. Captures: `media/capture-responsive-apply.json`.
+There is no physical 0.0.10 latency result and no claim that it finishes below
+ten seconds. An already initialized project is not remapped to measure it.
