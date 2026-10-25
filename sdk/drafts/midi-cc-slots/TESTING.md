@@ -410,3 +410,59 @@ UI action, interrupted-initialization recovery, production migration, physical
 timing, companion compatibility or hardware result is claimed. This prototype
 is not served by the local app. The normal 0.0.7 package was rebuilt and remains
 byte-identical (`5db4164bb52849497e93f0dc5fc3c42b755626bbc5065eb44baab010fb3b4244`).
+
+
+## 0.0.8 one-time initialization and actual native Save to New
+
+Source: `d2c05e7608a6b83ad4dd871c43ebaa22f1d93dbd`, template/ implementation.
+Exact package SHA-256:
+`876e3aa98455364181be7e055bfb5dd0d7f3b81f45051f8d85dc8894a5b47fad`.
+29,434 bytes, 25,564-byte authored image, 416 relocations, 24 sites, 22 stock
+copies, ABI 8, feature bits 3. Default `--profile` without the template flag
+still reproduces the historical 0.0.7 package byte-for-byte.
+
+Observed privately on the same stock MAIN and emulator hashes listed above:
+
+- 353 exact-build native assertions: actual D INIT editor, NO cancellation,
+  APPLY, all 32 saved bank checksums, every unrelated bank byte unchanged,
+  all current/saved Part channel copies, legacy overrides, independent names,
+  refusal to initialize twice, native Save to New with package-owned source
+  capture and completion hooks, and independent fresh-process source/copy
+  restore. No source identity or channel initialization was injected by host.
+- 398 exact-build CC/menu/header/sequencer regressions passed.
+- Actual INIT interrupted after bank01.work changed and before initialized
+  metadata committed. A fresh VM restored every byte of all 32 bank files,
+  completed native project reload, left its marker uninitialized and left
+  uninitialized Bank D OFF; waiting and bank selection did not reapply defaults.
+- YES and NO both closed the INIT editor after every package site was restored
+  and module RAM was poisoned. Returning to SRC stayed stock afterward.
+- Host core checks cover six fresh-process transaction cuts, failed-save retry,
+  foreign-file refusal, read-only legacy import, protected-template dirty-name
+  copy, independent copied names, and zero profile reads/writes or channel
+  restoration across 64 ordinary bank changes after initialization. Busy key
+  and encoder callbacks consume navigation while allowing STOP press/release.
+- The actual portable sector algorithm was tested with real 636,113-byte files:
+  exact neighboring-byte preservation, torn work/strd sector repair from the
+  saved peer, checksum repair, and refusal for missing/unsaved/native-mismatched
+  banks or two damaged peers. The host adapter models close-time truncation.
+- Exact host C loader prepare/publish/Undo/repeat/removal/free-space reclamation
+  passed against the private supplied user MAIN. Two-placement reconstruction
+  and strict 16-byte stock-overlap scans passed; no direct current-base site
+  overlap was found. Host loader execution is not resident-base execution.
+
+Private reports: `template-v8-native-10/report.json`,
+`template-v8-panel-3/report.json`, `template-v8-recovery-2/report.json`, and
+`template-v8-removal-2/report.json` under the developer's private MIDI draft
+folder; no firmware, card images or dumps are committed. INIT capture hashes
+and exact build provenance are in `media/capture-init.json`.
+
+The native bench publishes the guarded package after boot and supplies a UI
+tick shim. It also records a separate first-sector IRQ timing fixture for the
+known emulator race; this fixture does not ship in the module. Native saves
+need substantially more simulated time than a short UI delay: the bench waits
+for the stock panel to return. Generic resident key/encoder dispatch is not
+wired by that private tick fixture. Shared project lifecycle event admission,
+full base execution, physical install/Keep/Undo/power loss/restart, protected
+physical template copy, CF/FAT failure modes and timing remain unqualified.
+The UI names old screenshot versions explicitly instead of relabeling their
+captures as 0.0.8. No physical device was driven for these checks.

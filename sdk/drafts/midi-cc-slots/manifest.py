@@ -6,6 +6,6 @@ and release qualification remain separate work.
 """
 
 MODULE_ID = 'midi-cc-slots'
-VERSION = '0.0.7-experimental'
+VERSION = '0.0.8-experimental'
 RUNTIME_BUILDER = 'build_runtime.py'
 NATIVE_CARD_SUPPORTED = False

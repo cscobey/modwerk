@@ -1,8 +1,8 @@
 # On-device project initialization experiment
 
-This opt-in implementation is separate from the local site's reviewed 0.0.7
-build. Do not promote it until its exact native workflow and removal checks
-pass. Emulator results do not qualify hardware or public catalogue admission.
+The local site selects this opt-in 0.0.8 experimental implementation. Its exact
+native workflow, interruption recovery and removal checks passed. Emulator
+results do not qualify hardware or public catalogue admission.
 
 ## Player behavior
 

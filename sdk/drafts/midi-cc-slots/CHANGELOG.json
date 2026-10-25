@@ -1,10 +1,21 @@
 [
   {
+    "version": "0.0.8-experimental",
+    "date": "2026-10-25",
+    "changes": [
+      "Apply Bank A / Part 1 MIDI setup once using INIT/PUSH and the APPLY confirmation.",
+      "Keep independent names and native channels afterward; bank changes no longer restore a sidecar channel map.",
+      "Carry names and the initialization marker through Save to New.",
+      "Recover interrupted initialization from a verified previous snapshot.",
+      "Local experimental test; back up a disposable project and save normally before INIT."
+    ]
+  },
+  {
     "version": "0.0.7-experimental",
     "date": "2026-10-24",
     "changes": [
       "Use Bank 1 as the default MIDI track-name template.",
-      "Rename tracks independently in Banks 2\u201316 without changing Bank 1; names are shared across each bank\u2019s Parts.",
+      "Rename tracks independently in Banks 2–16 without changing Bank 1; names are shared across each bank’s Parts.",
       "Keep unedited names following Bank 1; save explicit bank overrides, including blank names.",
       "Import existing saved names and channels while preserving the original 0.0.6 checkpoint files.",
       "Documentation: add actual emulator screenshots for naming and bank-specific overrides."
@@ -34,7 +45,7 @@
     "version": "0.0.4-experimental",
     "date": "2026-10-24",
     "changes": [
-      "Both MIDI CONTROL pages show each assigned CC number above its encoder instead of CC1\u2013CC10 slot names.",
+      "Both MIDI CONTROL pages show each assigned CC number above its encoder instead of CC1–CC10 slot names.",
       "The remapped PB/AT positions show their assigned numbers; native positions keep PB and AT.",
       "SETUP captions follow the mode as PB, AT or CC, fitting the full stock selection highlight.",
       "Local USB trial update; saved-project behavior and this display change on hardware remain unqualified."
@@ -54,7 +65,7 @@
     "date": "2026-10-24",
     "changes": [
       "Double-tap FX1 on MIDI CONTROL 1, then click A or B to switch its PB/AT position to CC mode.",
-      "Turn the encoder to choose CC0\u2013127; click again to restore PB or AT.",
+      "Turn the encoder to choose CC0–127; click again to restore PB or AT.",
       "Turning alone preserves the selected mode, including stock fast editing while an encoder is held.",
       "Emulator research draft; saved projects, USB integration and hardware remain unqualified."
     ]

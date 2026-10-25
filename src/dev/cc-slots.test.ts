@@ -10,6 +10,7 @@ const review = base + ':' + ready.active
 describe('local CC trial review', () => {
   it('requires a connected, capable base and an inventory tied to the running set', () => {
     expect(ccTrialProblem(ready, [], review)).toBeUndefined()
+    expect(ccTrialProblem({ ...ready, identity: { ...ready.identity!, capabilities: { ...ready.identity!.capabilities!, abi: 7 } } }, [], review)).toContain('capabilities')
     expect(ccTrialProblem({ status: 'idle' }, [], review)).toBeTruthy()
     expect(ccTrialProblem({ ...ready, identity: { ...ready.identity!, capabilities: undefined } }, [], review)).toBeTruthy()
     expect(ccTrialProblem(ready, undefined, review)).toBeTruthy()
@@ -18,9 +19,17 @@ describe('local CC trial review', () => {
     expect(ccTrialProblem(ready, [], review, 'remove')).toContain('not installed')
   })
   it('refuses damaged or substituted local packages', () => {
-    expect(() => ccPackage({ version: '0.0.7-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
+    expect(() => ccPackage({ version: '0.0.8-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
     expect(() => ccPackage({ version: 'wrong', sha256: '', hex: '' })).toThrow('Invalid')
   })
+})
+
+it('accepts the larger initialized-project package and bounds it by the reviewed size', () => {
+  const data=new Uint8Array(29434),view=new DataView(data.buffer)
+  view.setUint32(0,0x4d57524d);view.setUint16(4,8);view.setUint32(28,parseInt(CC_SLOTS_ID,16))
+  const document={version:'0.0.8-experimental',sha256:sha(data),hex:Buffer.from(data).toString('hex')}
+  expect(ccPackage(document)).toEqual(data)
+  expect(()=>ccPackage({...document,hex:document.hex+'00'})).toThrow('Invalid')
 })
 
 it('does not offer edited native source as the verified local trial', () => {
@@ -43,8 +52,8 @@ it('retains a restart receipt across refresh while refusing another base or an i
   expect(ccPersistenceProblem(restored, ready, modules, { ...health, saved: 7 }, true)).toContain('Startup restoration is not confirmed')
 })
 
-it.each([[20,16],[21,15]])('refuses naming-test packages when base capacity is sites=%s copies=%s', (maxSites,maxCopies) => {
-  const state={...ready,identity:{...ready.identity!,capabilities:{abi:7,features:3,maxSites,maxCopies}}}
+it.each([[23,22],[24,21]])('refuses naming-test packages when base capacity is sites=%s copies=%s', (maxSites,maxCopies) => {
+  const state={...ready,identity:{...ready.identity!,capabilities:{abi:8,features:3,maxSites,maxCopies}}}
   expect(ccTrialProblem(state,[],review)).toContain('capabilities')
 })
 

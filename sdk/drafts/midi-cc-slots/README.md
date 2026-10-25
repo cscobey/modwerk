@@ -29,6 +29,36 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed CC and naming emulator gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
+## Version 0.0.8: initialize once, then save native channels
+
+Back up a disposable project before testing. Set Bank A / Part 1 names and
+channels, stop transport and recorders, and save the project normally. In
+MIDI SRC SETUP, click D at INIT/PUSH, type APPLY and confirm YES. NO cancels.
+Wait for MIDI SETUP SAVED before continuing. F still opens NAME/PUSH.
+
+INIT snapshots inherited names and fills native current/saved Parts once,
+retaining legacy saved overrides, including OFF. Initialize before making new
+bank-specific migration edits, because old saved channel profiles remain
+legacy override authority. After completion, banks keep independent names
+and native channels; bank/pattern changes and restart never remap defaults.
+Save channel edits normally. Names autosave while stopped; wait for MIDI
+PROFILE SAVED. Native Save to New copies names and the initialized marker.
+
+Keep all `MIDI4_*.DAT` files with full project backups. Two hold names/marker;
+two hold recovery intents. Old MIDI3/MIDI2 files import read-only. Interrupted,
+uncommitted INIT restores its recorded previous map and reloads the project;
+it never computes new Bank A defaults during recovery. Undo/removal restores
+module code, not completed bank edits. Restore a backup to undo those edits.
+
+The local listing builds the exact experimental package recorded in
+`local-build.json`. It requires ABI 8, 24 sites and 22 stock copies. Its guarded
+lifecycle sites still require owner-reviewed shared SDK events for publication.
+[Implementation and limits](template/README.md). Emulator checks passed;
+physical installation/restart, protected-template copy and resident dispatch
+are unqualified. Use the installed base and a backed-up test project.
+
+The sections below describe historical versions, not 0.0.8 channel behavior.
+
 ## Version 0.0.7 bank name defaults and overrides
 
 **Bank 1 supplies eight default names. Renaming in Banks 2–16 changes only
