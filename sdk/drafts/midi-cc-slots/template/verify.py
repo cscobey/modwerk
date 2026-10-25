@@ -31,7 +31,7 @@ def main():
                 if value==initialized:return
             b.run(500)
         raise AssertionError('Initialization/recovery did not complete: '+str(b.number('status')))
-    for phase,project in [('create','TRIAL'),('restart','TRIAL'),('copy-restart','COPYTEST')]:
+    for phase,project in [('create','TRIAL'),('restart','TRIAL'),('copy-restart','COPYTEST'),('replace-restart','COPYTEST')]:
         b=Bench(a.emulator,a.stock,a.build,image,out/phase,project)
         try:
             expect(b.number('loaded')==1,phase+': profile loaded in engine')
@@ -73,7 +73,11 @@ def main():
                 b.bank(0);b.channel(4);b.rename('BASS4');b.bank(3)
                 expect(b.channels()[0]==3,'later Bank A channel edit does not change Bank D')
                 expect(b.name()==b'BASS3','later Bank A name edit does not change Bank D')
-                b.apply();expect(b.number('status')==9,'initialized project refuses second Apply')
+                b.apply();b.run(100)
+                expect(b.number('status')==18,'initialized project asks before replacing all banks')
+                shutil.copyfile(b.out/'lcd.bin',out/'replace-confirm.lcd.bin')
+                b.press(0x32);b.run(100)
+                expect(b.number('busy')==0 and b.name()==b'BASS3' and b.channels()[0]==3,'NO dismisses replacement without changing independent Bank D')
                 b.save_project();b.press(0x32)
             elif phase=='restart':
                 wait(b,1);b.bank(0);expect(b.channels()[0]==4,'fresh process retains later Bank A channel edit')
@@ -96,19 +100,39 @@ def main():
                 b.run(3000)
                 expect(b.read(0x100f8378,9)==b'COPYTEST\0','native Save to New activates copied project')
                 expect(b.number('status')==2,'package hooks save copied names without injected source identity')
-            else:
+            elif phase=='copy-restart':
                 wait(b,1);b.bank(0);expect(b.name()==b'BASS4','copied project restores Bank A name')
                 expect(b.channels()[0]==4,'copied project restores Bank A native channel')
                 b.bank(3);expect(b.name()==b'BASS3','copied project restores Bank D snapshot')
                 expect(b.channels()[0]==3,'copied project restores Bank D native channel')
-                b.rename('COPY4');b.apply()
-                expect(b.number('status')==9,'copied initialization marker prevents reapplication')
+                b.rename('COPY4');b.bank(0);b.channel(6);b.rename('REMAP');b.save_project()
+                b.apply();b.run(100)
+                expect(b.number('status')==18,'copied initialized project also requires explicit replacement confirmation')
+                b.press(0x31);wait(b,1)
+                expect(b.number('status')==7,'YES confirms replacement and reaches MIDI SETUP SAVED')
+                for bank in range(16):
+                    b.bank(bank)
+                    expect(b.channels()[0]==6 and b.name()==b'REMAP',f'bank {bank+1}: explicit replacement copies Bank A channel and name')
+                b.cmd('card flush');replaced=card.extract_image(image.read_bytes())
+                for bank in range(1,17):
+                    for suffix in ['work','strd']:
+                        data=replaced[f'TEST/COPYTEST/bank{bank:02d}.{suffix}']
+                        for part in range(8):
+                            at=0x8eed6+part*0x18bb+9+0x4e2
+                            expect(data[at]==6,f'replaced bank {bank} {suffix} Part {part+1}: native channel saved')
+                b.save_project()
+            else:
+                wait(b,1)
+                for bank in [0,1,3,15]:
+                    b.bank(bank);expect(b.channels()[0]==6 and b.name()==b'REMAP',f'fresh process bank {bank+1}: replacement persists')
+                b.bank(0);b.channel(7);b.rename('AFTER');b.save_project();b.bank(3)
+                expect(b.channels()[0]==6 and b.name()==b'REMAP','ordinary Bank A edits do not reapply after replacement')
             expect('errors=0' in b.cmd('card flush'),phase+': card flush clean')
         finally:b.close()
     files=card.extract_image(image.read_bytes(),out/'saved')
     newest=lambda project:max((files[f'TEST/{project}/MIDI4_{i}.DAT'] for i in range(2)),key=lambda d:int.from_bytes(d[8:12],'big'))
     expect(newest('TRIAL')[16+3*128:32+3*128].split(b'\0',1)[0]==b'BASS3','copy edit leaves original project unchanged')
-    expect(newest('COPYTEST')[16+3*128:32+3*128].split(b'\0',1)[0]==b'COPY4','copy owns new name checkpoint')
+    expect(newest('COPYTEST')[16+3*128:32+3*128].split(b'\0',1)[0]==b'REMAP','copy owns replaced name checkpoint')
     for name,data in old.items():
         if name.startswith('TEST/PROFILE/MIDI3_'):expect(files['TEST/TRIAL/'+Path(name).name]==data,'old v7 profile remains byte-identical')
     report={'checks':checks,'packageSha256':hashlib.sha256((a.build/'trial.mwrm').read_bytes()).hexdigest(),'stockSha256':hashlib.sha256(a.stock.read_bytes()).hexdigest(),'emulatorSha256':hashlib.sha256(a.emulator.read_bytes()).hexdigest(),'initialization':'Actual FUNC + D; cooperative native engine persistence','copy':'Actual source-capture/destination package hooks; no injected project identity','limitations':['Private runtime publication, UI tick shim and separately recorded first-sector IRQ fixture, not full resident base.','Hardware and shared lifecycle admission not qualified.']}

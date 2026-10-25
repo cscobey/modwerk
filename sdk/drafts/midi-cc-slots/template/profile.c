@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT
- * Project-local name checkpoints and one-time native-channel initialization.
+ * Project-local names and explicitly requested native-channel setup.
  * Journal recovery restores the PREVIOUS snapshot, never Bank A defaults.
  */
 #include "template.h"
@@ -14,6 +14,7 @@ static uint32_t generation,jsequence;
 static unsigned loaded,dirty,pending_wake,redraw,status,ticks,revision;
 static unsigned peer,jpeer,busy,requested,recovery,damaged,clone_ready,finishing;
 static unsigned step,cursor,cancelled,rollback_reload,failure;
+static unsigned confirming,confirm_armed,replacing;
 uint8_t mt_work[MM_PROFILE_BYTES] __attribute__((aligned(16)));
 static uint8_t journal[MM_PROFILE_BYTES] __attribute__((aligned(16)));
 static uint8_t desired[1024];
@@ -143,7 +144,6 @@ static void failed(unsigned code){
     int result=recover();if(result==0){busy=1;announce(12);}
 }
 static void initialize(void){
-    if(state.initialized){busy=0;announce(9);return;}
     if(!mt_writable()){busy=0;announce(15);return;}
     if(dirty||!generation){if(!store()){busy=0;announce(3);return;}}
     clear(journal,4096);put32(journal,0x4d4d344au);put32(journal+4,1);
@@ -155,7 +155,8 @@ static void initialize(void){
     for(unsigned b=0;b<16;b++)for(unsigned p=0;p<4;p++)for(unsigned t=0;t<8;t++){
         unsigned at=b*4+p;
         uint8_t v=journal[64+b*64+p*8+t];
-        if(at&&(state.old_initialized[at>>3]&(1u<<(at&7u))))v=state.old_channels[at][t];
+        if(replacing)v=journal[64+t];
+        else if(at&&(state.old_initialized[at>>3]&(1u<<(at&7u))))v=state.old_channels[at][t];
         else if(at&&v==0)v=journal[64+t];
         desired[b*64+p*8+t]=desired[b*64+(p+4)*8+t]=v;
     }
@@ -183,7 +184,7 @@ static void advance(void){
             ++cursor;announce(6);return;
         }
         if(!mt_channels(1,desired)){failed(400);return;}
-        for(unsigned b=1;b<16;b++)for(unsigned t=0;t<8;t++)if(!(state.overrides[b]&(1u<<t)))copy(slot(b,t),names_store[t],16);
+        for(unsigned b=1;b<16;b++)for(unsigned t=0;t<8;t++)if(replacing||!(state.overrides[b]&(1u<<t)))copy(slot(b,t),names_store[t],16);
         for(unsigned b=0;b<16;b++)state.overrides[b]=255;
         state.initialized=1;++revision;dirty=1;
         if(!store()){failed(401);return;}
@@ -210,7 +211,7 @@ void mm_profile_service(void){
     pending_wake=0;if(!mm_profile_gate())return;
     char now[260];if(!current(now))return;
     if(!loaded||!same(now,directory)){
-        unsigned was=requested;requested=finishing=busy=step=cancelled=0;copy(directory,now,260);load_profile();recovery=1;rollback_reload=1;
+        unsigned was=requested||confirming;requested=finishing=busy=step=cancelled=confirming=confirm_armed=replacing=0;copy(directory,now,260);load_profile();recovery=1;rollback_reload=1;
         if(recover()!=1){busy=1;return;}if(was)announce(13);
     }
     if(step){advance();return;}
@@ -221,7 +222,18 @@ void mm_profile_service(void){
         if(store()){if(finishing){finishing=busy=0;announce(7);}else announce(2);}else announce(3);
     }
 }
+static void confirm(unsigned yes,unsigned no){
+    if(!confirming)return;
+    if(no){confirming=confirm_armed=busy=replacing=0;announce(11);}
+    else if(yes&&confirm_armed){confirming=confirm_armed=0;requested=1;announce(6);}
+}
 void mm_profile_tick(void*api){
+    if(confirming){
+        unsigned held=mt_confirm_held();
+        if(!held)confirm_armed=1;
+        else confirm(held&1u,held&2u);
+        if(confirming&&ticks==59)redraw=1;
+    }
     if(mt_busy()&&step!=3&&mt_cancel_held())cancelled=1;
     (void)api;if(redraw){redraw=0;mm_profile_redraw(status);}
     if(++ticks<60&&((step==3&&status==12)||(loaded&&!step&&(!dirty||!mt_writable())&&!requested&&!recovery&&!finishing)))return;
@@ -242,13 +254,19 @@ unsigned mt_busy(void){return busy||recovery;}
 void mt_request(void){
     if(!mm_profile_ready()||!mt_stopped()){announce(10);return;}
     if(!mt_writable()){announce(15);return;}
-    if(state.initialized){announce(9);return;}
     char now[260];if(!current(now)||!same(now,directory)){announce(13);return;}
-    copy(requested_directory,directory,260);failure=cancelled=0;requested=busy=1;announce(6);
+    copy(requested_directory,directory,260);failure=cancelled=0;busy=1;replacing=!!state.initialized;
+    if(replacing){confirming=1;confirm_armed=0;announce(18);}
+    else {requested=1;announce(6);}
 }
 unsigned mt_progress(void){return step*100+cursor;}
 unsigned mt_failure(void){return failure;}
 int mt_runtime_key(int code,int pressed){
+    if(confirming){
+        if(code==0x31||code==0x32){if(pressed)confirm(code==0x31,code==0x32);return 1;}
+        if(code==0x27&&pressed)confirm(0,1);
+        if(code!=0x27&&code!=0x2d)return 1;
+    }
     /* NO cancels at a bank boundary; always deliver STOP and FUNC releases. */
     if(mt_busy()){
         if(code==0x32){if(pressed&&step!=3)cancelled=1;return 1;}

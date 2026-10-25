@@ -14,6 +14,9 @@ int mt_stopped(void){
 }
 int mt_writable(void){return U32(0x100f847cu)==0;}
 int mt_cancel_held(void){return !!(U8(0x46100b18u+(0x32u>>3))&(1u<<(0x32u&7u)));}
+unsigned mt_confirm_held(void){
+    return !!(U8(0x46100b18u+(0x31u>>3))&(1u<<(0x31u&7u)))|(unsigned)mt_cancel_held()<<1;
+}
 int mt_view_key(int code){
     if(code<0x22||code>0x26||U32(0x46c7c730u))return 0;
     /* Only a bare page key is read-only. A held modifier/track could turn
@@ -41,9 +44,6 @@ int mt_key(int code,int down){
     }
     if(!mm_profile_ready()||!mt_stopped()){
         ((void(*)(const char*,unsigned))0x4005a2b8u)("STOP FOR MIDI SETUP",80);return 1;
-    }
-    if(mt_initialized()){
-        mt_request();return 1;
     }
     if(!armed||!(U8(0x46100b18u+(0x2du>>3))&(1u<<(0x2du&7u)))){
         ((void(*)(const char*,unsigned))0x4005a2b8u)("HOLD FUNC + PUSH D",100);return 1;
@@ -107,6 +107,7 @@ void mm_profile_redraw(unsigned value){
     case 13:message="PROJECT CHANGED";break;
     case 14:message="SAVE PROJECT FIRST";break;
     case 15:message="PROJECT IS PROTECTED";break;
+    case 18:message="REPLACE ALL? YES/NO";break;
     }
     char progress[26];
     if(value==6||value==16){

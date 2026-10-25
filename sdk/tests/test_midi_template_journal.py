@@ -25,7 +25,9 @@ class TemplateJournalTests(unittest.TestCase):
                 profile[673]=1;profile[688:692]=b'LEAD';profile[-4:]=zlib.crc32(profile[:-4]).to_bytes(4,'big')
                 for slot in range(2):(directory/f'A/MIDI3_{slot}.DAT').write_bytes(profile)
                 return directory,bytes(profile)
-            def run(directory,mode,*args):subprocess.run([str(program),str(directory),mode,*map(str,args)],check=True,capture_output=True)
+            def run(directory,mode,*args):
+                result=subprocess.run([str(program),str(directory),mode,*map(str,args)],capture_output=True,text=True)
+                self.assertEqual(result.returncode,0,mode+': '+result.stderr)
             directory,old=fixture('normal')
             run(directory,'init');run(directory,'restart')
             for slot in range(2):self.assertEqual((directory/f'A/MIDI3_{slot}.DAT').read_bytes(),old)
@@ -33,6 +35,11 @@ class TemplateJournalTests(unittest.TestCase):
                 directory,_=fixture(f'cut-{cut}')
                 run(directory,'init',cut)
                 run(directory,'recover-old' if cut<4 else 'recover-new')
+            directory,_=fixture('replace');run(directory,'init');run(directory,'replace');run(directory,'replace-recover-new')
+            directory,_=fixture('replace-cancel');run(directory,'init');run(directory,'replace-cancel');run(directory,'replace-recover-old')
+            for cut in range(1,7):
+                directory,_=fixture(f'replace-cut-{cut}');run(directory,'init');run(directory,'replace',cut)
+                run(directory,'replace-recover-old' if cut<4 else 'replace-recover-new')
             directory,_=fixture('write-failure');run(directory,'failed-save')
             for mode in ['cancel-before-write','cancel-after-bank']:
                 directory,_=fixture(mode);run(directory,mode)

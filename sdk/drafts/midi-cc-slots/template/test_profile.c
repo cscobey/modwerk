@@ -8,7 +8,7 @@
 char names_store[8][16];
 static char root[260],project[32]="A";
 static uint8_t native[1024];
-static unsigned bank,playing,apply_calls,persist_calls,cut,fail_persist,protected,reads,writes,reloads,modifier;
+static unsigned bank,playing,apply_calls,persist_calls,cut,fail_persist,protected,reads,writes,reloads,modifier,confirm_keys;
 #define CHECK(c) do{if(!(c)){fprintf(stderr,"line %d: %s\n",__LINE__,#c);return 1;}}while(0)
 static void native_file(unsigned write,unsigned n){
     char path[320];snprintf(path,sizeof path,"%s/%s/channels.bin",root,project);
@@ -21,6 +21,7 @@ int mm_profile_gate(void){return !playing;}
 int mt_stopped(void){return !playing;}
 int mt_writable(void){return !protected;}
 int mt_cancel_held(void){return 0;}
+unsigned mt_confirm_held(void){return confirm_keys;}
 int mt_view_key(int code){return !modifier&&code>=0x22&&code<=0x26;}
 int mt_channels(unsigned write,uint8_t values[1024]){if(write){memcpy(native,values,1024);++apply_calls;}else memcpy(values,native,1024);return 1;}
 int mt_preflight_bank(const uint8_t values[1024],uint8_t hashes[128],unsigned b){(void)values;memset(hashes+b*8,0x53,8);return 1;}
@@ -55,9 +56,14 @@ int mm_profile_file(unsigned write,const char*path,uint8_t*data,unsigned size){
     if(write&&metadata&&initialized&&data[11]>=3&&cut==6)exit(0);
     return amount==size?1:2;
 }
-static void rename_track(const char*text){char*s=mm_profile_edit(0);if(!s)abort();strcpy(s,text);mm_profile_name_changed(s);}
+static void rename_track(const char*text){char*s=mm_profile_edit(0);if(!s)abort();memset(s,0,16);strcpy(s,text);mm_profile_name_changed(s);}
 static void drain(void){for(unsigned i=0;i<100&&mt_busy();i++)mm_profile_service();if(!mt_busy())mm_profile_service();}
 static void request(void){mt_request();mm_profile_service();drain();}
+static void replacement_source(void){
+    native[0]=9;native[1]=10;native[2]=0;native_file(1,1024);
+    bank=1;char*s=mm_profile_edit(1);if(!s)abort();memset(s,0,16);strcpy(s,"OLD");mm_profile_name_changed(s);
+    bank=0;rename_track("NEW");mm_profile_service();
+}
 int main(int argc,char**argv){
     if(argc<3)return 2;snprintf(root,sizeof root,"%s",argv[1]);native_file(0,1024);
     if(!strcmp(argv[2],"init")){
@@ -68,7 +74,8 @@ int main(int argc,char**argv){
         request();CHECK(mt_initialized());CHECK(mm_profile_status()==7);CHECK(apply_calls==1);
         CHECK(native[0]==1&&native[64]==5&&native[65]==0&&native[128]==12&&native[192]==1);
         for(unsigned b=0;b<16;b++)for(unsigned p=0;p<4;p++)CHECK(!memcmp(native+b*64+p*8,native+b*64+(p+4)*8,8));
-        unsigned before=apply_calls;request();CHECK(apply_calls==before);CHECK(mm_profile_status()==9);
+        unsigned before=apply_calls;mt_request();CHECK(apply_calls==before);CHECK(mm_profile_status()==18);
+        CHECK(mt_runtime_key(0x32,1));CHECK(mm_profile_ready());CHECK(mm_profile_status()==11);
         rename_track("AEDIT");mm_profile_service();bank=2;CHECK(!strcmp(mm_profile_name(0),"BASS"));
     }else if(!strcmp(argv[2],"recover-old")){
         mm_profile_service();drain();CHECK(mm_profile_ready());CHECK(!mt_initialized());
@@ -77,7 +84,43 @@ int main(int argc,char**argv){
         unsigned before=apply_calls;mm_profile_service();CHECK(apply_calls==before);
     }else if(!strcmp(argv[2],"recover-new")){
         mm_profile_service();CHECK(mm_profile_ready());CHECK(mt_initialized());CHECK(apply_calls==0);
-        CHECK(native[192]==1);request();CHECK(apply_calls==0);
+        CHECK(native[192]==1);CHECK(apply_calls==0);
+    }else if(!strcmp(argv[2],"replace")){
+        mm_profile_service();CHECK(mm_profile_ready()&&mt_initialized());
+        replacement_source();
+        unsigned before=apply_calls;mt_request();CHECK(mt_busy()&&mm_profile_status()==18);
+        /* A held YES from before the prompt must not accept it. */
+        CHECK(mt_runtime_key(0x31,1));CHECK(apply_calls==before);CHECK(mm_profile_status()==18);
+        confirm_keys=1;for(unsigned i=0;i<3;i++)mm_profile_tick(0);CHECK(mm_profile_status()==18);confirm_keys=0;
+        mm_profile_tick(0);
+        if(argc>3)cut=(unsigned)atoi(argv[3]);
+        CHECK(mt_runtime_key(0x31,1));mm_profile_service();drain();
+        CHECK(mm_profile_ready()&&mt_initialized());
+        if(mm_profile_status()!=7)fprintf(stderr,"replace status=%u failure=%u\n",mm_profile_status(),mt_failure());
+        CHECK(mm_profile_status()==7);
+        for(unsigned b=0;b<16;b++)for(unsigned p=0;p<8;p++){
+            CHECK(native[b*64+p*8]==9&&native[b*64+p*8+1]==10&&native[b*64+p*8+2]==0);
+            bank=b;CHECK(!strcmp(mm_profile_name(0),"NEW"));CHECK(!mm_profile_name(1)[0]);
+        }
+    }else if(!strcmp(argv[2],"replace-recover-old")){
+        mm_profile_service();drain();CHECK(mm_profile_ready()&&mt_initialized());
+        CHECK(native[0]==9&&native[1]==10&&native[64]==5&&native[192]==1);
+        bank=0;CHECK(!strcmp(mm_profile_name(0),"NEW"));bank=1;CHECK(!strcmp(mm_profile_name(0),"LEAD"));
+        CHECK(!strcmp(mm_profile_name(1),"OLD"));
+    }else if(!strcmp(argv[2],"replace-recover-new")){
+        mm_profile_service();drain();CHECK(mm_profile_ready()&&mt_initialized());
+        for(unsigned b=0;b<16;b++)for(unsigned p=0;p<8;p++){
+            CHECK(native[b*64+p*8]==9&&native[b*64+p*8+1]==10&&native[b*64+p*8+2]==0);
+            bank=b;CHECK(!strcmp(mm_profile_name(0),"NEW"));CHECK(!mm_profile_name(1)[0]);
+        }
+    }else if(!strcmp(argv[2],"replace-cancel")){
+        mm_profile_service();CHECK(mt_initialized());replacement_source();mt_request();mm_profile_tick(0);
+        CHECK(mt_runtime_key(0x31,1));
+        for(unsigned i=0;i<40&&mt_progress()!=201;i++)mm_profile_service();
+        CHECK(mt_progress()==201);CHECK(mt_runtime_key(0x32,1));drain();
+        CHECK(mm_profile_ready()&&mt_initialized()&&reloads==0&&mm_profile_status()==11);
+        native_file(0,1024);CHECK(native[0]==9&&native[64]==5&&native[192]==1);
+        bank=1;CHECK(!strcmp(mm_profile_name(0),"LEAD"));
     }else if(!strcmp(argv[2],"restart")){
         mm_profile_service();CHECK(mm_profile_ready());CHECK(mt_initialized());CHECK(apply_calls==0);
         unsigned before_reads=reads,before_writes=writes;
