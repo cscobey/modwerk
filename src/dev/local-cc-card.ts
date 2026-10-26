@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { LOCAL_CC_ENABLED, localCcCardBaselineProblem } from './local-cc-module.ts'
+import { LOCAL_CC_ENABLED } from './local-cc-module.ts'
+import { localCcCardBaselineProblem } from './local-cc-card-baseline.ts'
 import pin from '../../sdk/drafts/midi-cc-slots/local-card-build.json' with {type:'json'}
 import { loggerHash } from '../engine/core-logger.ts'
 import type { ResidentCard } from '../engine/resident-card.ts'

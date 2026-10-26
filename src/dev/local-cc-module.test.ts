@@ -81,7 +81,8 @@ it('refuses missing or substituted card responses and permits retry after a fetc
 })
 
 it('requires renewed local review when the companion source or version changes',async()=>{
-  const {localCcCardBaselineProblem}=await local()
+  await local()
+  const {localCcCardBaselineProblem}=await import('./local-cc-card-baseline')
   const {default:compiled}=await import('../engine/assets/module-build.json')
   expect(localCcCardBaselineProblem()).toBe('')
   expect(localCcCardBaselineProblem({...compiled,sourceTreeSha256:'0'.repeat(64)})).toContain('Recheck')

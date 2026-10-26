@@ -1,4 +1,5 @@
-import { isLocalCcModule, localCcCardBaselineProblem } from '../dev/local-cc-module.ts'
+import { isLocalCcModule } from '../dev/local-cc-module.ts'
+import { localCcCardBaselineProblem } from '../dev/local-cc-card-baseline.ts'
 import localCard from '../../sdk/drafts/midi-cc-slots/local-card-build.json' with {type:'json'}
 import pairs from './compatibility-pairs.json'
 import { recordedCheck, type PairChecks } from './compatibility-checks'
