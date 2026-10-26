@@ -137,10 +137,12 @@ readback or saved-project qualification. The page never flashes firmware.
 It is outside the public catalogue. See [the draft's instructions and limits](../sdk/drafts/midi-cc-slots/README.md#local-app-installation-and-removal).
 
 The opt-in local draft also has a checked card adapter: the ordinary configuration
-builder accepts its reviewed companions and keeps its card identity separate from
-the USB package pin. The card route requires the pinned Elekloader tools; set
-`MODWERK_ELEKLOADER` for a non-default tools checkout. This does not install the
-USB loader in card firmware. See [local combined card builds](../sdk/drafts/midi-cc-slots/COMBINED_CARD.md).
+builder accepts its reviewed companions and now downloads a USB-capable installer
+ZIP: the unchanged standard base plus both initial saved module-set files. The
+MIDI USB package stays independently pinned. Its local compiler needs Python and
+the reviewed ColdFire tools. Historical C15 resident builds also require the
+pinned Elekloader checkout through `MODWERK_ELEKLOADER`. See
+[the USB-capable installer guide](../sdk/drafts/midi-cc-slots/USB_CARD_INSTALLER.md).
 
 The unit can report private or newer modules absent from this checkout’s catalogue.
 Keep those inventory IDs visible and use a neutral preview when their

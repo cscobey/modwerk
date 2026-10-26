@@ -830,3 +830,72 @@ The local combination gate is bound to the published source-tree fingerprint
 and exact companion versions in local-card-build.json. A future companion or
 SDK source update requires rechecking the local combinations before building;
 matching module names alone do not retain review.
+
+
+## 0.0.16 USB-capable card installer — 26 October 2026
+
+This supersedes the C15 local baked-card download with a ZIP of the unchanged
+published USB base and initial saved sets. No base/loader/controller/DSP source
+or compiled base package changes. Midi Mode 2 remains exact USB 0.0.13. All
+three companions use their existing checked USB packages, not their C15 baked
+objects. Normal USB inventory, update/removal, self-test and Keep/Undo remain
+owned by the existing loader. Public production registration is still pending.
+
+Exact default base identity:
+`0c5934e1bea411fc43143a75ee2a0fcf1c09a71b8c386732ed7526517d3b0846`.
+Base BIN SHA-256:
+`110f1d57d6fc81f89d35288f06d44147b7477d9e0966b4845bcb922f5baebe2c`.
+The site-session verifier compares it byte-for-byte by digest with the ordinary
+Download base request on the same original 1.40C input. Actual link metadata
+reports 281,996 runtime bytes and 4,571,136 reserved bytes. The callback added
+to buildBase only exposes link facts; it does not change the linked firmware.
+
+Initial sets use MWST v1, 84-byte header, four-byte record padding and 512-byte
+file padding. Generations 1 and 2 contain the identical four packages. Their
+file SHA-256 values are respectively
+`a1fffd7b7265bf6f0097ecb6105cbcdb4090da56e8f93c4706047b53d054188a`
+and `ba162cae19dc41d6c767bc6f690c2ec3b71eeaf17d0faade3986f8250b02da45`.
+Packages, all exact bytes from the ordinary Sync fetch/validation path:
+
+- Sidechain Compressor 95cff696: 1,236 bytes,
+  `38d00b16b13382e152c01cc82e0af18e348dae6951e05eebbd910996f04990c2`.
+- Play Modes be4ff75a: 14,846 bytes,
+  `abf1cda888e617408b4d088bb9afd536f9ea96c1bdb90339e56a3932d300bced`.
+- Mute Modes 73bab3b1: 2,702 bytes,
+  `c35b154d7a6ff4d9affc339387d68bde87554aec82a87b60059b6307f5b2b848`.
+- Midi Mode 2 f36a496d: 33,386 bytes,
+  `086fc3c73468bd58db823bf2857106ebe05f7d1197fd226c595d4139eeca000a`.
+
+Final installer ZIP SHA-256:
+`2a74c5a19365f34fe704dc6322b33b61ca8ac846f0757baffff348664b8f0c92`.
+`verify_usb_installer_session.mjs` passes the actual engine session and HTTP
+package routes, independent unchanged kit ZIP-member/CRC decoding, exact base
+comparison, both seed counts/digests, copyright notices, unsupported startup
+refusal and original-input preservation. Private report:
+`usb-card16-reviewed/session-proof.json`. The installer includes full component
+notices and the module MIT text. Only source/metadata/tests enter Git.
+
+`verify_installer_host.py` passes the exact four packages through the real C
+loader plus the actual modset.c sector reader, with normal files in a temporary
+host fixture. All four restore; corrupting the newer slot falls back to generation
+1; foreign-base and FUNC skip restore nothing. A normal removal and Undo restore
+all four and preserve the companions. Machine locks, DSP admission/ACKs, paused
+contexts and event-dispatch boundaries are synthetic host glue; ColdFire code,
+DSP engines and actual USB transfers do not execute in this proof.
+
+Native emulator restoration did **not** complete. The old workspace emulator
+stopped on the base's read-only boot mailbox scan. A fresh tool build from the
+repository-pinned Octabam 8250be0 checkout fixes that scan. Reusing another
+checkout's modified DSP vendor tree caused a host SIGSEGV; fresh matching pinned
+vendors removed that failure. The matched build reached the RTOS handoff with
+DSP frames, then timed out before the project-load/interactive stage. It reported
+the stock M6a p1b-task assumptions as failing. Its optional real-time DSP mode is
+unavailable on this host because DSP memory is not MMU-backed. No base firmware
+was patched and no private publication, IRQ or timer fixture bypassed this.
+There is no native four-module restore/persistence pass for C16.
+
+Physical installer flashing, enumeration/WebUSB on macOS, complete restoration,
+self-test, distinct-version update, Keep/Undo/removal/reinstall and physical
+power-cycle/project persistence remain open. C14's reported hardware success
+and C15's emulator proof do not qualify this different install path. The supplied
+candidate is an initial test installer; it is not declared production-ready.

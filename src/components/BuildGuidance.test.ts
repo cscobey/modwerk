@@ -33,3 +33,10 @@ describe('build next-step guidance', () => {
     expect(container.querySelector('#engine-status')?.textContent).not.toContain('Accept the flashing risks')
   })
 })
+
+it('labels a USB-capable installer as ZIP and explains replacing both saved-set files',async()=>{
+ const build={key:'installer',state:'valid',build:vi.fn(),report:{installer:{version:'test',base:'a'.repeat(64),baseSha256:'b'.repeat(64),files:['MODWERK0.SET','MODWERK1.SET']}}} as unknown as ReturnType<typeof useFirmwareBuild>
+ await act(()=>root.render(createElement(FirmwareBuildPanel,{build,available:true,downloadsEnabled:true,firmwareReady:true,moduleCount:4,riskAccepted:true,configurationName:'MIDI',onExport:noop,exported:false,results:null})))
+ expect(container.textContent).toContain('complete selected module set')
+ expect(container.textContent).toContain('replace both')
+})

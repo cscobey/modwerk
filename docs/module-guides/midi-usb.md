@@ -134,3 +134,11 @@ link, then boot the actual combined BIN and check persistence again. Keep the
 card adapter identity separate from a retained USB implementation pin in build
 reports; success on a standalone image does not qualify a different combined
 boot path or companion audio behavior.
+
+For an initial card installer using the existing USB base, use its MWST saved-set
+format, not the MWMS upload transaction. Bind each seed to the exact base digest,
+retain original unrelocated packages and sector-pad the files as modset.c does.
+Replace both seed peers only after backing them up; an old higher generation
+can otherwise win. Verify the actual C reader and fallback/foreign-base behavior,
+and compare the included base with the ordinary published base download. This
+does not qualify native restoration, a host USB driver or physical reboot.

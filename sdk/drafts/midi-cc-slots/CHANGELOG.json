@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.0.16-experimental",
+    "date": "2026-10-26",
+    "changes": [
+      "Build a local card installer with the standard USB-capable Modwerk base.",
+      "Include the selected original USB module packages in both saved-set files for boot restoration.",
+      "Retain USB updates, Keep, Undo and removal through the normal loader.",
+      "Keep the working 0.0.13 MIDI implementation; hardware testing of this installer is pending."
+    ]
+  },
+  {
     "version": "0.0.15-experimental",
     "date": "2026-10-26",
     "changes": [

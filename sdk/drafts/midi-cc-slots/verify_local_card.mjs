@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Private firmware inputs and outputs. Exercise the local site's actual session.
+// Historical C15 session verifier: use source revision e5b3a539.
+// Current C16 site sessions are verified by verify_usb_installer_session.mjs.
+// Private firmware inputs and outputs.
 import assert from 'node:assert/strict'
 import {Buffer} from 'node:buffer'
 import {TextDecoder} from 'node:util'

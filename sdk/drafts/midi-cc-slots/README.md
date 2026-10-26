@@ -29,6 +29,16 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed CC and naming emulator gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
+## Version 0.0.16: USB-capable card installer
+
+The local configuration builder now offers a ZIP containing the unchanged
+published USB base plus MODWERK0.SET and MODWERK1.SET with the selected original
+USB packages. This supersedes the C15 baked-card download. The loader restores
+the set at boot and manages later USB updates/removal; no second copy is baked
+into the base. Use [USB_CARD_INSTALLER.md](USB_CARD_INSTALLER.md). This remains
+a private candidate pending hardware/release qualification. The C14/C15 evidence
+stays bound to those earlier builds.
+
 ## Version 0.0.15: local combined card builds
 
 The [local combined card guide](COMBINED_CARD.md) explains the normal configuration

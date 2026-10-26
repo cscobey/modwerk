@@ -1,4 +1,9 @@
-# Midi Mode 2 — local combined card build
+# Midi Mode 2 — historical C15 combined card build
+
+**Superseded:** the local site now builds the USB-capable ZIP installer described
+in [USB_CARD_INSTALLER.md](USB_CARD_INSTALLER.md). This page records the older
+C15 baked image and its tests at source revision e5b3a539. C15 does not include
+the USB loader; do not use these steps for the new installer.
 
 The normal local configuration page can build Midi Mode 2 alone or with any
 subset of **Sidechain Compressor, Play Modes and Mute Modes**. This is an
