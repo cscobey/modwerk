@@ -682,3 +682,22 @@ The card/project snapshot, saved module sets and all personal data stay private.
 No physical unit/card was written. These native runs retain publication/tick/IRQ
 fixtures; they are not physical timing, full resident dispatch, arbitrary CF
 failure or physical power-loss qualification. Hardware 0.0.13 remains untested.
+
+
+## 0.0.13 follow-up: new destination missing stored copies
+
+The user reported check 100 after starting a temporary 0.0.13 trial and using
+Save to New. A new read-only card snapshot contained all sixteen valid working
+banks, no stored `.strd` bank files, and two valid initialized name checkpoints.
+The refusal was the expected missing-peer guard, not the prior divergent-map
+problem. No initialization journal existed in the destination.
+
+On a disposable copy of that project, exact unchanged 0.0.13 reproduced status
+14/code 100. A native full Save Project created all sixteen stored copies.
+Confirmed INIT then reached status 7, all 32 files/checksums/current and saved
+Part channels matched Bank A, and every bank's channels restored in a fresh VM.
+Private report: `test03-full-save-v13-1/report.json`. The physical card was read
+only; this remains emulator/publication/tick/IRQ-fixture evidence. The local
+page, module instructions and template guide now explicitly require full
+PROJECT → SAVE PROJECT after Save to New. There is no firmware version or
+package change and no physical success claim.

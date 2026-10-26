@@ -38,6 +38,7 @@
       "Click again in SETUP to restore native behavior. Entering CC mode starts at CC0.",
       "Double-tap SRC on a MIDI track, click F (NAME/PUSH), enter up to ten characters and confirm with YES or cancel with NO.",
       "Back up a disposable project. Set Bank A / Part 1 names and channels, stop transport and recorders, and save the project normally.",
+      "After Save to New, open PROJECT → SAVE PROJECT separately and let it finish before INIT; this creates the new project’s stored bank copies.",
       "Try the updated MIDI controls and Keep installed before starting INIT, so restart can recover an unfinished setup using this version.",
       "In MIDI SRC SETUP, hold FUNC and push D at INIT (FN+ / PUSH). On a previously initialized project, REPLACE ALL? YES/NO asks before replacing all bank names and channels with Bank A / Part 1. YES confirms; NO cancels. Wait for MIDI SETUP SAVED.",
       "After INIT, name or channel edits stay in their own banks. Save channels normally; wait for MIDI PROFILE SAVED after names. Repeating INIT requires explicit YES to overwrite them; bank changes and restart never do that. Save to New carries names and the marker."
@@ -113,7 +114,7 @@
       "Press FX1 to return to CONTROL 1. Enable its value with FUNC + encoder press, then turn it.",
       "Press FX2 for CONTROL 2; both pages show assigned controller numbers.",
       "Return to CONTROL 1 SETUP and click a mapped encoder again to restore its native PB or AT function.",
-      "Keep the updated module installed before INIT. Save normally, hold FUNC and click D, then confirm YES to replace all banks from Bank A / Part 1. NO cancels. Wait for MIDI SETUP SAVED; report a CHECK FAILED or APPLY FAILED code if shown."
+      "Keep the updated module installed before INIT. After Save to New, also complete PROJECT → SAVE PROJECT. Save normally, hold FUNC and click D, then confirm YES to replace all banks from Bank A / Part 1. NO cancels. Wait for MIDI SETUP SAVED; report a CHECK FAILED or APPLY FAILED code if shown."
     ],
     "screenshots": [
       "media/21-map-init.png",
@@ -206,7 +207,8 @@
       "Private reported-project Apply, NO cancellation and interrupted recovery; all 32 files checked byte-for-byte, including originally different working/stored channels",
       "Host split-map apply/rollback, torn work/strd repair, unsaved working and unrelated-data refusal; six journal cuts, legacy MAP1/untagged recovery and stale YES refusal",
       "Both old journal peers retired before mutation; actual old 0.0.12 host reader refuses pending v2 records without writes; terminal records remain v1",
-      "Two-placement reconstruction, strict stock-free scan, host C loader lifecycle and current native UI captures; earlier CC/name captures retain original evidence"
+      "Two-placement reconstruction, strict stock-free scan, host C loader lifecycle and current native UI captures; earlier CC/name captures retain original evidence",
+      "Reported fresh Save to New destination: check 100 before full save, native full Save Project creates all stored banks, then Apply and all-bank fresh-process restoration pass on the unchanged 0.0.13 package"
     ]
   },
   "license": {

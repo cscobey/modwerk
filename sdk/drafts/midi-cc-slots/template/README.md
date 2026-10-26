@@ -10,7 +10,9 @@ that emulator result as a hardware fix qualification.
 
 Keep the updated module installed before INIT so startup can recover its pending
 transaction. On an unprotected, stopped test project, set Bank A / Part 1 names and MIDI
-channels, then save the project normally. In MIDI SRC SETUP, encoder D shows
+channels, then save the project normally. After Save to New, explicitly complete
+PROJECT → SAVE PROJECT in the destination before INIT: the new project may
+initially contain only working bank files. In MIDI SRC SETUP, encoder D shows
 INIT with FN+ / PUSH. Hold FUNC and push D; a plain push only shows the gesture hint.
 There is no text confirmation editor. NAME on F retains its stock text editor.
 Progress identifies the bank being checked, applied or restored. NO requests

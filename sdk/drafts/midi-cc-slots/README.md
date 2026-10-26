@@ -42,7 +42,10 @@ Try the MIDI controls and **Keep installed before INIT**, so restart restores
 the version that can recover an unfinished setup. Older versions refuse the
 new pending journal; completed/cancelled operations leave compatible terminal
 records. Back up and save normally, then FUNC + D and YES to replace all banks.
-No physical 0.0.13 result is claimed.
+After Save to New, separately complete PROJECT → SAVE PROJECT in the new
+destination before INIT. Save to New can leave only working bank files; INIT
+requires the stored copies created by a full project save. No physical 0.0.13
+result is claimed.
 
 ## Version 0.0.12: explicitly replace a previous setup
 

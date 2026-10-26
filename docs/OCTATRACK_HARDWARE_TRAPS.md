@@ -659,6 +659,14 @@ retire both old journal peers before mutation. A compatible terminal record
 can permit old readers again after complete commit/rollback. Test the actual
 old reader, and require the recovery-capable module to be kept before starting.
 
+**A Save to New destination may contain only working banks.** A reported new
+project had all sixteen valid `.work` files and no `.strd` files. A copied name
+checkpoint and initialized marker did not mean the stored bank set existed.
+Native full SAVE PROJECT created all stored copies, after which initialization
+and fresh-process restoration passed. Tell the player to complete SAVE PROJECT
+in the destination after Save to New, and distinguish missing peers from channel
+mismatches before recommending another save.
+
 **Buffered write-mode close uses the logical end recorded in its file object.**
 An in-place bank edit must preserve the original logical length on every error
 path as well as success; a failed seek or partial update must not make close
