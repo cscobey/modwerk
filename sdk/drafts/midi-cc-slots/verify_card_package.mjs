@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Compare the browser's unchanged Elekloader kit with the Python card builder.
 import assert from 'node:assert/strict'
+import process from 'node:process'
+import console from 'node:console'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { createHash } from 'node:crypto'
