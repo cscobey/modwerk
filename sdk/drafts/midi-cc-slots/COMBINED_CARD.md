@@ -78,3 +78,8 @@ Shared bus source is irpina, GPL-2.0-or-later, from the exact pinned Elekloader
 checkout. Midi Mode 2 remains Cooper Scobey, MIT; adapter/browser integration
 is GPL-3.0-or-later. Preserve the full source licences. Underlying Elektron
 firmware remains private and is not covered by these source licences.
+
+The local combination gate is bound to the published source-tree fingerprint
+and exact companion versions in local-card-build.json. A future companion or
+SDK source update requires rechecking the local combinations before building;
+matching module names alone do not retain review.

@@ -825,3 +825,8 @@ compiler identity. Physical combined flashing/restart, actual MIDI transmission,
 companion playback/muting/compression audio, timing, project copying and recovery
 power cuts remain untested. No physical card was modified. The draft stays
 unregistered publicly; module:doctor retains its intentional unknown-draft limit.
+
+The local combination gate is bound to the published source-tree fingerprint
+and exact companion versions in local-card-build.json. A future companion or
+SDK source update requires rechecking the local combinations before building;
+matching module names alone do not retain review.

@@ -79,3 +79,11 @@ it('refuses missing or substituted card responses and permits retry after a fetc
   await expect(localCcCard()).rejects.toThrow('differs from the reviewed build')
   expect(fetched).toHaveBeenCalledTimes(2)
 })
+
+it('requires renewed local review when the companion source or version changes',async()=>{
+  const {localCcCardBaselineProblem}=await local()
+  const {default:compiled}=await import('../engine/assets/module-build.json')
+  expect(localCcCardBaselineProblem()).toBe('')
+  expect(localCcCardBaselineProblem({...compiled,sourceTreeSha256:'0'.repeat(64)})).toContain('Recheck')
+  expect(localCcCardBaselineProblem({...compiled,moduleVersions:{...compiled.moduleVersions,playmodes:'changed'}})).toContain('Recheck')
+})

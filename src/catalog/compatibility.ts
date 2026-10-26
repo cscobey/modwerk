@@ -1,4 +1,4 @@
-import { isLocalCcModule } from '../dev/local-cc-module.ts'
+import { isLocalCcModule, localCcCardBaselineProblem } from '../dev/local-cc-module.ts'
 import localCard from '../../sdk/drafts/midi-cc-slots/local-card-build.json' with {type:'json'}
 import pairs from './compatibility-pairs.json'
 import { recordedCheck, type PairChecks } from './compatibility-checks'
@@ -16,6 +16,8 @@ export function checkSelection(ids: readonly string[], keepStockFx2 = false) {
  if(conflicts.length)return result([])
  const regular=modules.filter(m=>!isLocalCcModule(m.id))
  if(modules.some(m=>isLocalCcModule(m.id))) {
+  const baseline=localCcCardBaselineProblem()
+  if(baseline)return result([baseline])
   const unreviewed=regular.filter(m=>!localCard.companions.includes(m.id))
   if(unreviewed.length)return result(['Midi Mode 2 card composition has not been checked with '+unreviewed.map(m=>m.name).join(', ')+'.'])
  }

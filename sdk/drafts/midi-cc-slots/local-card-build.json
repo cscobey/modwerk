@@ -8,5 +8,11 @@
     "sidechain-compressor",
     "playmodes",
     "mute-modes"
-  ]
+  ],
+  "nativeSourceTreeSha256": "e2bdc7d8c244528547c30fb62001bf92d25a5e2bda4b47742cde40f297de05fc",
+  "nativeModuleVersions": {
+    "sidechain-compressor": "0.1.2-experimental",
+    "playmodes": "0.2.0-experimental",
+    "mute-modes": "0.2.1-experimental"
+  }
 }

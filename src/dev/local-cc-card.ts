@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { LOCAL_CC_ENABLED } from './local-cc-module.ts'
+import { LOCAL_CC_ENABLED, localCcCardBaselineProblem } from './local-cc-module.ts'
 import pin from '../../sdk/drafts/midi-cc-slots/local-card-build.json' with {type:'json'}
 import { loggerHash } from '../engine/core-logger.ts'
 import type { ResidentCard } from '../engine/resident-card.ts'
@@ -10,6 +10,8 @@ export function localCcCard(): Promise<ResidentCard> {
 }
 async function load(): Promise<ResidentCard> {
   if(!LOCAL_CC_ENABLED) throw new Error('Local card packaging is disabled.')
+  const baseline=localCcCardBaselineProblem()
+  if(baseline)throw new Error(baseline)
   const response=await fetch('/__local/midi-cc-slots/card.json')
   if(!response.ok) throw new Error('The local card package did not compile. Check the local development tools.')
   const data=new Uint8Array(await response.arrayBuffer())
