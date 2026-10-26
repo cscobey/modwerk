@@ -1,3 +1,4 @@
+import { makeUsbTestPackage, test as usbTestPin } from '../src/dev/cc-usb-test.ts'
 import pin from '../sdk/drafts/midi-cc-slots/local-build.json' with { type: 'json' }
 // Development-only package compiler. No firmware inputs, device access or public assets.
 import { loadEnv, type Plugin } from 'vite'
@@ -36,7 +37,7 @@ export function localCcSlots(): Plugin {
       res.setHeader('Content-Type', 'application/json')
       if (req.method !== 'GET') { res.statusCode = 405; res.end(JSON.stringify({ error: 'Use GET.' })); return }
       const path = new URL(req.url ?? '/', 'http://localhost').pathname
-      if (path !== '/' && path !== '/package.mwrm' && path !== '/card.json') { res.statusCode = 404; res.end(JSON.stringify({ error: 'Unknown local draft route.' })); return }
+      if (path !== '/' && path !== '/package.mwrm' && path !== '/card.json' && path !== '/usb-test.json') { res.statusCode = 404; res.end(JSON.stringify({ error: 'Unknown local draft route.' })); return }
       const work = await mkdtemp(join(tmpdir(), 'modwerk-cc-slots-'))
       try {
         const output = join(work, 'trial.mwrm')
@@ -51,6 +52,7 @@ export function localCcSlots(): Plugin {
         const data = await readFile(output)
         const approved = JSON.parse(await readFile(join(server.config.root, 'sdk/drafts/midi-cc-slots/local-build.json'), 'utf8')) as { version: string; sha256: string }
         const document = verifiedCcDocument(data, approved)
+        if (path === '/usb-test.json') { res.end(JSON.stringify({ original: document, test: verifiedCcDocument(makeUsbTestPackage(data), usbTestPin) })); return }
         if (path === '/package.mwrm') { res.setHeader('Content-Type', 'application/octet-stream'); res.end(data) }
         else res.end(JSON.stringify(document))
       } catch {

@@ -392,6 +392,17 @@ export class OctatrackLink {
   deviceLog(signal?: AbortSignal, allowed: () => boolean = () => true) { return this.read('diagnostics log', transport => transport.deviceLog(signal), signal, allowed) }
   /** Private recovery export: holds one link lock for both fixed saved files, with no card writes. */
   savedBackup(signal?: AbortSignal) { return this.read('saved module files', transport => transport.savedBackup(signal), signal) }
+  /** Exact MWS1 package-set identity, read under the ordinary idle USB lock. */
+  runtimeSetIdentity() { return this.read('runtime package identity', transport => transport.setIdentity()) }
+  /** Read-only verification inside this link's own tested trial. Its upload lock/interface remain held. */
+  async inspectTrial() {
+    const before = this.state, connection = this.connection
+    if (before.status !== 'trial' || !before.tested || !this.session || !this.transport) throw new Error('No tested trial is available to inspect.')
+    const modules = await this.transport.inventory()
+    this.live(connection)
+    if (this.state.status !== 'trial' || this.state.active !== before.active || !modules) throw new Error('The trial changed while reading its identity.')
+    return { modules }
+  }
   /** The modules the unit's project names that are not installed, while it is idle ([] from a base without MISSING);
    * undefined when it couldn't ask this round, so a poll keeps what it had. */
   async missing(): Promise<MissingModule[] | undefined> { return this.read('missing modules', transport => transport.missing()).then(list => list ?? [], () => undefined) }

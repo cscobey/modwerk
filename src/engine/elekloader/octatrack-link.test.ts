@@ -157,6 +157,21 @@ describe('finding the unit', () => {
 
 describe('sending a module', () => {
   const data = new Uint8Array(10000), one = [{ module: 'PREVIEW VOL', data }]
+  it('inspects a tested trial through its held interface, without requesting an unavailable trial set digest', async () => {
+    const { link } = await linked()
+    await expect(link.inspectTrial()).rejects.toThrow('No tested trial')
+    const modules = [{ module: 'f36a496d', name: 'MIDI2 TEST 17', layout: 1, handle: 1 }]
+    const inventory = vi.spyOn(UsbVendorTransport.prototype, 'inventory').mockResolvedValue(modules)
+    const identity = vi.spyOn(UsbVendorTransport.prototype, 'setIdentity').mockResolvedValue('a'.repeat(64))
+    try {
+    await link.update('USB test', one, async () => null)
+    expect(await link.inspectTrial()).toEqual({ modules })
+    expect(inventory).toHaveBeenCalledOnce(); expect(identity).not.toHaveBeenCalled()
+    await link.undo()
+    expect(await link.runtimeSetIdentity()).toBe('a'.repeat(64))
+    await expect(link.inspectTrial()).rejects.toThrow('No tested trial')
+    } finally { inventory.mockRestore(); identity.mockRestore() }
+  })
   it('runs a trial, then keeps it', async () => {
     const { link } = await linked()
     const progress: number[] = []

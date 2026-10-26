@@ -410,3 +410,12 @@ shows NAME/PUSH, BASS in the editor, Bank 2's LEAD override and Bank 1's BASS
 retained afterward. These four 0.0.7 emulator images have separate provenance
 in `media/capture-names.json`; earlier CC captures retain their original version.
 The firmware package is unchanged by this documentation update.
+
+## USB package replacement test (0.0.17-usb-test)
+
+The development-only [USB update test](USB_UPDATE_TEST.md) provides the exact
+0.0.13 original and a separately pinned label-only test revision. Open
+`http://127.0.0.1:5173/?preview=midi-usb-update`. It checks trial/Undo/Keep and
+fresh-start package identities while preserving companions; neither the ordinary
+0.0.13 catalogue package nor C16 installer changes. This is a lifecycle fixture,
+not a new MIDI behavior release.

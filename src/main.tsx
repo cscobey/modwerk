@@ -10,6 +10,7 @@ import { PageError } from './components/PageError'
 import { RenderBoundary } from './components/RenderBoundary'
 
 startRouting(MODULES.map(module => module.id))
+const CcUsbTestLab = import.meta.env.DEV ? lazy(() => import('./dev/CcUsbTestLab')) : () => null
 const CcSlotsLab = import.meta.env.DEV ? lazy(() => import('./dev/CcSlotsLab')) : () => null
 const ReportingPreview = import.meta.env.DEV ? lazy(() => import('./components/ReportingPreview')) : () => null
 const AudioPreviewPrototype = import.meta.env.DEV ? lazy(() => import('./components/AudioPreviewPrototype')) : () => null
@@ -18,7 +19,7 @@ const preview = import.meta.env.DEV ? new URLSearchParams(window.location.search
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <RenderBoundary fallback={error => <PageError error={error} scope="app" />}>
-      {preview === 'midi-cc-slots' ? <Suspense fallback={<p>Opening MIDI CC Slots…</p>}><CcSlotsLab/></Suspense> : preview === 'audio' ? <Suspense fallback={<p>Opening audio previews…</p>}><AudioPreviewPrototype/></Suspense> : preview === 'reporting' || preview === 'reporting-module' ? <Suspense fallback={<p>Opening reporting previews…</p>}><ReportingPreview modulePage={preview === 'reporting-module'}/></Suspense> : <CommunityProvider><PublicAudioPreviews><App /></PublicAudioPreviews></CommunityProvider>}
+      {preview === 'midi-usb-update' ? <Suspense fallback={<p>Opening MIDI USB update test…</p>}><CcUsbTestLab/></Suspense> : preview === 'midi-cc-slots' ? <Suspense fallback={<p>Opening MIDI CC Slots…</p>}><CcSlotsLab/></Suspense> : preview === 'audio' ? <Suspense fallback={<p>Opening audio previews…</p>}><AudioPreviewPrototype/></Suspense> : preview === 'reporting' || preview === 'reporting-module' ? <Suspense fallback={<p>Opening reporting previews…</p>}><ReportingPreview modulePage={preview === 'reporting-module'}/></Suspense> : <CommunityProvider><PublicAudioPreviews><App /></PublicAudioPreviews></CommunityProvider>}
     </RenderBoundary>
   </StrictMode>,
 )

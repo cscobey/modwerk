@@ -899,3 +899,47 @@ self-test, distinct-version update, Keep/Undo/removal/reinstall and physical
 power-cycle/project persistence remain open. C14's reported hardware success
 and C15's emulator proof do not qualify this different install path. The supplied
 candidate is an initial test installer; it is not declared production-ready.
+
+## C16 hardware follow-up and label-only USB revision test — 26 October 2026
+
+After the C16 installation walkthrough, Cooper said “i think that all works”.
+This is a tentative user report for the installer workflow, not an independently
+captured exact-base inventory/self-test/Keep/restart receipt. No new physical
+measurement, host/model/duration/load or firmware read-back was obtained here.
+It does not complete the production performance/resource or owner-review gates.
+
+A separate 0.0.17-usb-test fixture now tests a distinct package revision, retaining
+the exact 0.0.13 baseline. It changes only package header bytes [50,66), the name
+`MIDI CC SLOTS` to `MIDI2 TEST 17`. Both are 33,386 bytes, ABI 8, runtime ID f36a496d,
+layout 1; all image, hooks, sites, copies, relocation and project-format bytes
+remain identical. This exercises replacement, not new MIDI functionality.
+
+Original SHA-256: 086fc3c73468bd58db823bf2857106ebe05f7d1197fd226c595d4139eeca000a.
+Test SHA-256: 1d740235d843dbb6ab499809b7c6f5c77d85b08b1220cff1ce7504e64415e83e.
+The ordinary local catalogue pin and C16 ZIP/base/saved sets are unchanged.
+
+The actual local endpoint compiles the reviewed original and derives the exact
+pinned test package. `verify_usb_test_pair.mjs` checks both hashes and proves the
+limited header difference; private proof/packages are in usb-update17-reviewed.
+The real C loader harness passes original→test→Undo, test retirement, reverse
+replacement→Undo and return to original, with identical reclaimed memory and
+closed masks/locks. This uses synthetic host glue, not CPU execution, USB,
+DSP/CF work or physical restart.
+
+The page compares the newest valid saved-file package set to the live MWS1
+identity before staging, checks inventory/name and completed self-test during
+trial, and exact package/companion hashes after Undo/Keep and after restart.
+Request 38 is intentionally unavailable during a whole-set trial; the test does
+not bypass that ownership condition. After Keep it requires saved=7 and complete
+counts; after restart saved=1 and the exact kept revision. Both export snapshots
+must validate; checksum-valid logical bodies accept unspecified sector padding.
+
+Distinct-revision physical USB Update/Undo/Keep/power-cycle and return-to-original
+checks are **not tested yet**. Follow USB_UPDATE_TEST.md and report each outcome.
+
+Focused software checks for this test page: 80 tests in five files passed,
+including exact MWS1 construction, saved-pair checks, substituted package refusal,
+changed inventory/Undo refusal, failed card-save retry, self-test failure, both
+Keep/restart directions and trial-only interface access. Typecheck, lint (existing
+warnings) and licence checks passed. DOM/link fakes validate the test controls;
+they are not physical USB results.

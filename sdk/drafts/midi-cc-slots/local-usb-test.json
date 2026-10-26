@@ -1,0 +1,9 @@
+{
+  "version": "0.0.17-usb-test",
+  "title": "MIDI2 TEST 17",
+  "sha256": "1d740235d843dbb6ab499809b7c6f5c77d85b08b1220cff1ce7504e64415e83e",
+  "bytes": 33386,
+  "base": "0c5934e1bea411fc43143a75ee2a0fcf1c09a71b8c386732ed7526517d3b0846",
+  "originalTitle": "MIDI CC SLOTS",
+  "change": "Package display name only; all bytes outside [50,66) remain identical to the reviewed 0.0.13 package."
+}

@@ -142,3 +142,17 @@ Replace both seed peers only after backing them up; an old higher generation
 can otherwise win. Verify the actual C reader and fallback/foreign-base behavior,
 and compare the included base with the ordinary published base download. This
 does not qualify native restoration, a host USB driver or physical reboot.
+
+### Verifying a USB revision change
+
+A module ID/layout does not distinguish code revisions. Pin both full package
+hashes, retain every companion hash and verify the device's MWS1 full-set digest
+at the idle boundaries after Undo/Keep and after restart. The cached request 38
+digest is deliberately unavailable while a whole-set trial owns its rows; do not
+poll it throughout the trial or weaken the base's ownership checks. Inspect the
+read-only inventory/name during that trial, then check exact hashes once idle.
+A label-only package revision can exercise replacement/rollback without changing
+project behavior; identify that limited scope explicitly. It does not qualify a
+future changed MIDI implementation. Ordinary saved-file tail padding may retain
+old bytes after Keep; validate the logical body checksum and ignore only padding
+beyond the declared logical length, within the sector-aligned file bounds.
