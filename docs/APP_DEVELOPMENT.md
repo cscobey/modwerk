@@ -136,6 +136,12 @@ the startup-restored result separately after reboot. This is not package-byte
 readback or saved-project qualification. The page never flashes firmware.
 It is outside the public catalogue. See [the draft's instructions and limits](../sdk/drafts/midi-cc-slots/README.md#local-app-installation-and-removal).
 
+The opt-in local draft also has a checked card adapter: the ordinary configuration
+builder accepts its reviewed companions and keeps its card identity separate from
+the USB package pin. The card route requires the pinned Elekloader tools; set
+`MODWERK_ELEKLOADER` for a non-default tools checkout. This does not install the
+USB loader in card firmware. See [local combined card builds](../sdk/drafts/midi-cc-slots/COMBINED_CARD.md).
+
 The unit can report private or newer modules absent from this checkout’s catalogue.
 Keep those inventory IDs visible and use a neutral preview when their
 documentation/artwork is missing; never dereference catalogue metadata just

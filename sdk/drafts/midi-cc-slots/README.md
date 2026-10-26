@@ -29,6 +29,16 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed CC and naming emulator gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
+## Version 0.0.15: local combined card builds
+
+The [local combined card guide](COMBINED_CARD.md) explains the normal configuration
+build flow with Sidechain Compressor, Play Modes and Mute Modes, the separate
+MIDI2 C15 packaging identity and the omitted USB loader. The existing 0.0.13
+USB listing stays unchanged. Other combinations and combined hardware behavior
+remain unqualified. The user reported standalone MIDI2-C14 working and all
+settings retained after a physical power cycle; that report is recorded separately
+in TESTING.md and does not qualify this new integration.
+
 ## Version 0.0.14: standalone card candidate
 
 A private [standalone card build and hardware test guide](CARD_TEST.md) is now
@@ -347,7 +357,7 @@ package uses guarded private sites and hash-backed stock copies; it does not cla
 event or direct base write overlaps those sites. The user reported the controls and display working on hardware, without an
 independently read build identity. On-device
 install/self-test/Undo/removal and persistence still need exact-build testing. Full
-release metadata, mixed-module card composition and Keep qualification remain outstanding.
+release metadata, public mixed-module card composition and Keep qualification remain outstanding.
 An opt-in local development listing is available; no public catalogue entry is added.
 No compatibility with MIDI Scenes or other modules is established merely
 because the candidate hook addresses do not overlap their current recipes.

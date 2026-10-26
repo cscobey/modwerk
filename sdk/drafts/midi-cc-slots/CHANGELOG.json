@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.0.15-experimental",
+    "date": "2026-10-26",
+    "changes": [
+      "Build Midi Mode 2 card firmware from the local configuration page.",
+      "Combine with Sidechain Compressor, Play Modes and Mute Modes in reviewed selections.",
+      "Retain the 0.0.13 MIDI controls and saved settings; the USB listing is unchanged.",
+      "Card firmware uses MIDI2 C15 and omits the USB loader; combined hardware testing is pending."
+    ]
+  },
+  {
     "version": "0.0.14-experimental",
     "date": "2026-10-26",
     "changes": [

@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-afterEach(() => { vi.unstubAllEnvs(); vi.resetModules() })
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.resetModules() })
 async function local(enabled = true, dev = true) {
   vi.resetModules(); vi.stubEnv('DEV', dev); vi.stubEnv('MODE', 'development'); vi.stubEnv('VITE_LOCAL_CC_SLOTS', enabled ? '1' : '')
   return import('./local-cc-module')
@@ -44,7 +44,7 @@ it('registers the local listing, source, artwork, real screenshots and installed
   const detail=renderToStaticMarkup(createElement(ModuleDetail,{module,selected:false,onToggle(){}}))
   expect(detail).toContain('Install through Sync to Octatrack');expect(detail).toContain('Add to ')
   expect(moduleSetReview({name:'Keep current',moduleIds:[module.id]},inventory).needsSync).toBe(false)
-  expect(cardBuildError([module.id])).toContain('local USB draft')
+  expect(cardBuildError([module.id])).toBe('')
   const saved=newConfiguration('Local MIDI',['miniverb',module.id])
   expect(validateConfiguration(JSON.parse(JSON.stringify(saved))).moduleIds).toEqual(saved.moduleIds)
 })
@@ -57,4 +57,25 @@ it('reviews a single local add or removal, preserving companions and requiring t
   expect(moduleSetReview(target,current,caps).problem).toBeUndefined()
   expect(moduleSetReview(target,current,{...caps,maxCopies:7}).problem).toBeTruthy()
   expect(moduleSetReview({name:'Remove CC',moduleIds:['miniverb']},{...current,moduleIds:target.moduleIds},caps).changes).toMatchObject({add:[],remove:['midi-cc-slots']})
+})
+
+it('checks only reviewed local card companions and keeps the published compiler identity unchanged', async()=>{
+  await local()
+  const {checkSelection}=await import('../catalog/compatibility')
+  const {compiledModuleSource}=await import('../engine/module-build')
+  const {moduleUsbOnly}=await import('../catalog/usb-only')
+  expect(moduleUsbOnly('midi-cc-slots')).toBe(false)
+  expect(checkSelection(['midi-cc-slots','sidechain-compressor','playmodes','mute-modes'],true)).toMatchObject({checked:true,issues:[]})
+  expect(checkSelection(['midi-cc-slots','tapehead']).issues.join(' ')).toContain('not been checked')
+  expect(compiledModuleSource().moduleVersions).not.toHaveProperty('midi-cc-slots')
+})
+
+it('refuses missing or substituted card responses and permits retry after a fetch failure',async()=>{
+  await local()
+  const {localCcCard}=await import('./local-cc-card')
+  const fetched=vi.fn().mockResolvedValueOnce(new Response(null,{status:500})).mockResolvedValueOnce(new Response('{}'))
+  vi.stubGlobal('fetch',fetched)
+  await expect(localCcCard()).rejects.toThrow('did not compile')
+  await expect(localCcCard()).rejects.toThrow('differs from the reviewed build')
+  expect(fetched).toHaveBeenCalledTimes(2)
 })

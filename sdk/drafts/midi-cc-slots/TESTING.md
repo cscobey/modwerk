@@ -758,3 +758,70 @@ handling. Firmware and scan artifacts stay outside Git.
 `module:doctor -- midi-cc-slots` reports an unknown module because this remains
 an unregistered draft. This is an intentional public-registration boundary,
 not a claim of release readiness. The source/draft checks run through pr:ready.
+
+
+## Reported standalone hardware test — 26 October 2026
+
+After receiving the private MIDI2-C14 card candidate and hardware instructions,
+Cooper Scobey reported that it worked, then explicitly confirmed a physical
+power cycle worked and everything was saved. The requested checks included
+names, channels and CC assignments. The supplied BIN identity was
+`fe4d539ae304a4fd8143fbb5b1ca11f0ea9f62c8dcd0d0b1dbdf402327581fa3`;
+the exact running bytes/version were not independently read back. The earlier
+supplied photo shows an MKII. Project, duration, worst-case load and receiver
+measurements were not recorded. This remains a reported functional/persistence
+test, not a new measured performance or power-loss qualification. It does not
+qualify the different 0.0.15 combined card integration.
+
+## 0.0.15 local combined card integration — 26 October 2026
+
+USB implementation and normal local listing remain exact 0.0.13, SHA-256
+`086fc3c73468bd58db823bf2857106ebe05f7d1197fd226c595d4139eeca000a`.
+The new card adapter compiles that image with the unchanged shared bus source
+at Elekloader revision `3b31ef3c0e43c810e3acd0be6257e2484b20fc40`.
+Its stock-free resident ELF SHA-256 is
+`0cdb83ecd28e501351fbb000c6cb4815f9fd3473698a4176df9bb758449d2044`.
+The on-demand JSON package SHA-256 is
+`1855453aaba61e82f50e8dee17c5591279e341d35a171d1bff52216f6138b690`.
+It uses the existing native linker/bootstrap/logger/arena; no second core boot
+or arena writes ship. Only three shared bus sites and the original 24 guarded
+module sites are added. All 25 copies remain checked against original firmware.
+
+The actual local HTTP compiler and engine session pass sixteen compositions:
+all subsets of Sidechain Compressor, Play Modes and Mute Modes with both
+classic/docking startup. Four representative complete BIN downloads (alone and
+all three companions, both startups) pass packaging round-trip and digest checks.
+An unreviewed TapeHead combination is refused; original firmware is unchanged.
+The full resident text, including all pointers and checked stock replay, matches
+an independent GNU link byte-for-byte. Private report:
+`card15-combined-reviewed/report.json`. This is relocation parity, not a full
+independent GNU composition of every companion's implementation.
+
+The four-module docking candidate, label **MIDI2 C15**, has BIN SHA-256
+`0f900d76718eddb167c1434d9a7e9344aa0104a241ee90a2a3d6e29d6db96f2f`
+and MAIN SHA-256
+`d30cfab0fecac4ff3a4a1484c0065e227a1aa419a9707e5bbb199507861f23f1`.
+Its 116,396-byte native runtime uses the ordinary companion reservation of
+10,586,112 bytes (unchanged legacy policy). Midi Mode 2 alone reserves 165,888
+bytes, rather than triggering the legacy full reservation just for this adapter.
+The build report separates the card package pin/version from the unchanged
+USB implementation and published compiler identities.
+
+Direct reset boot of that exact four-module MAIN, decoded from the packaged
+BIN, passes all sixteen card panel/persistence assertions in fresh MKII emulator
+processes: code/profile startup, NAME autosave, CC0/CC127 setup and native PB/AT
+assignment restoration, NO/YES replacement, MIDI SETUP SAVED, cross-bank names
+and channels, independent bank names and fresh-process restoration. No saved
+USB set, private runtime publication, state injection, direct call or timing/IRQ
+fixture is used. Private report: `card15-combined-boot/report.json`.
+
+An allocated-section literal scan at 16 bytes with no skipped sites finds no
+stock runs in the new unfilled resident object (`literal-scan.json`).
+
+Focused app tests cover resident stock guards/zero placeholders/checksums,
+copy overlap rejection, image/site relocation, missing symbols, ordinary
+write-plan overlap refusal, local companion restrictions and unchanged published
+compiler identity. Physical combined flashing/restart, actual MIDI transmission,
+companion playback/muting/compression audio, timing, project copying and recovery
+power cuts remain untested. No physical card was modified. The draft stays
+unregistered publicly; module:doctor retains its intentional unknown-draft limit.

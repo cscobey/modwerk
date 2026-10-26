@@ -125,3 +125,12 @@ and hash-copy references, and compare complete native and browser BIN/SYX
 outputs under identical startup settings. Record UART output separately from
 assignment-state checks; a working setup screen does not prove MIDI transmission.
 Emulator results remain separate from physical flash and restart qualification.
+
+For a resident object in the existing card engine, retain that engine’s bootstrap,
+logger and arena ownership; do not install a second core boot/arena recipe.
+Guard and check the union of platform and module writes before applying any.
+Compare the new object’s complete relocated text with an independent native
+link, then boot the actual combined BIN and check persistence again. Keep the
+card adapter identity separate from a retained USB implementation pin in build
+reports; success on a standalone image does not qualify a different combined
+boot path or companion audio behavior.

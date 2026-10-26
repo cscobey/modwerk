@@ -1,3 +1,6 @@
+import { isLocalCcModule } from '../dev/local-cc-module.ts'
+import { localCcCard } from '../dev/local-cc-card.ts'
+import { residentCardObject } from './resident-card.ts'
 import { selectedDramRegions, placeDramRegions } from './runtime-memory.ts'
 import { readCoreLogger, loggerExternals, LOGGER_RESERVE_BYTES, LOGGER_RETAINED_BYTES } from './core-logger.ts'
 import { readBetaStartup, BETA_STARTUP_ACTIVE_ADDRESS } from './beta-startup.ts'
@@ -25,7 +28,16 @@ export async function createStaticColdFireRuntime(ids: readonly string[], origin
   }
   if (usbAudio && !ids.includes(USB_AUDIO_MODULE)) throw new Error('USB Audio settings require the USB Audio module.')
   if (!usbAudio && selected.some(g => g.moduleId === 'usb-midi')) for (const pkg of requestedFacts.objects.filter(pkg => pkg.moduleId === 'usb-midi')) units.push(await readRequestedObject(pkg.label, original, ids))
-  const reserveBytes = (units.length ? 1707 * 6144 : 0) + LOGGER_RESERVE_BYTES
+  const ordinaryUnits=units.length
+  let residentReserve=0
+  if(ids.some(isLocalCcModule)) {
+    if(!original) throw new Error('Resident card modules need original firmware.')
+    const unit=await residentCardObject(await localCcCard(),original)
+    units.push(unit)
+    // Reserve its loaded image plus a worst-case uncompressed staging copy.
+    residentReserve=Math.ceil((2*unit.object.sections.filter(s=>s.flags&2).reduce((n,s)=>n+s.size,0)+4096)/6144)*6144
+  }
+  const reserveBytes = (ordinaryUnits ? 1707 * 6144 : residentReserve) + LOGGER_RESERVE_BYTES
   const regions = placeDramRegions(selectedDramRegions(ids), base, base + reserveBytes - LOGGER_RETAINED_BYTES)
   units.push(await readCoreLogger())
   if (betaAccess) units.push(await readBetaStartup())

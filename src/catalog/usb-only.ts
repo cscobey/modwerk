@@ -5,17 +5,15 @@
 // against the selected version: the published package is the only one the site offers.
 import packages from '../engine/assets/octatrack-module-packages.json' with { type: 'json' }
 import { resolveSelection } from './modules.ts'
-import { isLocalCcModule } from '../dev/local-cc-module.ts'
 
 export type PackageList = { packages: readonly { id: string; requires?: number }[] }
 export function moduleUsbOnly(id: string, published: PackageList = packages) {
-  return isLocalCcModule(id) || published.packages.some(entry => entry.id === id && (entry.requires ?? 0) !== 0)
+  return published.packages.some(entry => entry.id === id && (entry.requires ?? 0) !== 0)
 }
 
 /** Why card firmware cannot include these modules. `usb` says whether this member can sync over USB (the beta
  * interface, hasBetaUi): without it the refusal does not point at a sync they cannot start. */
 export function cardBuildError(ids: readonly string[], usb = true, published: PackageList = packages): string {
-  if (ids.some(isLocalCcModule)) return 'Midi Mode 2 is a local USB draft. Sync this set over USB, or remove it to build card firmware. Card-file packaging for this draft is still in preparation.'
   const usbOnly = resolveSelection(ids).filter(module => moduleUsbOnly(module.id, published)), one = usbOnly.length === 1
   if (!usbOnly.length) return ''
   const names = usbOnly.map(module => module.name).join(', '), them = one ? 'it' : 'them'

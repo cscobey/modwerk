@@ -9,6 +9,7 @@ export type BuildReport = {
   osBytes: number; runtimeBytes: number; reservedBytes: number; fx1Rows: number; fx2Rows: number
   // Stock FX2 effects left out of this build's FX2 menu; FX1 keeps every stock effect.
   omittedStockFx2: string[]
+  localCard?: {version: string; packageSha256: string; implementationSha256: string}
   startupAnimation?: StartupAnimation
   // Docking was asked for, but this selection composes only with the classic startup.
   startupFallback?: true

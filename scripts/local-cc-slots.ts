@@ -1,10 +1,10 @@
 import pin from '../sdk/drafts/midi-cc-slots/local-build.json' with { type: 'json' }
 // Development-only package compiler. No firmware inputs, device access or public assets.
-import type { Plugin } from 'vite'
+import { loadEnv, type Plugin } from 'vite'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { tmpdir, homedir } from 'node:os'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 
@@ -16,6 +16,7 @@ export function verifiedCcDocument(data: Uint8Array, verified: { version: string
 
 export function localCcSlots(): Plugin {
   return { name: 'local-cc-slots', apply: 'serve', configureServer(server) {
+    const tools = process.env.MODWERK_ELEKLOADER ?? loadEnv(server.config.mode, server.config.root, '').MODWERK_ELEKLOADER ?? join(homedir(), '.cache/modwerk-upstream/elekloader')
     const mediaRoot = '/module-media/midi-cc-slots/' + pin.version
     const media = new Map<string, string>([
       ['presentation/thumbnail.svg', 'image/svg+xml'],
@@ -35,11 +36,18 @@ export function localCcSlots(): Plugin {
       res.setHeader('Content-Type', 'application/json')
       if (req.method !== 'GET') { res.statusCode = 405; res.end(JSON.stringify({ error: 'Use GET.' })); return }
       const path = new URL(req.url ?? '/', 'http://localhost').pathname
-      if (path !== '/' && path !== '/package.mwrm') { res.statusCode = 404; res.end(JSON.stringify({ error: 'Unknown local draft route.' })); return }
+      if (path !== '/' && path !== '/package.mwrm' && path !== '/card.json') { res.statusCode = 404; res.end(JSON.stringify({ error: 'Unknown local draft route.' })); return }
       const work = await mkdtemp(join(tmpdir(), 'modwerk-cc-slots-'))
       try {
         const output = join(work, 'trial.mwrm')
         await promisify(execFile)('python3', ['-B', join(server.config.root, 'sdk/drafts/midi-cc-slots/build_runtime.py'), '--output', output, ...(pin.profile ? ['--profile'] : []), ...(pin.projectTemplate ? ['--project-template'] : [])], { timeout: 30000 })
+        if (path === '/card.json') {
+          const card = join(work, 'card.json')
+          await promisify(execFile)('python3', ['-B', join(server.config.root, 'sdk/drafts/midi-cc-slots/build_resident.py'), '--package', output, '--upstream', tools, '--output', card], { timeout: 30000 })
+          const data = await readFile(card), approved = JSON.parse(await readFile(join(server.config.root, 'sdk/drafts/midi-cc-slots/local-card-build.json'), 'utf8')) as { sha256: string }
+          if (createHash('sha256').update(data).digest('hex') !== approved.sha256) throw new Error('Card package differs from the reviewed build.')
+          res.end(data); return
+        }
         const data = await readFile(output)
         const approved = JSON.parse(await readFile(join(server.config.root, 'sdk/drafts/midi-cc-slots/local-build.json'), 'utf8')) as { version: string; sha256: string }
         const document = verifiedCcDocument(data, approved)
