@@ -29,6 +29,21 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed CC and naming emulator gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
+## Version 0.0.13: working and saved channel maps
+
+Valid working and stored bank files can contain different MIDI channels. The
+previous check rejected that state as SAVE PROJECT FIRST, even after saving.
+The update records each file’s original map, applies confirmed replacement to
+both, and restores each map separately on cancellation or interruption. File
+checksums, matching non-channel data and the working-versus-native check remain.
+Other preflight failures now show CHECK FAILED with a bank code.
+
+Try the MIDI controls and **Keep installed before INIT**, so restart restores
+the version that can recover an unfinished setup. Older versions refuse the
+new pending journal; completed/cancelled operations leave compatible terminal
+records. Back up and save normally, then FUNC + D and YES to replace all banks.
+No physical 0.0.13 result is claimed.
+
 ## Version 0.0.12: explicitly replace a previous setup
 
 INIT now works on an initialized project. Set Bank A / Part 1 names and channels,

@@ -3,11 +3,11 @@
   "id": "midi-cc-slots",
   "key": "MIDI CC SLOTS",
   "name": "Midi Mode 2",
-  "version": "0.0.12-experimental",
+  "version": "0.0.13-experimental",
   "category": "midi-usb",
   "source": {
     "repository": "https://github.com/cscobey/modwerk",
-    "revision": "d3212cca362a2d1411a4a304d552426fdd837e2e",
+    "revision": "93dd9ae36514b141ac38f84f7363762bd55dcf33",
     "path": "sdk/drafts/midi-cc-slots"
   },
   "author": {
@@ -38,6 +38,7 @@
       "Click again in SETUP to restore native behavior. Entering CC mode starts at CC0.",
       "Double-tap SRC on a MIDI track, click F (NAME/PUSH), enter up to ten characters and confirm with YES or cancel with NO.",
       "Back up a disposable project. Set Bank A / Part 1 names and channels, stop transport and recorders, and save the project normally.",
+      "Try the updated MIDI controls and Keep installed before starting INIT, so restart can recover an unfinished setup using this version.",
       "In MIDI SRC SETUP, hold FUNC and push D at INIT (FN+ / PUSH). On a previously initialized project, REPLACE ALL? YES/NO asks before replacing all bank names and channels with Bank A / Part 1. YES confirms; NO cancels. Wait for MIDI SETUP SAVED.",
       "After INIT, name or channel edits stay in their own banks. Save channels normally; wait for MIDI PROFILE SAVED after names. Repeating INIT requires explicit YES to overwrite them; bank changes and restart never do that. Save to New carries names and the marker."
     ]
@@ -112,12 +113,12 @@
       "Press FX1 to return to CONTROL 1. Enable its value with FUNC + encoder press, then turn it.",
       "Press FX2 for CONTROL 2; both pages show assigned controller numbers.",
       "Return to CONTROL 1 SETUP and click a mapped encoder again to restore its native PB or AT function.",
-      "Double-tap SRC: F opens NAME. Save normally, then hold FUNC and click D at INIT. A previous setup asks REPLACE ALL? YES/NO. YES replaces names and channels in all banks from Bank A / Part 1; NO cancels. Wait for MIDI SETUP SAVED."
+      "Keep the updated module installed before INIT. Save normally, hold FUNC and click D, then confirm YES to replace all banks from Bank A / Part 1. NO cancels. Wait for MIDI SETUP SAVED; report a CHECK FAILED or APPLY FAILED code if shown."
     ],
     "screenshots": [
-      "media/18-replace-init.png",
-      "media/20-replace-confirm.png",
-      "media/19-replace-progress.png",
+      "media/21-map-init.png",
+      "media/23-map-confirm.png",
+      "media/22-map-progress.png",
       "media/07-name-editor.png",
       "media/08-bank1-name.png",
       "media/09-bank2-name.png",
@@ -132,11 +133,11 @@
     "conflicts": [],
     "limitations": [
       "Local experimental USB draft. Requires loader ABI 8, at least 24 sites and 25 stock copies; public shared lifecycle events and hardware qualification remain pending.",
-      "Back up the full project and save normally before INIT. Both saved bank copies must be valid and current. First initialization retains legacy saved overrides. A confirmed repeat replaces all names and current/saved Part channels in every bank from Bank A / Part 1, including blanks and OFF.",
+      "Back up and save normally before INIT. Working and stored bank copies may have different channels, but both must have valid checksums and matching non-channel data. The working map must match the native project. Recovery records and restores each disk map separately.",
       "Names and marker use MIDI4_0.DAT / MIDI4_1.DAT; recovery uses MIDI4_J0.DAT / MIDI4_J1.DAT. Keep all sidecars with backups. Existing MIDI3_*.DAT and MIDI2_*.DAT import read-only and remain unchanged.",
       "Apply changes native bank files once; Undo/removal does not reverse completed project edits. Progress yields between bank pairs. NO cancels at a safe boundary; live failure rolls back in place without automatic reload. Boot recovery may reload after restoring files. Loss of both verified peers requires backup recovery.",
       "Bank changes and restart never remap defaults. Names remain shared across Parts in a bank. Only explicitly repeating INIT and confirming YES replaces saved bank overrides.",
-      "The user reports the earlier trial works, but no independently identified 0.0.12 hardware result exists. Physical timing, full resident dispatch, restart and broader coexistence remain unqualified.",
+      "Keep 0.0.13 installed before INIT so startup uses the version that understands an unfinished setup. Older versions refuse the new pending journal. Completed or cancelled transactions leave a terminal record older versions can read. No independently bound physical 0.0.13 result or timing qualification is claimed.",
       "Switching back into CC mode starts at CC0 rather than recalling its previous number."
     ],
     "uiClaims": [
@@ -157,8 +158,8 @@
     "recorded": "25 October 2026: exact experimental package footprint; physical timing unmeasured",
     "storage": {
       "label": "Runtime package",
-      "display": "32,990 bytes · 28,580-byte image",
-      "value": 32990,
+      "display": "33,386 bytes · 28,916-byte image",
+      "value": 33386,
       "unit": "bytes",
       "method": "static",
       "conditions": "Package bytes and image size measured from the verified relocatable package. Runtime loader metadata and copied stock spans add allocation overhead.",
@@ -190,22 +191,22 @@
       "memory": {
         "level": "minimal",
         "basis": "source-estimate",
-        "rationale": "A 28,580-byte image includes names, journal buffers, a runtime-generated byte CRC table and touched-bank recovery state. Package size is 32,990 bytes; loader metadata adds overhead. Four 4,096-byte sidecars hold names/marker and journal checkpoints.",
+        "rationale": "A 28,916-byte image includes names, journal buffers, a runtime-generated byte CRC table and touched-bank recovery state. Package size is 33,386 bytes; loader metadata adds overhead. Four 4,096-byte sidecars hold names/marker and journal checkpoints.",
         "source": "TESTING.md"
       }
     }
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "634 exact 0.0.12 native checks: first setup, confirmed replacement, NO cancellation, copying and restart checks; host six-cut initial/replacement recovery, OFF/empty overwrite, old-name preservation on cancel, and stale YES refusal. Physical hardware qualification remains outstanding.",
+    "summary": "Exact 0.0.13 fixes the reported Save project first loop with separate working/stored rollback maps. The private reported project reproduces code 101 on 0.0.12; current native Apply/cancel/interruption/fresh-process checks restore each original disk copy or commit Bank A exactly. Hardware qualification remains outstanding.",
     "hardwareStatus": "untested",
-    "evidenceRevision": "d3212cca362a2d1411a4a304d552426fdd837e2e",
+    "evidenceRevision": "93dd9ae36514b141ac38f84f7363762bd55dcf33",
     "gates": [
-      "Native first Apply and explicit YES replacement: all bank names and current/saved Part channels, cancellation, copy and fresh-process persistence",
-      "Interrupted native first initialization and replacement restore every original bank byte; old initialization marker and independent bank names are retained",
-      "Host transaction cuts before/after metadata commit for both first and repeated setup; stale held YES, NO cancel, empty-name and OFF overwrite checks",
-      "Two-placement guarded reconstruction, strict 16-byte stock scan and host C loader install/Undo/removal/reclamation",
-      "Current native INIT, progress and replacement confirmation captures; older naming/CC provenance retained"
+      "634 native first/confirmed replacement, independent edits, Save to New and fresh-process checks",
+      "Private reported-project Apply, NO cancellation and interrupted recovery; all 32 files checked byte-for-byte, including originally different working/stored channels",
+      "Host split-map apply/rollback, torn work/strd repair, unsaved working and unrelated-data refusal; six journal cuts, legacy MAP1/untagged recovery and stale YES refusal",
+      "Both old journal peers retired before mutation; actual old 0.0.12 host reader refuses pending v2 records without writes; terminal records remain v1",
+      "Two-placement reconstruction, strict stock-free scan, host C loader lifecycle and current native UI captures; earlier CC/name captures retain original evidence"
     ]
   },
   "license": {
@@ -215,7 +216,7 @@
   },
   "media": [
     {
-      "path": "media/18-replace-init.png",
+      "path": "media/21-map-init.png",
       "caption": "Save normally, then hold FUNC and click D at INIT. FN+ / PUSH shows the gesture. The first setup retains legacy overrides; a saved setup asks for YES before replacement. F opens NAME/PUSH.",
       "alt": "MIDI NOTE SETUP with INIT centered beneath CHAN, FN+ and PUSH underneath, and NAME/PUSH at encoder F.",
       "credit": "Cooper Scobey — local ot_emu framebuffer capture",
@@ -226,13 +227,13 @@
         "page": "MIDI NOTE SETUP",
         "shows": "location-and-controls",
         "firmware": "1.40C",
-        "moduleVersion": "0.0.12-experimental",
+        "moduleVersion": "0.0.13-experimental",
         "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
-        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-replace-setup.json; native 128×64 LCD at integer scale 6."
+        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-bank-map-fix.json; native 128×64 LCD at integer scale 6."
       }
     },
     {
-      "path": "media/20-replace-confirm.png",
+      "path": "media/23-map-confirm.png",
       "caption": "On a saved setup, REPLACE ALL? YES/NO appears before any replacement. YES copies Bank A / Part 1 names and channels into every bank and Part, including empty names and OFF. NO keeps the previous setup.",
       "alt": "MIDI NOTE SETUP with a REPLACE ALL? YES/NO confirmation popup.",
       "credit": "Cooper Scobey — local ot_emu framebuffer capture",
@@ -243,13 +244,13 @@
         "page": "MIDI setup replacement confirmation",
         "shows": "controls",
         "firmware": "1.40C",
-        "moduleVersion": "0.0.12-experimental",
+        "moduleVersion": "0.0.13-experimental",
         "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
-        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-replace-setup.json; native 128×64 LCD at integer scale 6."
+        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-bank-map-fix.json; native 128×64 LCD at integer scale 6."
       }
     },
     {
-      "path": "media/19-replace-progress.png",
+      "path": "media/22-map-progress.png",
       "caption": "Progress identifies the bank being checked or written. NO cancels safely and restores the previous snapshot; wait for MIDI SETUP SAVED before using bank edits.",
       "alt": "Native MIDI setup screen with an APPLY MIDI 02/16 progress popup.",
       "credit": "Cooper Scobey — local ot_emu framebuffer capture",
@@ -260,9 +261,9 @@
         "page": "MIDI setup progress",
         "shows": "controls",
         "firmware": "1.40C",
-        "moduleVersion": "0.0.12-experimental",
+        "moduleVersion": "0.0.13-experimental",
         "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
-        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-replace-setup.json; native 128×64 LCD at integer scale 6."
+        "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-bank-map-fix.json; native 128×64 LCD at integer scale 6."
       }
     },
     {

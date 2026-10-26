@@ -642,3 +642,43 @@ fixtures. They are software evidence, not full resident dispatch, hardware
 latency, physical power-loss or CF/FAT qualification. Earlier CC/output/NAME
 retirement results remain tied to their recorded versions. No physical 0.0.12
 result is claimed, and these tests did not write a physical card or unit.
+
+
+## 0.0.13: reported saved-project check loop
+
+Firmware source: `93dd9ae36514b141ac38f84f7363762bd55dcf33`. Exact SHA-256:
+`086fc3c73468bd58db823bf2857106ebe05f7d1197fd226c595d4139eeca000a`.
+33,386 bytes, 28,916-byte image, 533 relocations, 24 sites, 25 checked copies,
+ABI 8, feature bits 3. A read-only card snapshot showed both Bank B checksums
+valid and all non-channel bytes identical; working MIDI track 3 used channel 3
+and the stored copy used OFF. The exact 0.0.12 package reproduced status 14,
+code 101 on a private copy and left all 32 bank files unchanged. A separate
+normal edited-Bank-B fixture passed, so that fixture had missed the distinction.
+
+Current exact-package evidence:
+
+- 634 native initialization/replacement/cancel/copy/restart assertions
+  pass (`template-v13-native-final/report.json`).
+- Private reported-project apply, NO cancellation and interrupted replacement
+  each pass in a fresh VM: all 32 native files match their exact expected bytes.
+  Cancellation/recovery restore each original copy independently, including
+  the original working/stored channel difference; names and marker remain
+  correct. Apply persists Bank A names and all channels across all banks.
+  Reports: `test02-v13-apply-final`, `test02-v13-cancel-final`,
+  `test02-v13-interrupt-final`.
+- Host bank tests cover differing maps, exact apply/restore, torn work/strd
+  peer repair, checksums, unrelated-byte and unsaved working-map refusal. Host
+  journal tests cover initial/repeat interruption cuts, both v2 peers before
+  mutation, old MAP1/untagged recovery and existing confirmation checks.
+- The actual 0.0.12 host reader refuses new pending journals without RAM/bank
+  writes and accepts a current completed terminal record. Pending MAP2 records
+  use version 2; committed/aborted terminal records use version 1. Older
+  modules must not recover an unfinished new operation; Keep 0.0.13 first.
+- Exact host loader lifecycle, codegen, two-placement reconstruction, strict
+  stock-overlap scan and current-base direct-overlap checks pass. Three native
+  LCD captures are bound in `media/capture-bank-map-fix.json`.
+
+The card/project snapshot, saved module sets and all personal data stay private.
+No physical unit/card was written. These native runs retain publication/tick/IRQ
+fixtures; they are not physical timing, full resident dispatch, arbitrary CF
+failure or physical power-loss qualification. Hardware 0.0.13 remains untested.

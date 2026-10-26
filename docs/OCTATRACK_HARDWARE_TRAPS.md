@@ -645,6 +645,20 @@ the journal's target generation. Exercise interrupted repeats as well as first
 initialization, and require a fresh confirmation key press before replacing
 independent bank edits.
 
+**Valid working and stored banks can have different channel maps.** A reported
+save loop had identical non-channel bytes and valid checksums in both copies,
+but one working MIDI channel was 3 and its stored channel was OFF. Do not
+require both channel maps to equal RAM. Check the working map against the live
+project, record each disk map separately and restore each original on rollback;
+retain the checksum and non-channel fingerprint checks. Exercise real divergent
+copies, including torn-peer recovery, rather than only identical saved twins.
+
+When a journal gains recovery data old readers cannot interpret, an unknown
+tag alone may fall through their legacy path. Use a version they reject and
+retire both old journal peers before mutation. A compatible terminal record
+can permit old readers again after complete commit/rollback. Test the actual
+old reader, and require the recovery-capable module to be kept before starting.
+
 **Buffered write-mode close uses the logical end recorded in its file object.**
 An in-place bank edit must preserve the original logical length on every error
 path as well as success; a failed seek or partial update must not make close

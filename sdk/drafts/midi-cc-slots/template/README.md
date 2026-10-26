@@ -1,6 +1,6 @@
 # On-device project initialization experiment
 
-The local site pins the 0.0.12 explicit-replacement candidate.
+The local site pins the 0.0.13 per-file recovery candidate.
 0.0.8 aborted initialization on the reported physical project. Its card journal
 confirmed rollback and valid original bank copies. The low-level cause remains
 unconfirmed: the same project succeeds in the private emulator. Do not treat
@@ -8,7 +8,8 @@ that emulator result as a hardware fix qualification.
 
 ## Player behavior
 
-On an unprotected, stopped test project, set Bank A / Part 1 names and MIDI
+Keep the updated module installed before INIT so startup can recover its pending
+transaction. On an unprotected, stopped test project, set Bank A / Part 1 names and MIDI
 channels, then save the project normally. In MIDI SRC SETUP, encoder D shows
 INIT with FN+ / PUSH. Hold FUNC and push D; a plain push only shows the gesture hint.
 There is no text confirmation editor. NAME on F retains its stock text editor.
@@ -47,10 +48,12 @@ The old `MIDI3_*.DAT` and `MIDI2_*.DAT` files are read for migration and left
 unchanged. Keep all sidecars with project backups.
 
 Initialization requires all sixteen `.work` / `.strd` bank pairs to have valid
-checksums, matching non-channel data and channels matching the native engine.
-Missing, damaged or unsaved banks produce SAVE PROJECT FIRST without applying
-the map. A verified journal (`MIDI4_J0.DAT` / `MIDI4_J1.DAT`) records the previous
-channel map and channel-neutral fingerprints before mutation. Only sectors
+checksums and matching non-channel data. The working copy’s channels must match
+the native engine; the stored copy may have a different valid map. Missing,
+damaged or unsaved working banks show CHECK FAILED with a bank code before
+applying the map. A verified journal (`MIDI4_J0.DAT` / `MIDI4_J1.DAT`) records the previous
+native map, each disk copy’s channel map and channel-neutral fingerprints before
+mutation. Only sectors
 containing channel cells or the bank checksum are rewritten; unrelated bytes
 are preserved. Every bank copy is read back and verified before its peer is
 changed. Sector batches close the read descriptor before opening the same file
@@ -141,3 +144,22 @@ D shows INIT with FN+ / PUSH stacked beneath it. Native text centers in a
 16-pixel field: D starts at x=62, forty pixels left of F at x=102. Both hint
 lines fit within D’s cell. The FUNC + D gesture and all persistence logic
 are unchanged.
+
+
+## Separate disk baselines (0.0.13)
+
+A reported project had a valid Bank B working track-3 channel of 3 and a valid
+stored channel of OFF. All unrelated bytes matched. The old check rejected
+that legitimate difference. MAP2 adds 2,048 bytes of separate disk maps at
+journal offset 1216; the original 1,024-byte native baseline stays at offset 64.
+Rollback restores each disk map separately and the native baseline in RAM.
+The same neutral fingerprint and verified peer can repair a torn sector before
+reapplying the correct map for that copy. Non-channel differences still refuse
+initialization.
+
+Pending MAP2 journals have version 2. Both old peers are replaced and verified
+before bank mutation, so an old module cannot mistake an older terminal record
+for the new transaction. Older modules refuse pending v2 recovery. After a
+complete commit/rollback, a version-1 terminal record permits older readers
+again. Current code still reads old MAP1 and untagged journals. Keep this module
+installed before INIT; do not downgrade while a setup is unfinished.

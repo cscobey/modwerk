@@ -89,3 +89,15 @@ names and channels into every bank and Part, including empty names and OFF.
 NO keeps the saved setup. Wait for MIDI SETUP SAVED; NO cancels safely during
 progress. Ordinary bank changes and restart never perform this replacement.
 The current images are version-bound in capture-replace-setup.json.
+
+
+## Valid working/saved differences (0.0.13)
+
+![Current INIT and FN+ / PUSH in MIDI NOTE SETUP.](21-map-init.png)
+
+Keep the updated module installed before INIT so restart can recover an
+unfinished operation. Save normally, then hold FUNC and click D. Confirm YES
+at REPLACE ALL to replace all banks, or NO to keep bank edits. Valid channel
+differences between working and stored files no longer cause a save loop.
+Other check failures show a bank code. Exact capture provenance is in
+capture-bank-map-fix.json; prior screenshots keep their original versions.
