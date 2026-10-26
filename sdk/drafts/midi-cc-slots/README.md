@@ -29,6 +29,16 @@ The [proposed module copy](presentation/COPY.md),
 [reviewed CC and naming emulator gallery](media/README.md) are ready for review.
 They do not register or publish the module.
 
+## Version 0.0.14: standalone card candidate
+
+A private [standalone card build and hardware test guide](CARD_TEST.md) is now
+available. It translates the exact reviewed 0.0.13 implementation into the
+pinned Elekloader core’s native sections and event tables, adds shared Modwerk
+startup artwork, and produces BIN/SYX from original 1.40C. The candidate boots
+without a saved runtime set. It replaces the installed firmware and omits other
+modules and the USB loader. Hardware card qualification and ordinary mixed-module
+composition remain pending. The local USB page stays on unchanged 0.0.13.
+
 ## Version 0.0.13: working and saved channel maps
 
 Valid working and stored bank files can contain different MIDI channels. The
@@ -337,7 +347,7 @@ package uses guarded private sites and hash-backed stock copies; it does not cla
 event or direct base write overlaps those sites. The user reported the controls and display working on hardware, without an
 independently read build identity. On-device
 install/self-test/Undo/removal and persistence still need exact-build testing. Full
-release metadata, card composition and Keep qualification remain outstanding.
+release metadata, mixed-module card composition and Keep qualification remain outstanding.
 An opt-in local development listing is available; no public catalogue entry is added.
 No compatibility with MIDI Scenes or other modules is established merely
 because the candidate hook addresses do not overlap their current recipes.

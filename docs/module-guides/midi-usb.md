@@ -113,3 +113,15 @@ identities; folder-change polling cannot safely distinguish copying from loading
 an unrelated project. Stage disposable cards for serialization research before
 implementing an on-device transaction; staged files do not qualify interruption
 recovery or a production lifecycle event.
+
+
+### Prove standalone card startup separately
+
+A runtime publication fixture does not test a card recipe. Boot the MAIN
+decoded from the exact packaged BIN in a fresh emulator process, with no saved
+runtime module set, injected RAM code, direct calls or timing/IRQ shim. Use the
+shared core’s tick/key/encoder tables, retain the runtime package’s stock guards
+and hash-copy references, and compare complete native and browser BIN/SYX
+outputs under identical startup settings. Record UART output separately from
+assignment-state checks; a working setup screen does not prove MIDI transmission.
+Emulator results remain separate from physical flash and restart qualification.

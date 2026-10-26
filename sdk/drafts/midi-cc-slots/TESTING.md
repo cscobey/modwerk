@@ -701,3 +701,60 @@ only; this remains emulator/publication/tick/IRQ-fixture evidence. The local
 page, module instructions and template guide now explicitly require full
 PROJECT → SAVE PROJECT after Save to New. There is no firmware version or
 package change and no physical success claim.
+
+
+## 0.0.14 standalone card candidate — 26 October 2026
+
+Private first card test only; the normal USB listing and its exact 0.0.13 bytes
+are unchanged. Build inputs and hardware procedure are in [CARD_TEST.md](CARD_TEST.md).
+No physical CF card was copied to or flashed. Hardware, mixed-module builds,
+resident USB loader integration and public publication are not qualified.
+
+`build_card.py` translates the reviewed USB package to native format 2, retaining
+all 533 relocations, 24 guarded sites and 25 hash-backed stock references. Its
+tick/key/encoder contributions use the unchanged pinned core-ot 0.3.1 shared
+bus, not another feature module. Shared original Modwerk artwork is added to
+the core package. The linker reserves five 6,144-byte pages; the 29,256-byte
+runtime blob ends at 0x40a9c7e8. Module image base is 0x40a956c0.
+
+Two independent private builds produce the same BIN SHA-256:
+`fe4d539ae304a4fd8143fbb5b1ca11f0ea9f62c8dcd0d0b1dbdf402327581fa3`.
+The packaged MAIN SHA-256 is
+`f0fa5f5ebf7e19bff452d645764835eb4a80574698109033b6c470d28a76e649`.
+Core package SHA-256:
+`d772d1d71af23109cb3f22f8089b0578e63cbf83bae86353504c6225e1ef3d66`.
+Module package SHA-256:
+`d6a8276f1237ca9cd31251179335655df067c3c639bde94bb56ac4e2c2ecfa88`.
+Native Elekloader and the app's unchanged TypeScript kit produce byte-identical
+complete BIN and SYX outputs (`verify_card_package.mjs`, `browser-parity.json`).
+The original full 1.40C firmware remains unchanged. Container/bootloader,
+flash bounds and depacking checks pass in the native builder.
+
+`template/verify_card.py` boots MAIN decoded from that exact packaged BIN, from
+reset in a fresh headless MKII emulator. It does not publish a module after
+boot, inject state, call private entry points, or use tick/IRQ fixtures.
+The scratch CF contains a copied TEST/TRIAL saved project, no MODWERK0/1.SET.
+Sixteen assertions pass: code/profile startup, NAME autosave, CC0/CC127 setup,
+restoring PB/AT assignments, real event-bus NO/YES confirmation, MIDI SETUP SAVED,
+Bank A to Bank D initialization, independent bank names and fresh-process name
+and channel restoration. Private report: `card14-boot-final/report.json`.
+MIDI wire output is **not tested** by this card probe: the available interactive
+emulator lacks `midi-tx`, and its batch `--midi-out` path does not capture the
+interactive session. Setup state and encoder input are not UART output evidence.
+Physical flash, timing, audio, power cuts, Save to New and recovery cuts were not
+requalified for this card dispatch. Earlier USB evidence keeps its stated limits.
+
+Emulator executable SHA-256: `489024df15f4ccc562b22365f7251180f3965c7887b1aa1fe4b94fe4e186c776`.
+
+Three synthetic stock-free translation tests pass:
+`python3 -B -m unittest sdk.tests.test_midi_card_package`.
+The literal scanner at 16 bytes, with **no skipped sites**, finds no MIDI module
+literal stock runs. Core has two matches in the existing source-authored Modwerk
+wordmark at site 0x400c3c32: offset 86/18 bytes and offset 154/22 bytes. They are
+recorded in `literal-scan.json`, not silently exempted; no strict whole-core
+clean claim is made. The normal shared-core scanner already documents artwork
+handling. Firmware and scan artifacts stay outside Git.
+
+`module:doctor -- midi-cc-slots` reports an unknown module because this remains
+an unregistered draft. This is an intentional public-registration boundary,
+not a claim of release readiness. The source/draft checks run through pr:ready.

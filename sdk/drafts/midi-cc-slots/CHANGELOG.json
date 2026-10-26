@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.0.14-experimental",
+    "date": "2026-10-26",
+    "changes": [
+      "Add a private standalone CF firmware test build that starts Midi Mode 2 at boot.",
+      "Retain the reviewed 0.0.13 controls, names and explicit bank initialization.",
+      "Use the shared core and Modwerk startup artwork; other modules and the USB loader are not included.",
+      "Keep the normal local USB listing on 0.0.13; physical card testing is pending."
+    ]
+  },
+  {
     "version": "0.0.13-experimental",
     "date": "2026-10-25",
     "changes": [
