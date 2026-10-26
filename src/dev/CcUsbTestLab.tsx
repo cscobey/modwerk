@@ -3,9 +3,9 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { OctatrackLink } from '../engine/elekloader/octatrack-link'
 import type { MissingModule } from '../engine/elekloader/upload-usb'
 import { ccTrialProblem, type LocalCcPackage } from './cc-slots'
-import { original, test, type Revision, type PackageRow, type TestReceipt, revisionPin, verifiedTestDocument, packageSetDigest, replaceRevision, inventoryProblem, readSavedPackages, revisionOf, parseTestReceipt, TEST_RECORD_KEY } from './cc-usb-test'
+import { original, test, type Revision, type PackageRow, type TestReceipt, revisionPin, verifiedTestDocument, packageSetDigest, replaceRevision, inventoryProblem, readSavedPackages, reviewedRuntimePackages, revisionOf, parseTestReceipt, TEST_RECORD_KEY } from './cc-usb-test'
 import './cc-slots.css'
-interface Review {base:string;active:string|null|undefined;rows:PackageRow[];revision:Revision;modules:MissingModule[]}
+interface Review {source:'saved'|'runtime';base:string;active:string|null|undefined;rows:PackageRow[];revision:Revision;modules:MissingModule[]}
 interface Trial {before:Review;revision:Revision;rows:PackageRow[];active:string|null|undefined;verified:boolean;modules?:MissingModule[]}
 export default function CcUsbTestLab({link:supplied}:{link?:OctatrackLink}) {
   const [link]=useState(()=>supplied??new OctatrackLink())
@@ -22,10 +22,11 @@ export default function CcUsbTestLab({link:supplied}:{link?:OctatrackLink}) {
     if(before.status!=='ready'||before.identity?.base!==test.base)throw new Error('Connect to the reviewed USB card base (0c5934e1) first.')
     const first=await link.runtimeSetIdentity(),snapshots=await link.savedBackup(),modules=await link.inventory(),last=await link.runtimeSetIdentity(),after=link.getState()
     if(!first||first!==last||!modules||after.status!=='ready'||after.identity?.base!==before.identity.base||after.active!==before.active)throw new Error('The device or module set changed while checking. Read again.')
-    const rows=readSavedPackages(snapshots,before.identity.base),revision=revisionOf(rows)
+    const source=snapshots===undefined?'runtime':'saved'
+    const rows=source==='runtime'?reviewedRuntimePackages(modules,first,before.identity.base):readSavedPackages(snapshots,before.identity.base),revision=revisionOf(rows)
     if(packageSetDigest(rows)!==first)throw new Error('The running package hashes differ from the newest saved set. No update was started.')
     const why=inventoryProblem(rows,modules,revision);if(why)throw new Error(why)
-    const result={base:before.identity.base,active:after.active,rows,revision,modules};setReview(result);return result
+    const result:Review={source,base:before.identity.base,active:after.active,rows,revision,modules};setReview(result);return result
   }
   async function prepare() {
     setReview(undefined);setPackages(undefined)
@@ -33,7 +34,7 @@ export default function CcUsbTestLab({link:supplied}:{link?:OctatrackLink}) {
     const document=await response.json() as {original:LocalCcPackage;test:LocalCcPackage;error?:string}
     if(!response.ok)throw new Error(document.error??'Could not build the reviewed USB test pair.')
     const pair={original:verifiedTestDocument(document.original,'original'),test:verifiedTestDocument(document.test,'test')}
-    const r=await read();setPackages(pair);setMessage('Confirmed '+revisionPin(r.revision).title+' and all '+r.rows.length+' exact saved/running packages. Nothing sent.')
+    const r=await read();setPackages(pair);setMessage('Confirmed '+revisionPin(r.revision).title+' and all '+r.rows.length+' exact running packages.'+(r.source==='saved'?' Saved files also verified.':' Saved-file export is unavailable on this base; card checks use the base’s save/startup status.')+' Nothing sent.')
   }
   async function start(revision:Revision) {
     if(!review||!packages)throw new Error('Prepare and read the installed version first.')
@@ -92,6 +93,7 @@ export default function CcUsbTestLab({link:supplied}:{link?:OctatrackLink}) {
     <button className="button" disabled={busy||!['idle','ready','stock','busy'].includes(state.status)} onClick={()=>void run(async()=>{setReview(undefined);await link.retry()})}>Connect Octatrack</button>{state.status==='unsupported'&&<p>Open this page in Chrome or Edge with WebUSB.</p>}
     <button className="button" disabled={!ready} onClick={()=>void run(prepare)}>Prepare and read installed version</button>
     {displayed&&<><h2>{state.status==='trial'?'Verified trial inventory':'Last verified installed set'}</h2><p>{revisionPin(displayed.revision).title} · {displayed.rows.length} modules</p><ul>{displayed.modules.map(m=><li key={m.module}>{m.name} <code>{m.module}</code></li>)}</ul></>}
+    {review?.source==='runtime'&&<p>Verification: exact running package hashes. Saved-file export is unavailable; card saving and restart restoration are confirmed by the base, followed by another exact runtime check.</p>}
     <button className="button button-primary" disabled={!prepared||review?.revision==='test'} onClick={()=>void run(()=>start('test'))}>Trial test revision</button>
     <button className="button" disabled={!prepared||review?.revision==='original'} onClick={()=>void run(()=>start('original'))}>Trial original revision</button>
     {state.status==='trial'&&<div><button className="button" disabled={busy||!trial} onClick={()=>void run(undo)}>Undo trial</button><button className="button button-primary" disabled={busy||!trial?.verified||!state.tested} onClick={()=>void run(keep)}>Keep revision</button></div>}

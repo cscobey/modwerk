@@ -156,3 +156,14 @@ project behavior; identify that limited scope explicitly. It does not qualify a
 future changed MIDI implementation. Ordinary saved-file tail padding may retain
 old bytes after Keep; validate the logical body checksum and ignore only padding
 beyond the declared logical length, within the sector-aligned file bounds.
+
+Saved-file export (requests 31–33) is optional and is absent from published base
+`0c5934e1…`, even though it supports MWS1 identity and Keep/startup status. Do not
+require that export merely to exercise module updates. For an exact reviewed
+module subset, derive candidate rows from pinned package hashes and require the
+live MWS1 digest to match all of them. Use saved=7 plus complete counts for the
+base's save/read-back confirmation, then saved=1 plus the exact runtime digest
+after restart. State that saved-file bytes were not exported. If export is
+available, validate its files; a failed, partial or corrupt export must not be
+silently treated as unsupported. Unknown packages or a mismatched digest stop
+the test; matching names/IDs alone never permit an update.

@@ -2,7 +2,7 @@ import { expect,it } from 'vitest'
 import { sha } from '../../vendor/elekloader/kit/src/bytes'
 import { encodeCardSeed } from '../engine/elekloader/card-seed'
 import type { SavedSetSnapshot } from '../engine/elekloader/upload-wire'
-import { packageSetDigest,readSavedPackages,replaceRevision,revisionOf,verifiedTestDocument,inventoryProblem,parseTestReceipt,makeUsbTestPackage,original,test } from './cc-usb-test'
+import { packageSetDigest,readSavedPackages,reviewedRuntimePackages,replaceRevision,revisionOf,verifiedTestDocument,inventoryProblem,parseTestReceipt,makeUsbTestPackage,original,test } from './cc-usb-test'
 function pkg(id:number){const b=new Uint8Array(80),v=new DataView(b.buffer);v.setUint32(0,0x4d57524d);v.setUint16(4,8);v.setUint32(8,4);v.setUint32(28,id);return b}
 function snapshot(slot:0|1,generation:number,packages:Uint8Array[]):SavedSetSnapshot {const data=encodeCardSeed(test.base,packages,generation);return {slot,status:'ready',token:1,length:data.length,fileBase:test.base,sha256:sha(data),data}}
 it('matches the C MWS1 sorted id/hash encoding and rejects duplicate/invalid rows',()=>{
@@ -35,4 +35,20 @@ it('requires the complete companion inventory, visible revision, and a bounded v
  const receipt={schema:1,base:test.base,rows,revision:'original',saved:true,restored:false,undoVerified:true}
  expect(parseTestReceipt(JSON.stringify(receipt))).toEqual(receipt)
  for(const invalid of [{...receipt,base:'a'.repeat(64)},{...receipt,saved:false,restored:true},{...receipt,revision:'test'},{...receipt,rows:[]},{...receipt,rows:[...rows,...rows]}])expect(parseTestReceipt(JSON.stringify(invalid))).toBeUndefined()
+})
+
+it('verifies both revisions and reviewed companion subsets without optional file export',()=>{
+ const hashes={'95cff696':'38d00b16b13382e152c01cc82e0af18e348dae6951e05eebbd910996f04990c2','be4ff75a':'abf1cda888e617408b4d088bb9afd536f9ea96c1bdb90339e56a3932d300bced','73bab3b1':'c35b154d7a6ff4d9affc339387d68bde87554aec82a87b60059b6307f5b2b848'}
+ const companions=Object.entries(hashes).map(([module,sha256])=>({module,sha256}))
+ for(let mask=0;mask<8;mask++)for(const revision of ['original','test'] as const){
+  const rows=[{module:'f36a496d',sha256:revision==='original'?original.sha256:test.sha256},...companions.filter((_,i)=>mask&1<<i)]
+  const modules=rows.map(r=>({module:r.module,name:'not trusted as version proof',layout:1,handle:1}))
+  expect(reviewedRuntimePackages(modules,packageSetDigest(rows),test.base)).toEqual(rows)
+  expect(()=>reviewedRuntimePackages(modules,'0'.repeat(64),test.base)).toThrow('hashes differ')
+ }
+ const modules=[{module:'f36a496d',name:test.originalTitle,layout:1,handle:1}]
+ expect(()=>reviewedRuntimePackages(modules,packageSetDigest([{module:'f36a496d',sha256:original.sha256}]),'a'.repeat(64))).toThrow('another base')
+ expect(()=>reviewedRuntimePackages([...modules,{module:'12345678',name:'Unknown',layout:1,handle:1}],'0'.repeat(64),test.base)).toThrow('outside')
+ expect(()=>reviewedRuntimePackages([...modules,...modules],'0'.repeat(64),test.base)).toThrow('Invalid')
+ expect(()=>reviewedRuntimePackages([], '0'.repeat(64),test.base)).toThrow('missing')
 })

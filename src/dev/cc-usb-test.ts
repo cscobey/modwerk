@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import original from '../../sdk/drafts/midi-cc-slots/local-build.json' with { type: 'json' }
 import test from '../../sdk/drafts/midi-cc-slots/local-usb-test.json' with { type: 'json' }
+import installer from '../../sdk/drafts/midi-cc-slots/local-usb-installer.json' with { type: 'json' }
 import { sha } from '../../vendor/elekloader/kit/src/bytes.ts'
 import { decodeCardSeed } from '../engine/elekloader/card-seed.ts'
 import type { SavedSetSnapshot } from '../engine/elekloader/upload-wire.ts'
@@ -32,6 +33,21 @@ export function packageSetDigest(rows:readonly PackageRow[]) {
   data.set(new TextEncoder().encode('MWS1'));v.setUint32(4,rows.length)
   ;[...rows].sort((a,b)=>a.module.localeCompare(b.module)).forEach((r,i)=>{const at=8+36*i;v.setUint32(at,parseInt(r.module,16));data.set(Uint8Array.from(r.sha256.match(/../g)!,s=>parseInt(s,16)),at+4)})
   return sha(data)
+}
+/** Published base lacks optional file export. Match exact live MWS1 against the reviewed subset pins. */
+export function reviewedRuntimePackages(modules:readonly MissingModule[],digest:string,base:string):PackageRow[] {
+  if(base!==test.base||base!==installer.base)throw new Error('The runtime package review belongs to another base.')
+  const hashes=installer.packages as Readonly<Record<string,string>>
+  const rows=modules.map(m=>{
+    if(!Object.hasOwn(hashes,m.module))throw new Error('An installed companion is outside the reviewed package list. No update was started.')
+    return {module:m.module,sha256:hashes[m.module]}
+  })
+  // module names/IDs alone never establish version. The device digest must match every exact package hash.
+  for(const revision of ['original','test'] as const) {
+    const candidate=replaceRevision(rows,revision)
+    if(packageSetDigest(candidate)===digest)return candidate
+  }
+  throw new Error('The running package hashes differ from both reviewed revisions. No update was started.')
 }
 export function replaceRevision(rows:readonly PackageRow[],revision:Revision) {
   if(!rows.some(r=>r.module===ID))throw new Error('Midi Mode 2 is missing.')

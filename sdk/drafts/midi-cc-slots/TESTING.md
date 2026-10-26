@@ -943,3 +943,25 @@ changed inventory/Undo refusal, failed card-save retry, self-test failure, both
 Keep/restart directions and trial-only interface access. Typecheck, lint (existing
 warnings) and licence checks passed. DOM/link fakes validate the test controls;
 they are not physical USB results.
+
+### Optional export correction after hardware preparation report
+
+Cooper reported “Both saved module files must be readable for this test” at
+Prepare. The guard failed before staging any package. Source audit of the exact
+published base asset finds its runtime set-identity symbols but no saved-set
+export/session implementation; export is an optional build flag, disabled by
+default. The first page wrongly required a feature this reviewed base lacks.
+
+The page now uses the pinned original/test and companion package hashes when
+savedBackup returns unsupported (undefined), requiring an exact live MWS1 match
+before and after the review read. It still validates both snapshots if export
+exists; incomplete, unavailable, foreign or corrupt files and transport failures
+do not fall back. Unknown companions or modified package hashes are refused.
+Keep requires saved=7 and complete live/saved counts; restart requires saved=1
+and the exact kept runtime set. These are base-reported persistence checks, not
+an independent export of saved-file bytes. No firmware or package bytes changed.
+
+Domain regressions cover both revisions across all eight reviewed companion
+subsets, mismatched digests, duplicates, wrong base and unknown companions.
+DOM regressions cover no-export preparation, Undo, Keep/restart in both directions
+and mismatched-digest refusal. The corrected hardware run is still pending.

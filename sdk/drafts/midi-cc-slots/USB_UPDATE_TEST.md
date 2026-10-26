@@ -21,8 +21,10 @@ hashes, rather than a browser version label, establish the revision.
 ## Hardware steps
 
 1. Connect Octatrack, then **Prepare and read installed version**. It compiles
-   and pins both packages, reads both saved files without changing them and
-   checks that the newest saved set exactly matches the runtime set. Expect
+   and pins both packages and checks the exact runtime set. The published base
+   does not export saved files: the page uses reviewed package hashes and the
+   device’s MWS1 digest. On an export-capable base it also validates both saved
+   files and compares the newest saved set to the runtime set. Expect
    `Confirmed MIDI CC SLOTS` and all your companions. No package has been sent.
 2. Click **Trial test revision**. Wait for `Trial verified: MIDI2 TEST 17`.
    Self-test must pass and the inventory must contain the expected test name
@@ -35,8 +37,9 @@ hashes, rather than a browser version label, establish the revision.
    power on and retry **Check card save**; do not count a failed save as passed.
 5. Power-cycle normally, boot without FUNC and reconnect on the same page/browser.
    Click **Check after restart**. Expect `Restart verified: MIDI2 TEST 17`.
-   The page checks startup restoration status, exact live/saved package hashes
-   and companion inventory. Check names, channels and CC assignments on the OT.
+   The page checks startup restoration status, exact runtime package hashes
+   and companion inventory. Card confirmation comes from the base’s saved/restored
+   status; without export the page does not claim to have read the saved-file bytes. Check names, channels and CC assignments on the OT.
 6. Click **Prepare and read installed version**, then **Trial original revision**.
    Wait for the self-test/visible original name, check controls and **Keep revision**.
    Wait for `Card save confirmed: MIDI CC SLOTS`, then power-cycle, reconnect and
@@ -68,3 +71,15 @@ difference. The second executes the real C loader with synthetic host glue:
 replacement in both directions, Undo, retirement and memory reclamation. It does
 not execute ColdFire, USB transport, CF writes or real power-cycle persistence.
 See TESTING.md for measured/reported results. Packages/proofs stay private.
+
+### Published-base compatibility correction
+
+The initial page incorrectly required optional saved-file export and stopped with
+“Both saved module files must be readable for this test” before sending a package.
+Published base 0c5934e1… does not include that export; its update, MWS1 identity,
+save/read-back and startup reporting remain available. Refresh the page and choose
+Prepare again. The normal path now checks the observed IDs against the reviewed
+package pins and requires the device's complete MWS1 digest to match original or
+test plus every companion. Both revisions and all eight companion subsets are
+covered. An unsupported export is different from a failed/corrupt export; the
+latter still stops. No base, firmware, package or project-file changes are needed.
