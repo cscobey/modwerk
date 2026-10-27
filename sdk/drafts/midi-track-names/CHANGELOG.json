@@ -1,0 +1,11 @@
+[
+  {
+    "version": "0.0.1-experimental",
+    "date": "2026-10-24",
+    "changes": [
+      "Emulator prototype adds NAME on encoder F in MIDI SRC SETUP using the stock naming editor.",
+      "A name replaces the MIDI channel header on normal track pages.",
+      "Known issue: names are temporary and do not save or follow bank/project changes."
+    ]
+  }
+]

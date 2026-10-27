@@ -44,10 +44,18 @@ machine/track prerequisites and hardware differences when applicable.
 
 Use hardware LCD photographs/captures or the headless emulator's actual
 framebuffer. Preserve the rendered pixels and use readable integer scaling.
+A working framebuffer can be sampled during a redraw. For pixel comparisons,
+observe completion of the actual renderer before reading it; a fixed delay alone
+does not establish a complete frame. Retain failed comparisons for diagnosis.
 Do not reconstruct labels, redraw the interface, generate mockups or present
 an illustration as an OT capture. A selection cursor alone does not prove that
 the module loaded: confirm it, then capture the resulting controls. Review
 every image for error popups, stale parameters and unrelated UI.
+
+For encoder-cell captions, check the rendered text against the native cell
+borders, not just the encoder's hardware position. Native text helpers may
+center inside a fixed-width field rather than around the supplied x coordinate.
+Keep modifier hints inside that same cell; stack short lines when needed.
 
 ## Manifest contract
 
@@ -106,6 +114,12 @@ An automatic USB module with no OT controls or dedicated OT page must explain
 that fact in `access.noUiReason`, keep `screenshots` empty and document its
 actual host/device access steps. Owner review verifies this narrow exception;
 do not invent a menu or use unrelated stock pages as evidence.
+
+A module that only changes how stock controls behave, with no page and
+nothing drawn (Butter Fingers drops knob turns while a lock is edited), is not
+covered by `access.noUiReason`, which the contract allows only for automatic
+USB modules. Until the owner sets a rule, keep its `screenshots` empty in the
+draft, describe the gesture in `access.steps`, and say so in the pull request.
 
 ## Headless capture workflow
 
@@ -274,22 +288,39 @@ Rytm modules use the same manifest fields and `media/capture.json` as the
 Digitakt and Digitone. Capture them in
 [rytm-emu](https://github.com/trigcondition/rytm-emu) (MIT) at revision
 `3c4c42c`, built with `cargo build --release --bin dtboot`. Its headless
-`dtboot` runs your own build of stock OS 1.73 with core-ar2 and the module, and
+`dtboot` runs your own build of stock OS 1.74 with core-ar2 and the module, and
 writes the firmware-rendered 128×64 screen as a PNG at 3× without
 interpolation: `DTBOOT_STEPS=1` with `DTBOOT_PNG_DIR` after each key release,
 `DTBOOT_TURN_PNG` after each encoder turn. The command line is the panel-input
 plan; keep it in `capture.json` with the PNG hashes and the built `.syx` hash.
 
+- Never put an event on a multiple of 10M. dtboot runs in chunks of
+  `--every` instructions (10M by default) and silently drops a press,
+  release or turn whose clock the CPU has already passed when its chunk
+  starts. An event exactly on a boundary is lost whenever the CPU is busy
+  there (in an interrupt, not stopped): Send FX's boot plan lost its NO
+  presses, the notices stayed up and the run was silent
+  ([repeat98/modwerk#878](https://github.com/repeat98/modwerk/pull/878)).
+  Place every event 3M off the boundaries.
 - Without the unit's analog calibration the OS opens with notices. Clear them
   with held NO presses before the first real step, for example
-  `--press NO@4500M:80M --press NO@5300M:80M --press NO@6100M:80M --press NO@6900M:80M`
+  `--press NO@4503M:80M --press NO@5303M:80M --press NO@6103M:80M --press NO@6903M:80M`
   (clocks are instruction counts, about 200M a second).
 - Keys use the panel's names (`FLTR`, `AMP`, `TRIG`, `FUNC`, `T1`…`T16`).
   Encoders are numbered 0 to 7: the top row A–D, then E–H, so FRQ on the
-  FILTER page is `4`.
+  FILTER page is `4`. Encoder `8` is LEVEL/DATA, which sets the tempo on the
+  TEMPO screen.
 - Turns of delta 1 move a parameter one step every five to nine turns. Use a
-  larger delta for coarse moves (`--turn 4:-6@8000Mx37/20M` moved FRQ from
-  127 to 61), then turns of `-1` or `1` 40M apart to land on an exact value.
+  larger delta for coarse moves (37 turns of `-6`, 20M apart, moved FRQ from
+  127 to 61: `--turn 4:-6@8003Mx37/20M`), then turns of `-1` or `1` 40M
+  apart to land on an exact value.
 - The analog voices are stubbed, so a capture shows the screen, never the
-  sound. Compare the same plan on stock 1.73 to confirm that only the
+  sound. Compare the same plan on stock 1.74 to confirm that only the
   module's pixels changed.
+- `--break ADDR` stops at a PC and prints the registers and stack. Do not
+  add `--break-after`: it runs the machine to that clock before the card is
+  attached and before any `--press` or `--turn` happens, so the state it stops
+  in is not the plan's. Leave out the turns you do not want to stop on
+  instead. `--trace N` adds the last N PCs to a fault report.
+- `--profile-after` never samples a mod's own code; to measure it, see
+  [the audio block](../sdk/machines/analog-rytm-mkii/README.md#the-audio-block).

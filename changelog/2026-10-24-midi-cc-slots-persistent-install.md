@@ -1,0 +1,1 @@
+The local MIDI CC Slots draft page now offers Keep after a tested trial, removal, and separate card-save and restart checks. Failed or missing save reports do not confirm installation. The existing native module is unchanged; physical restart testing remains outstanding.

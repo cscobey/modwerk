@@ -14,7 +14,7 @@ describe('machine profiles', () => {
   it('validates every machine and matches the generated registry', () => {
     const parsed = profiles.map(parseMachineProfile).sort((a, b) => a.order - b.order)
     expect(parsed.map(profile => profile.id)).toEqual(GENERATED.map(profile => profile.id))
-    expect(parsed.filter(profile => profile.sdk).map(profile => profile.id)).toEqual(['octatrack', 'digitakt', 'digitone', 'digitakt-ii', 'analog-rytm-mkii'])
+    expect(parsed.filter(profile => profile.sdk).map(profile => profile.id)).toEqual(['octatrack', 'digitakt', 'digitone', 'digitakt-ii', 'analog-rytm-mkii', 'analog-four-mkii'])
   })
 
   it('keeps status, steps and SDK claims consistent', () => {
@@ -49,5 +49,10 @@ describe('machine profiles', () => {
     const noFile = octatrack()
     noFile.firmware.releases[0].files = []
     expect(() => parseMachineProfile(noFile)).toThrow('machine.firmware.releases[0].files')
+
+    // Erica Synths machines build from published source: their own road, and no Elektron steps.
+    const lxr = () => structuredClone(profiles.find(profile => profile.id === 'lxr-02'))
+    expect(parseMachineProfile(lxr()).steps).toEqual({ source: 'started', boot: 'open', core: 'open', mods: 'open' })
+    expect(() => parseMachineProfile({ ...lxr(), steps: { ...lxr().steps, rebuild: 'open' } })).toThrow('unknown field')
   })
 })

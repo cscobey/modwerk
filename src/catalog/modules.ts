@@ -4,6 +4,7 @@ import { MODULE_DOCUMENTS } from './documents.ts'
 import { moduleReleasedAt } from './module-releases.ts'
 import sdkCatalog from '../../sdk/catalog.json' with { type: 'json' }
 import { displayName, type ModuleContributor } from './module-authors.ts'
+import { isLocalCcModule, LOCAL_CC_ENABLED, LOCAL_CC_ID } from '../dev/local-cc-module.ts'
 export const CATALOG_SOURCE = {
   repository: 'https://github.com/repeat98/octamad',
   revision: 'b8deefc88b2c3e5f3c6158e364eb741df1924e1d',
@@ -24,7 +25,7 @@ const LIBRARY_CATEGORY_OVERRIDES: Readonly<Partial<Record<string, ModuleCategory
   repitch: 'system',
 }
 // When each module first entered the catalog, kept through version updates for the Recently added sort.
-export const MODULE_ADDED_AT: Readonly<Record<string, string>> = Object.fromEntries(sdkCatalog.modules.map(item => [item.id, item.addedAt]))
+export const MODULE_ADDED_AT: Readonly<Record<string, string>> = { ...Object.fromEntries(sdkCatalog.modules.map(item => [item.id, item.addedAt])), ...(LOCAL_CC_ENABLED ? { [LOCAL_CC_ID]: '2026-10-24T00:00:00Z' } : {}) }
 export type FirmwareModule = {
   id: string
   key: string
@@ -48,7 +49,7 @@ export const MODULES: readonly FirmwareModule[] = MODULE_DOCUMENTS.map(document=
   description:document.presentation.summary,detail:document.compatibility.location,
   author:document.author.github,authorName:displayName(document.author.github,document.author.name),authorUrl:'https://github.com/'+document.author.github,
   contributors:document.author.contributors,
-  sourcePath:'sdk/octabam/modules/'+document.id+'/manifest.py',version:document.version,addedAt:MODULE_ADDED_AT[document.id],updatedAt:moduleReleasedAt(document.id,document.version),fxId:document.compatibility.effectId??undefined,
+  sourcePath:isLocalCcModule(document.id)?'sdk/drafts/midi-cc-slots/build_runtime.py':'sdk/octabam/modules/'+document.id+'/manifest.py',version:document.version,addedAt:MODULE_ADDED_AT[document.id],updatedAt:moduleReleasedAt(document.id,document.version),fxId:document.compatibility.effectId??undefined,
 }))
 
 // DSP code that stock code reaches through hooks, with no effect ID or chooser row.

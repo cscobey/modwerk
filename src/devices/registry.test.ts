@@ -21,6 +21,10 @@ describe('device registry', () => {
       // No zdl module contract yet: the pedals stay locked even where an effect loads.
       expect(readyForMods(device)).toBe(false)
     }
+    // An Erica Synths machine needs its Modwerk base and a module contract (an SDK) before it takes mods.
+    expect(readyForMods(DEVICES_BY_ID['lxr-02'])).toBe(false)
+    expect(readyForMods({ ...DEVICES_BY_ID['lxr-02'], steps: { ...DEVICES_BY_ID['lxr-02'].steps, core: 'done' } })).toBe(false)
+    expect(readyForMods({ ...DEVICES_BY_ID['lxr-02'], steps: { core: 'done' }, sdk: 'sdk/machines/lxr-02/README.md' })).toBe(true)
     expect(readyForMods(DEVICES_BY_ID.octatrack)).toBe(true)
   })
 

@@ -1,3 +1,6 @@
+import { buildLocalCcInstaller } from '../dev/local-cc-installer.ts'
+import { isLocalCcModule } from '../dev/local-cc-module.ts'
+import { localCardPin } from '../dev/local-cc-card.ts'
 import { usbAudioBuildError } from '../config/usb-audio'
 import { compiledModuleSource } from './module-build.ts'
 import { inspectBaseFirmware } from './base'
@@ -65,6 +68,25 @@ export function createEngineSession(reply: (response: EngineResponse, transfer?:
       if (typeof request.keepStockFx2 !== 'boolean') throw new Error('Choose whether to keep the stock FX2 effects.')
       const claims = checkSelection(request.moduleIds, DSP_LOADER && request.keepStockFx2)
       if (!claims.checked || claims.issues.length) throw new Error(claims.issues.join(' ') || 'This module selection could not be validated.')
+      if(request.moduleIds.some(isLocalCcModule)) {
+        if(request.startup==='classic')throw new Error('The USB-capable installer uses the published base startup. Choose Docking startup for this installer.')
+        if(!stock)throw new Error('Choose the original OS file first.')
+        reply({id:request.id,type:'progress',phase:'composing'})
+        const response=await fetch(basePackage)
+        if(!response.ok)throw new Error('The USB base package did not load.')
+        const installer=await buildLocalCcInstaller(stock,request.moduleIds,await response.text(),baseFills as BaseFill[])
+        if(current!==generation||newest!==request.id)throw new Error('The selected firmware or configuration changed. Build again.')
+        const source=compiledModuleSource(),receipt=installer.receipt
+        const report:BuildReport={version:'ELEKLOADER',revision:CATALOG_SOURCE.revision,sourceCommit:source.sourceCommit,sourceTreeSha256:source.sourceTreeSha256,moduleIds:modules.map(m=>m.id),moduleVersions:Object.fromEntries(modules.map(m=>[m.id,m.version])),keepStockFx2:true,osBytes:decodeFirmware(installer.files.get('Modwerk-USB-base.bin')!).mainOs.length,runtimeBytes:installer.runtime.bytes,reservedBytes:installer.runtime.reservedBytes,fx1Rows:chooserMetadata.stockFx1.length,fx2Rows:chooserMetadata.stockFx2.length,omittedStockFx2:[],installer:{version:receipt.version,base:receipt.base,baseSha256:receipt.baseSha256,files:[...installer.files.keys()]}}
+        if(request.type==='validate'){reply({id:request.id,type:'validated',report});return}
+        if(!DOWNLOADS_ENABLED)throw new Error('Firmware downloads are paused.')
+        reply({id:request.id,type:'progress',phase:'verifying'})
+        const buffer=installer.zip.slice().buffer
+        const digest=await crypto.subtle.digest('SHA-256',buffer)
+        if(current!==generation||newest!==request.id)throw new Error('The selected firmware or configuration changed. Build again.')
+        const sha256=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('')
+        reply({id:request.id,type:'built',report,buffer,sha256},[buffer]);return
+      }
       reply({ id: request.id, type: 'progress', phase: 'composing' })
       // Every build plays the docking startup unless the member chose the classic one. Docking adds two guarded hooks,
       // an 80-byte gate and its runtime; a selection that composes only without them keeps the classic startup, so
@@ -95,11 +117,12 @@ export function createEngineSession(reply: (response: EngineResponse, transfer?:
       if (current !== generation) throw new Error('The selected firmware changed. Build again.')
       const source = compiledModuleSource()
       const report: BuildReport = {
-        version: FIRMWARE_VERSION, revision: CATALOG_SOURCE.revision, sourceCommit: source.sourceCommit, sourceTreeSha256: source.sourceTreeSha256,
+        version: request.moduleIds.some(isLocalCcModule) ? localCardPin.firmwareLabel : FIRMWARE_VERSION, revision: CATALOG_SOURCE.revision, sourceCommit: source.sourceCommit, sourceTreeSha256: source.sourceTreeSha256,
         moduleIds: modules.map(module => module.id), moduleVersions: Object.fromEntries(modules.map(module=>[module.id,module.version])), keepStockFx2: request.keepStockFx2,
         osBytes: result.bytes.length, runtimeBytes: result.runtime.bytes, reservedBytes: result.runtime.reservedBytes,
         fx1Rows: result.chooser.fx1.length, fx2Rows: result.chooser.fx2.length,
         omittedStockFx2: chooserMetadata.stockFx2.filter(key => !result.chooser.fx2.includes(key)),
+        ...(request.moduleIds.some(isLocalCcModule) ? {localCard: {version: localCardPin.version, packageSha256: localCardPin.sha256, implementationSha256: localCardPin.implementationSha256}} : {}),
         startupAnimation, ...(startupFallback ? { startupFallback: true } : {}),
       }
       if (request.type === 'validate') { reply({ id: request.id, type: 'validated', report }); return }

@@ -1,0 +1,1 @@
+An emulator-only MIDI track naming prototype opens the stock naming editor from the unused F position in MIDI SRC SETUP. Temporary names replace the channel header and stay separate across tracks and Parts. Saving and bank/project handling remain unimplemented; no installable module changes.

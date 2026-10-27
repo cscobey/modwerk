@@ -20,19 +20,37 @@ Handlers use the C calling convention: arguments on the stack, d0–d1/a0–a1 f
 | --- | --- | --- |
 | `ev_tick` | the UI compose check, about 20 Hz (the Digitakt's runs at 30) | `void f(void *ctrl)`; set `ctrl + 0x20` to 1 to request a redraw. Not an audio-rate clock. |
 | `ev_draw` | after the OS composes the 128 × 64 screen | `void f(void *bmp, void *ctrl)`; y counts up from the bottom row (0) to the top (63), x runs left to right |
-| `ev_key` | a UI key event | `int f(void *brain, void *event)`; nonzero consumes it |
-| `ev_enc` | a UI encoder event | `int f(void *brain, void *event)`; nonzero consumes it |
+| `ev_key` | a UI key event | `int f(void *brain, void *event)`; nonzero consumes it. `event + 12` is the key id (trig keys 0x00–0x0f, BANK A–H 0xc0–0xc7, FUNC 0x80, NO 0x45), `event + 16` the flags: 1 pressed, 0x10 released; a held key repeats with 8 set (a 2 s BANK hold gave 15 events) |
+| `ev_enc` | a UI encoder event | `int f(void *brain, void *event)`; nonzero consumes it. `event + 12` is the encoder, 0–7 for A–H (not 1–8 as elekloader's ADAPTING.md gives for the Digitakt), `event + 16` the count after the encoder's acceleration, which can be 0 for a slow first turn |
 | `ev_settings` | building the SETTINGS menu | `void f(void *menu)`; add rows with `core_additem(menu, row)` |
 | `ev_render_in` / `ev_render_out` | entry and exit of the ColdFire's audio block: 32 frames, about 1,500 blocks a second | `void f(void)` |
 | `ev_project` (core 0.3) | after CREATE NEW or the project reset (`how` 0), and after every project load, at boot too (`how` 1); the project and its mod data are in place | `void f(int how, unsigned dropped)`; `dropped` flags the global, track, pattern and project scopes that loaded as zeros. Keep it short, and start no load or save from it. |
 
 On the Rytm, y = 0 is the bottom row of the screen: a rectangle at y 48–63 lands at the top, as hardware photos and rytm-emu both show. Drawing code written with y = 0 as the top row, such as the hooks-check example ported from the Digitakt, needs y flipped (63 − y).
 
-The render events cover the digital path only: this block renders the delay and reverb and mixes their returns. The analog voices are not rendered by this code, so a render handler cannot process the drum voices themselves. Like the Digitakt mk1 core, the core uses DTIM0 and claims `timer:DTIM0`.
+The render events cover the digital path only: this block renders the delay and reverb and mixes their returns. The analog voices are not rendered by this code, so a mod cannot change a voice's own sound; it can read each voice from the codec's receive buffer and add a return of its own ([The audio block](#the-audio-block)). Like the Digitakt mk1 core, the core uses DTIM0 and claims `timer:DTIM0`.
+
+Traps found while writing a C mod for OS 1.74 (rytm-emu `3c4c42c`, October 2026):
+
+- **Stock returns pointers in d0.** Debian's `m68k-linux-gnu-gcc` expects a pointer result in a0, so a C mod that declares a stock routine as returning a pointer (`project_singleton`, `kit_track_sound`, a vtable getter) reads garbage and can jump to 0 at boot. Declare such routines as returning an integer and cast the result.
+- **`is_key_held` does not cover the BANK keys.** They are not in stock's key-scan list, so it reads them as up; follow a BANK hold through `ev_key`'s press and release events instead, and ignore its repeats.
+- **FUNC + turn never reaches the parameter path.** On a sound page a turn with FUNC held calls neither `param_set_apply_delta` nor `param_set_value`, and stock changes nothing, so a hook there never sees it. Take the gesture in `ev_enc` and test FUNC with `is_key_held(0x80)`.
+- **SETTINGS is the GLOBAL menu.** The rows `ev_settings` adds come after SYSTEM in the menu the GLOBAL key opens. The menu calls a row's label callback again when it redraws the row, so the label can show the row's state: a row whose select callback flips a value and whose label reads it shows the new value at once.
+- **Trig times in rytm-emu.** `DTEMU_FRAME_TRACE=160,162` prints the analog voice frame's trig switches (BD byte 161 bit 4, SD byte 160 bit 0, RS byte 163 bit 4) with their sample number whenever they change: exact trig timing without reading audio. The sequencer's timing words are in [sequencing.md](../../../docs/module-guides/sequencing.md#analog-rytm-mkii-os-174).
+
+## The audio block
+
+What follows was read and measured for Send FX on OS 1.74 (`src/gate.s` on branch `module/rytm-chorus`, commit `bf62ba19`, [repeat98/modwerk#878](https://github.com/repeat98/modwerk/pull/878)).
+
+- **Where the returns are.** The FX returns routine takes the output slot in d2, runs the PRE return mixer (delay and reverb into the analog mixer, before distortion and the compressor), then the POST one, and ends with `move.l #32,%macsr` at 0x4010ee66 (6 bytes) before it returns. A mod that adds its own return detours that instruction as its own declared site; the second mod that needs it proposes a core event instead ([choose how a module hooks in](../../../docs/module-guides/README.md#choose-how-a-module-hooks-in)). The PRE words sit at `0x80000030 + slot × 2048`, left and right on a 64-byte stride, 24-bit values in the low bits. The codec's receive buffer at 0x80007440 holds MAIN, the eight voices and AUDIO IN, 12 words a frame.
+- **The EMAC.** Stock's mixers use the EMAC, and `#32` is its fractional mode, so a mod hooked there can use the EMAC too if it leaves it as stock had it. Read the accumulators it will use (Send FX: ACC0, ACC1 and ACCEXT01) into registers while MACSR still holds 0x20, which neither rounds nor saturates the reads. Then set its own mode, for example 0x80 (signed integer, saturating). Before returning, set `#32` again, then write the accumulators back, ACCEXT01 last.
+- **What it buys.** `mac.w` with a parallel load sums the eight voice words in one instruction each: each multiplies a word's upper half by its gain while it loads the next word. To add a 16-bit return to a 24-bit PRE word with 24-bit saturation, shift the word up 8 bits, `move.l` it into an accumulator, `mac.l` the sample by the gain, read it back with `movclr.l` and shift it down 8. In the emulator Send FX's output loop fell from about 40 to about 20 instructions a frame, and the eight voices from about 60 to about 16.
+- **Measure it on the unit's own clock.** core-ar2 starts DMA timer 0 free running. Read its counter (0xFC07000C) as the mod's block starts and ends, and divide by the time since the previous block, as Send FX's CPU meter does. In the emulator one instruction executed per 48 kHz frame cost about 0.023 % of the block period.
+- **rytm-emu's profiler does not see mod code.** `dtboot --profile-after N` (revision `3c4c42c`) samples only the blocks it runs from its code window, the stock code from 0x40000400. A mod's code, high in RAM (0x47BE0000 on), runs on the stepped path and is never sampled. Measuring Send FX needed a local change to `src/cpu.rs` that samples the stepped branch too, at a jittered interval (33 to 96 instructions) so a loop's period does not alias with it, and a dump of every sampled PC in an address range. Propose such a change to [rytm-emu](https://github.com/trigcondition/rytm-emu) upstream; do not commit emulator code here.
 
 ## Mod storage (core 0.3)
 
-Declare each field in `build.json`, then read and write it through the core with elekloader's `analog-rytm-mk2/store.h`:
+Declare each field in `build.json`, then read and write it through the core with elekloader's `analog-rytm-mk2/store.h`. Modwerk's source builder finds it in [`include/`](include/analog-rytm-mk2/store.h), copied unchanged from elekloader's `core-ar2-v0.3` tag (`sdk/imports/core-ar2-store-header-769d9aa.json`); elekloader's own builder uses its SDK's copy:
 
 ```json
 "storage": [{ "sym": "my_accent", "scope": "track", "bits": 4 }]
@@ -46,6 +64,8 @@ core_store_set(STORE(my_accent), live_pattern, track, v + 1);
 ```
 
 `scope` is `sound` (56 bits a sound), `kit` (64), `global` (40 a slot), `track` (at most 16 bits a pattern track), `pattern` or `project`; `bits` is 1 to 32, and `sym` is a C name no other mod uses. Zero is the default everywhere. The linker places every field from the build's lockfile, as elekloader's `store.ts` does, and appends the lockfile after the image, so the next build keeps each field where it was and older projects keep their data. A field that changes size, or a new field that no longer fits, gives the build a new layout. `core_store_get` and `core_store_set` mask interrupts, so call them from any event. The full rules, which bytes each scope uses and what travels over SysEx and Transfer, are in elekloader's [ADAPTING.md](https://github.com/irpina/elekloader/blob/main/docs/ADAPTING.md) ("Mod storage") and the [core-ar2 README](https://github.com/irpina/elekloader/tree/main/mods/core-ar2).
+
+On modwerk.app each configuration keeps the lockfile of its last build. The next build of that configuration starts from it, so adding or removing a module leaves every other module's fields where projects on the unit expect them. Duplicating a configuration copies the lockfile, and the configuration's JSON backup carries it (the field places only, no project data). A configuration that has never been built, or one shared on the forum, starts from a new layout.
 
 ## Memory and budgets
 
@@ -70,7 +90,7 @@ python -m elekloader.patch --stock Analog-Rytm_MKII_OS1.74.syx \
     --out my-build.syx --version XX01
 ```
 
-Modwerk's linker covers OS 1.74 (`src/engine/elektron/elemod.ts`), mod storage included. On the owner's stock 1.74 file it links core-ar2 0.3 with each of rytm2_mods v1.2's eleven mods, with the storage mods together, with all eleven, and again from a kept lockfile, byte for byte as elekloader kit 0.7.0 does. In the browser, the Rytm's configuration page checks and builds core-ar2 0.3 and the selected library modules from the owner's stock OS 1.74, with elekloader's kit, the core pinned in `sdk/imports/elekloader-core-ar2-v0.3.json` and each module's source-only package pinned in its own record (`sdk/imports/elekloader-filter-hz-2026-10-23.json`). Downloads stay off until the owner turns them on. The browser does not keep a configuration's storage lockfile yet, so it rebuilds a fresh storage layout each time; no library module declares storage, so nothing is lost. A module with storage needs that lockfile before it enters the library. Until then, build firmware with storage mods with elekloader.
+Modwerk's linker covers OS 1.74 (`src/engine/elektron/elemod.ts`), mod storage included. On the owner's stock 1.74 file it links core-ar2 0.3 with each of rytm2_mods v1.2's eleven mods, with the storage mods together, with all eleven, and again from a kept lockfile, byte for byte as elekloader kit 0.7.0 does. In the browser, the Rytm's configuration page checks and builds core-ar2 0.3 and the selected library modules from the owner's stock OS 1.74, with elekloader's kit, the core pinned in `sdk/imports/elekloader-core-ar2-v0.3.json` and each module's source-only package pinned in its own record (`sdk/imports/elekloader-filter-hz-2026-10-23.json`). Downloads stay off until the owner turns them on. Each configuration keeps the storage lockfile of its last build (Mod storage, above), so a module with storage can enter the library.
 
 ## Flash and recover
 

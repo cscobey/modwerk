@@ -138,4 +138,33 @@ struct modwerk_sequencer_rows { uint32_t count; struct modwerk_sequencer_row row
 #define MODWERK_EV_TAIL_KILL 30
 typedef void modwerk_ev_tail_kill(uint8_t *record, unsigned track);
 
+/* ot_midi_generators (table, contribute {"to": "ot_midi_generators", "order", "data"}): MIDI NOTE SETUP (double-tap SRC, or double-tap TRACK in MIDI mode) lists OFF and the contributed generators in its empty left half; a MIDI track running one shows that generator's pages on the MIDI pages it takes (always ARP; FUNC+AMP: the ARP page's second). The UI task. Contribute one struct modwerk_midi_generator (every field but abi, label and id optional, 0). Choosing it puts 'M' and its id in the track's arp step mask (Part 0x1822 + 2 t, high byte first), which stock's validator never reads and only ARP SETUP edits; stock's default there is ffff. On every change of generator the base first puts the track's arpeggiator back to stock's defaults (MODE OFF, every note 0), then calls the old generator's assign(t, 0) and the new one's assign(t, 1). While a generator runs a track it owns that track's 16 arpeggiator note bytes (Part 0x1832 + 16 t, each -64..63, the range stock's validator keeps), so the ARP page is always its own and FUNC+AMP never opens ARP SETUP there. Its pages show while no trig or scene is held (stock's then, so locks stay stock's); the base takes encoders A-F, YES and, on the second ARP page, NO there. Values behind the pages it takes stay stock's and keep their meaning (a NOTE page's NOT2-4 still add chord notes): set or show them itself. Layout A (owner, 24 October 2026): generators take SRC and AMP; FX1 and FX2 are kept for MIDI effects. A track whose id has no installed generator reads as stock. */
+#define MODWERK_OT_MIDI_GENERATORS 31
+struct modwerk_midi_generator {
+    uint32_t abi;                       /* MODWERK_MIDI_GENERATOR_ABI */
+    const char *label;                  /* its row in MIDI NOTE SETUP's list: up to 8 characters */
+    uint32_t id;                        /* 1-255, its own: a MIDI track running it keeps 'M' and it in its arp step mask */
+    uint32_t pages;                     /* the MIDI pages it draws, bit k for page k: 0 NOTE (SRC), 1 LFO, 2 ARP (AMP, always), 3 CTRL1 (FX1), 4 CTRL2 (FX2) */
+    void (*assign)(unsigned track, unsigned on); /* MIDI track 0-7 of the current Part becomes it (1) or leaves it (0) */
+    uint32_t (*page)(uint32_t stock, unsigned page, unsigned second); /* the descriptor to draw on page 0-4 instead of stock's; second: FUNC+AMP's second ARP page */
+    void (*knob)(unsigned page, unsigned index, int delta, unsigned second); /* encoder A-F (0-5) turned on that page */
+    void (*yes)(unsigned page);         /* YES on that page */
+    void (*ui_tick)(void);
+};
+#define MODWERK_MIDI_GENERATOR_ABI 2u
+
+/* ev_midi_note_key (0x4009fb58, take: subscribe a struct modwerk_take): a MIDI track's note, from its trig, chord or arpeggiator, is about to be corrected to the track's KEY (ARP SETUP) and sent (d7 the track). The MIDI sequencer tick 0x400a1e0c (an interrupt, vector 0x60; octabam docs/firmware/MIDI_SCENES.md section 5), once per note: a few microseconds, no firmware call, nothing that waits or allocates. The taker's entry gets every register and the stack as at the site: d7 the track, a2 the note byte (it may rewrite it, 0-127, or store -1 to drop the note), -64(%fp) stock's KEY root offset. It returns to stock by jumping to 0x4009fb80 to send the note as it is now, or by replaying the stock tail below (stock's KEY correction); it must not jump into the site's bytes. Stock keeps the note it sends for that note's note-off. */
+#define MODWERK_EV_MIDI_NOTE_KEY 32
+
+/* ev_arp_setup_knob (0x4007a2ec, take: subscribe a struct modwerk_take): an encoder turns on MIDI ARP SETUP (FUNC+AMP on a MIDI track), before stock edits LEN, KEY or an arp note. The UI task (ARP SETUP's input layer): short, no firmware call that can block. The taker's entry gets every register and the stack as at the site: (%sp) the return address, 4(%sp) the encoder (2 LEN, 5 KEY, 6 the arp note editor), 8(%sp) the delta. It takes the turn by returning to the caller with rts (stock edits nothing), or hands it to stock by replaying the stock tail below; it must not jump into the site's bytes. A taker that stores into the pattern or the Part writes the bank and its battery-backed copy and sets the edited flags as stock's writers do. */
+#define MODWERK_EV_ARP_SETUP_KNOB 33
+
+/* ev_arp_setup_text (0x4007a1ec, take: subscribe a struct modwerk_take): MIDI ARP SETUP is about to draw a setup value (d3 the slot: 2 LEN, 5 KEY). The UI task (the drawer): short, no firmware call that can block. The taker's entry gets every register and the stack as at the site: d3 the slot, d4 the track's value, a3 the slot's descriptor (a3@ the text function f(buffer, value), a3@(48) the drawer or 0 for 0x400479b4), a2 and d2 the place, d6 the surface. It draws the value itself, normally by calling the slot's drawer as stock does with a text function of its own, and goes on at 0x4007a216 with every register but d0-d1/a0-a1 as it found them; or it hands the value to stock by replaying the stock tail below. It must not jump into the site's bytes. */
+#define MODWERK_EV_ARP_SETUP_TEXT 34
+
+/* ev_trig_muted (raised by a module): a machine that starts a note from a trig itself, before stock binds the track's voice (ev_voice_bind), asks which tracks' new trigs a module drops now; no stock site: the machine calls the base's modwerk_raise_ev_trig_muted(), which returns every handler's answer OR'd, 0 with none. Where the machine starts its note: the frame interrupt (the renderer the packer calls at 0x4000d43e) or a task: short, no firmware call that can block. Return the tracks whose new trigs this module drops now: bit t for track t+1, bits 0-7; higher bits are ignored. Every handler runs. They are the tracks whose ev_voice_bind this module drops (1) in the same frame: muted or soloed-out tracks while one of its trig-dropping modes is on, less those whose trigs it lets through (ev_mute_keep). The asking machine starts no new note on these tracks and lets a note already sounding finish; with no answer (0) it plays every trig, as stock does. d2-d7/a2-a6 must be kept. */
+#define MODWERK_EV_TRIG_MUTED 35
+typedef unsigned modwerk_ev_trig_muted(void);
+/* Raise it: define `modwerk_ev_trig_muted *raise_ev_trig_muted` as a zero word in your image (initialized data, not bss), list "ev_trig_muted" under "raise" in runtime.json and call through it; every handler's answer, OR'd. */
+
 #endif

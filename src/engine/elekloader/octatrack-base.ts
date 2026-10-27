@@ -72,7 +72,7 @@ export function baseIdentity(filledPackage: string): string {
 }
 
 /** The base's .bin from the user's original OCTATRACK_OS1.40C.bin. */
-export async function buildBase(stock: Uint8Array, packageText: string, fills: readonly BaseFill[]): Promise<{ bin: Uint8Array; sha256: string; base: string }> {
+export async function buildBase(stock: Uint8Array, packageText: string, fills: readonly BaseFill[], onLinked?: (facts: {symbols: ReadonlyMap<string,number>; runtime: {bytes:number;reservedBytes:number}})=>void): Promise<{ bin: Uint8Array; sha256: string; base: string }> {
   if (sha(stock) !== BASE_FIRMWARE.sha256) throw new Error('The base builds only from the original Octatrack OS 1.40C file. Choose an unmodified ' + BASE_FIRMWARE.filename + '.')
   const [parsed, device] = await formats.load(stock)
   const cores = await recoverStockDsp(formats.mainImage(parsed, device))
@@ -80,6 +80,8 @@ export async function buildBase(stock: Uint8Array, packageText: string, fills: r
   const filled = new TextEncoder().encode(text)
   const [outputs, manifest] = await build({ path: '/' + BASE_FIRMWARE.filename, data: stock }, [{ path: '/octatrack-base.elemod', data: filled }], VERSION)
   if (!outputs?.bin) throw new Error('The builder did not write a .bin.')
+  const layout=manifest.link.layout
+  onLinked?.({symbols:manifest._map ?? new Map(),runtime:{bytes:layout.blob_len,reservedBytes:(layout.reserve?.end ?? layout.ddr[0]+layout.ddr_size)-layout.ddr[0]}})
   if (!manifest._map?.has(RUN_UNPACK)) return { bin: outputs.bin, sha256: sha(outputs.bin), base }
   // Its boot decodes .run packed (run-pack.ts): MAIN again with it packed, repacked and verified as build() does.
   const main = packRun(formats.mainImage(formats.parse(outputs.bin, device), device), manifest.link.layout, device.mainLoad)

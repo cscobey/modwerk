@@ -1,3 +1,6 @@
+import { isLocalCcModule } from '../dev/local-cc-module.ts'
+import { localCcCard } from '../dev/local-cc-card.ts'
+import { residentCardWrites } from './resident-card.ts'
 import { installStartup, BETA_STARTUP_IDENTITY } from './beta-startup.ts'
 import { verifyNativeContracts } from './native-contracts.ts'
 import { installCoreLogger, LOGGER_RETAINED_BYTES } from './core-logger.ts'
@@ -22,6 +25,7 @@ export async function planStaticOs(original: Uint8Array, ids: readonly string[],
   if (usbAudio) menus.writes = await replaceUsbAudioHooks(original, menus.writes, runtime)
   const logging = await installCoreLogger(runtime, original, ids, menus.chooser, betaAccess ? BETA_STARTUP_IDENTITY : undefined)
   const platform = createPlatformOsWrites(runtime, ids, { loader: false, reserveBytes: runtime.reserveBytes })
+  if(ids.some(isLocalCcModule)) platform.push(...residentCardWrites(await localCcCard(),runtime))
   const startup = await installStartup(runtime, original, betaAccess)
   return { runtime, menus, dsp, logging, platform, startup }
 }

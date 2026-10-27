@@ -74,7 +74,9 @@ by their module id, and the machine's admission (`modwerk_machine_dsp_admit`)
 gives each effect the id it gets, a handle, and says whether its DSPs can
 take it. The loader keeps that id and hands the effect over at the switch
 (`modwerk_machine_dsp_switch`), masked with the module's hooks and sites. The code itself goes into a DSP only when a track
-picks the effect (the Octatrack's `dsp.c`). `build.py --dsp` makes one from
+picks the effect (the Octatrack's `dsp.c`). Admission refuses removing an effect a track runs (`RUNTIME_IN_USE`), except
+while a restore switches (`modwerk_runtime_restoring()`: an Undo, or the rollback after a failed self-test), which puts a
+position back as it was. The Octatrack then makes such a track dry first, as it was before the change (beta finding 66). `build.py --dsp` makes one from
 a DSP package Modwerk's builder proved, and checks those proofs again.
 
 ABI 6 adds 18 bytes to that descriptor (a 68-byte header): the module's
@@ -231,9 +233,10 @@ published one, built with the resident engines on demand): the capability record
 
 The `MODWERK_RUNTIME_SETS` candidate adds MWCP feature **512** and the
 [`MWMS v1` bundle](set_package.h): an 80-byte header binds the exact base and
-the baseline's sorted `(module id, package SHA-256)` digest; up to 20 unique
-length-prefixed MWRM changes follow, with zero padding to four bytes. The
-resulting census is bounded to 20 modules. The existing single-package
+the baseline's sorted `(module id, package SHA-256)` digest; up to
+`RUNTIME_MODULES` (128 on the Octatrack) unique length-prefixed MWRM changes
+follow, with zero padding to four bytes. The resulting census is bounded to as
+many installed modules (`RUNTIME_JOURNAL_ROWS`). The existing single-package
 protocol and ABI remain available.
 
 All candidates are admitted before publication. Both generations keep their

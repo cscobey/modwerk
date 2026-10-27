@@ -16,7 +16,7 @@ int modwerk_saved_set_busy(void);
 int dl_hook_buffer_ranges_idle(unsigned);
 #ifdef MODWERK_RESIDENT_ON_DEMAND
 int modwerk_dsp_keybus_charge(int on);       /* dsp.c (resident_engines.dsp): the tap's per-core price, 1 fits and held */
-int modwerk_dsp_keybus_fits(void);           /* ... would it fit now (admission) */
+uint32_t modwerk_dsp_keybus_price(unsigned c); /* ... on core c while it is not charged there, 0 once it is */
 int modwerk_dsp_bank_names(unsigned id);     /* dsp.c: a track runs this FX id, or one of the bank's Parts names it */
 extern volatile uint8_t modwerk_controller_lease_seen; /* controller_write_lease.c: features a trusted controller asked to write */
 #endif
@@ -186,17 +186,33 @@ static unsigned slot_of(const struct mw_controller_binding *b)
     }
     return MW_CONTROLLER_SLOTS;
 }
-/* Published at a position, as this exact owner generation: that module, or 0. */
+/* Published at a position, as this exact owner generation: that module, or 0. The walk over every position is kept per
+ * binding while the owner epoch stands even and unchanged (loader.h: positions and owners are then as found), and the
+ * owner's own header is checked again on every call (owner_held); with 26 modules the walk cost 120 µs a tick. */
+static struct { uint32_t epoch, generation, module; uintptr_t canonical; const struct runtime_module *m; struct runtime_owner o; unsigned hint; }
+    found[MW_CONTROLLER_SLOTS];
+static unsigned found_next;
 static const struct runtime_module *module_of(const struct mw_controller_binding *b)
 {
-    for (unsigned i = 0; i < RUNTIME_MODULES; ++i) {
+    uint32_t epoch = modwerk_runtime_owner_epoch();
+    for (unsigned k = 0; !(epoch & 1u) && k < MW_CONTROLLER_SLOTS; ++k)
+        if (found[k].epoch == epoch && found[k].generation == b->generation && found[k].module == b->identity.module &&
+            found[k].canonical == b->canonical_extent)
+            return found[k].m && modwerk_runtime_owner_held(&found[k].o, &found[k].hint) == 1 ? found[k].m : 0;
+    const struct runtime_module *hit = 0; struct runtime_owner kept = {0};
+    for (unsigned i = 0; i < RUNTIME_MODULES && !hit; ++i) {
         const struct runtime_module *m = modwerk_runtime_module(i);
         struct runtime_owner o; uintptr_t canonical;
-        if (m && modwerk_runtime_owner_snapshot(m->dsp.image, &o) == 1 && o.generation == b->generation &&
-            o.module == b->identity.module && modwerk_runtime_owner_canonical(&o, &canonical) == 1 &&
-            canonical == b->canonical_extent) return m;
+        if (m && m->id == b->identity.module && modwerk_runtime_owner_snapshot(m->dsp.image, &o) == 1 && /* id first: one read */
+            o.generation == b->generation && o.module == b->identity.module && modwerk_runtime_owner_canonical(&o, &canonical) == 1 &&
+            canonical == b->canonical_extent) hit = m, kept = o;
     }
-    return 0;
+    if (!(epoch & 1u) && epoch == modwerk_runtime_owner_epoch()) {
+        unsigned k = found_next++ % MW_CONTROLLER_SLOTS;
+        found[k].epoch = epoch, found[k].generation = b->generation, found[k].module = b->identity.module;
+        found[k].canonical = b->canonical_extent, found[k].m = hit, found[k].o = kept, found[k].hint = 0;
+    }
+    return hit;
 }
 static int live(const struct mw_controller_binding *b) { return module_of(b) != 0; }
 
@@ -307,13 +323,16 @@ static uint32_t page_stage(const struct mw_controller_binding *b, uint8_t saved[
     }
     return donor;
 }
-/* Masked only for the byte copy: the descriptor never changes under a reader. */
+/* Masked only for the byte copy: the descriptor never changes under a reader. The screen may already show the page
+ * as it was (FX SETUP opened at the pick that activated it, #882): runtime.c redraws it on the next UI tick. */
+extern volatile uint8_t modwerk_runtime_redraw_wanted;
 static void page_write(uint32_t donor, const uint8_t *from)
 {
     volatile uint8_t *d = DONOR(donor);
     uint32_t irq = modwerk_machine_mask();
     for (unsigned i = 0; i < PAGE_BYTES; ++i) d[i] = from[i];
     modwerk_machine_unmask(irq);
+    modwerk_runtime_redraw_wanted = 1;
 }
 static unsigned page_of(unsigned at, uint32_t generation)
 {
@@ -513,20 +532,47 @@ static unsigned engine_features(void) { return slot_features(); }
 #endif
 /* A live package requires the key bus (ABI 9 `requires`, loader.h): a reader, once a track runs its effect or the bank's
  * Parts name it (use_tick's rule). A few loads a tick, no hashing. */
+static uint32_t readers_epoch = 1u; /* odd: none taken yet */
+static uint32_t readers[RUNTIME_MODULES], readers_count;
 static int keybus_read(void)
+{
+    /* Which modules require it changes only with the owners (loader.h's epoch): their headers are read again then, not
+     * every tick. Their effect ids are looked up every time, since a project load may move a module's handle. */
+    uint32_t epoch = modwerk_runtime_owner_epoch();
+    if (epoch != readers_epoch || (epoch & 1u)) {
+        readers_count = 0;
+        for (unsigned i = 0; i < RUNTIME_MODULES; ++i) {
+            const struct runtime_module *m = modwerk_runtime_module(i);
+            if (m && (m->dsp.requires & KEYBUS)) readers[readers_count++] = m->dsp.module;
+        }
+        readers_epoch = epoch == modwerk_runtime_owner_epoch() ? epoch : 1u;
+    }
+#ifdef MODWERK_RESIDENT_ON_DEMAND
+    for (unsigned n = 0; n < readers_count; ++n) {
+        int id = HANDLE(readers[n]);
+        if (id >= 0 && modwerk_dsp_bank_names((unsigned)id)) return 1;
+    }
+    return 0;
+#else
+    return readers_count != 0;
+#endif
+}
+#ifdef MODWERK_RESIDENT_ON_DEMAND
+/* The FX allocator's seam (resident_engines.allocator): the tap's price on core c that a set of effects (FX1 T1-T8, then
+ * FX2) brings when it names a reader's effect while the tap is not charged there. So the pick or Part change that brings
+ * a reader is DSP FULL when the tap does not fit beside it, as an effect is; its install never is (owner, 24 October
+ * 2026: a project may never name it, and the Part it is installed beside may change). */
+uint32_t modwerk_controller_keybus_pending(unsigned c, const uint8_t ids[16])
 {
     for (unsigned i = 0; i < RUNTIME_MODULES; ++i) {
         const struct runtime_module *m = modwerk_runtime_module(i);
-        if (!m || !(m->dsp.requires & KEYBUS)) continue;
-#ifdef MODWERK_RESIDENT_ON_DEMAND
-        int id = HANDLE(m->dsp.module);
-        if (id >= 0 && modwerk_dsp_bank_names((unsigned)id)) return 1;
-#else
-        return 1;
-#endif
+        int id = m && (m->dsp.requires & KEYBUS) ? HANDLE(m->dsp.module) : -1;
+        for (unsigned s = 0; id >= 0 && s < 16u; ++s)
+            if (ids[s] == (unsigned)id) return modwerk_dsp_keybus_price(c);
     }
     return 0;
 }
+#endif
 /* The key bus is on for a feature that needs it on this core (Sidechain's detector reads it). */
 static int keybus_ready(unsigned feature, unsigned c) { return !KEYBUS_IMPLIED(feature) || (mask[c] & KEYBUS); }
 /* Drain the key bus's own owned jobs: an ACKed CAS updates the known mask; anything uncertain closes that core's owned
@@ -831,7 +877,10 @@ int modwerk_controller_admit(const struct runtime_dsp *from, const struct runtim
             if (kb_lane[c].op == KB_DISABLE || kb_lane[c].op == KB_SCRUB || (kb_dirty[c] && !(mask[c] & KEYBUS))) return RUNTIME_BUSY;
         /* The bus engine waits for room as any engine does; stuck on a core, it never places. */
         if (mw_engines_admit(KEYBUS, modwerk_controller_held() | live_features(), 0) == MW_ENGINE_STUCK_BOOT) return RUNTIME_FEATURE;
-        if (!kb_priced && !modwerk_dsp_keybus_fits()) return RUNTIME_CYCLES;
+        /* The tap's price is not checked here: it is charged only once the bank names a reader's effect, and the pick
+         * that brings it pays it (modwerk_controller_keybus_pending). A check here promised nothing and refused a sync
+         * whenever the Part on screen left no room (owner, 24 October 2026). A reader the bank already names when it
+         * goes in (beta finding 64) waits for the price (keybus_tick), as an engine waits for room. */
     }
 #endif
     if (!outgoing) return RUNTIME_OK;

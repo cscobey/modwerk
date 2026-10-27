@@ -3,6 +3,7 @@
 // publishes as runtime packages (public/octatrack-modules, made from source by `npm run octatrack:module-packages`)
 // are installed from them; anything the set leaves out is removed with an empty package naming its module.
 import manifest from '../assets/octatrack-module-packages.json' with { type: 'json' }
+import { localCcPackages } from '../../dev/local-cc-module.ts'
 import siteEvents from '../../../sdk/machines/octatrack/site-events.json' with { type: 'json' }
 import baseBinding from '../../../sdk/machines/octatrack/base-binding.json' with { type: 'json' }
 import dspSites from '../../../sdk/machines/octatrack/dsp-sites.json' with { type: 'json' }
@@ -384,7 +385,7 @@ export function createRuntimeCatalogue(document: RuntimePackageManifest) {
   }
 }
 
-const catalogue = createRuntimeCatalogue(manifest)
+const catalogue = createRuntimeCatalogue({ ...manifest, packages: [...manifest.packages, ...localCcPackages] })
 /** Only modules with an actually published package or reviewed current group variant are USB-selectable, and USB
  * Audio once the base is published in its layouts. */
 export const USB_MODULE_IDS = catalogue.ids
