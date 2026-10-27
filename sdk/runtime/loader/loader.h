@@ -171,6 +171,7 @@ uint32_t modwerk_runtime_broken(void);               /* the first live module wh
 uint32_t modwerk_runtime_free(uint32_t *largest);    /* pool bytes free, and the largest free run */
 unsigned modwerk_runtime_list(uint8_t *out, unsigned first, unsigned most); /* INVENTORY: 4 + 24 x entries bytes */
 enum runtime_refusal modwerk_runtime_refusal(void);
+void modwerk_runtime_refused(enum runtime_refusal why); /* a machine check that refuses before the loader (Octatrack modset.c) */
 unsigned modwerk_runtime_refused_event(void);         /* after RUNTIME_EVENT: that event's hook index */
 #if RUNTIME_SITE_EVENTS
 /* Each site event's handlers in (order, module id) order, then 0: the base's dispatch (runtime_events.s,
@@ -224,6 +225,9 @@ enum runtime_metadata_operation { RUNTIME_METADATA_PREPARE=1, RUNTIME_METADATA_S
 int modwerk_machine_metadata_admit(const struct runtime_dsp *from, struct runtime_dsp *to,
     const struct runtime_context *,enum runtime_metadata_operation);
 int modwerk_machine_dsp_admit(const struct runtime_dsp *from, struct runtime_dsp *to); /* may set to->id */
+/* 1 while a restore switches (an Undo, or the rollback after a failed self-test): it puts a position back as it was
+ * before its change, so a machine may make a track that runs the outgoing module dry first (Octatrack, dsp.c). */
+int modwerk_runtime_restoring(void);
 /* ABI 9: the base feature bits this base provides to packages (`requires`); weak, 0 by default (the Octatrack's
  * on-demand base: sdk/machines/octatrack/dsp-sites.json's features). */
 unsigned modwerk_machine_dsp_features(void);

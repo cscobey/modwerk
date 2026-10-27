@@ -98,10 +98,12 @@ for (const machine of machines.filter(item => item.sdk?.platform === 'elemod')) 
       const extraFlags = [...build.cflags, ...port.cflags]
       validateCompilerFlags(extraFlags)
       const inputs = []
+      // The machine's shared SDK headers (the Rytm's elekloader store.h), after the module's own src/.
+      const includes = ['-I', resolve(folder, 'src'), '-I', resolve(root, 'sdk/machines', machine.id, 'include')]
       for (const [index, source] of build.sources.entries()) {
         const path = await resolveModuleFile(folder, source), object = resolve(work, index + '.o')
-        if (source.endsWith('.c')) run('gcc', [...cflags, ...extraFlags, '-I', resolve(folder, 'src'), '-c', path, '-o', object])
-        else if (source.endsWith('.S')) run('gcc', [...cflags, ...extraFlags, '-Wa,-mcpu=54455', ...defines.filter((_, i) => i % 2).map(define => '-Wa,--defsym,' + define), '-I', resolve(folder, 'src'), '-c', path, '-o', object])
+        if (source.endsWith('.c')) run('gcc', [...cflags, ...extraFlags, ...includes, '-c', path, '-o', object])
+        else if (source.endsWith('.S')) run('gcc', [...cflags, ...extraFlags, '-Wa,-mcpu=54455', ...defines.filter((_, i) => i % 2).map(define => '-Wa,--defsym,' + define), ...includes, '-c', path, '-o', object])
         else run('as', ['-mcpu=54455', '-I', resolve(folder, 'src'), ...defines, '-o', object, path])
         inputs.push(object)
       }

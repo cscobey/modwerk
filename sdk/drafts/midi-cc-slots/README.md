@@ -419,3 +419,13 @@ The development-only [USB update test](USB_UPDATE_TEST.md) provides the exact
 fresh-start package identities while preserving companions; neither the ordinary
 0.0.13 catalogue package nor C16 installer changes. This is a lifecycle fixture,
 not a new MIDI behavior release.
+
+## Current upstream integration
+
+The 0.0.18 installer candidate uses the current published USB base; its review
+is independent of historical C15 native composition. The exact 0.0.13 MIDI
+package and the 0.0.17 lifecycle test remain pinned. The test page retains the
+older tested base and companion hashes; it does not silently upgrade hardware.
+See [local site setup](LOCAL_SITE.md), [storage lessons](HARDWARE_NOTES.md) and
+[installer instructions](USB_CARD_INSTALLER.md). The working C14/C16 files remain
+private and unchanged. New-base hardware qualification remains pending.

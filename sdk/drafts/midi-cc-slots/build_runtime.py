@@ -20,6 +20,7 @@ NAME_REPLAYS = [('header', 0x4004c40c, 8, 'names_header'), ('names_key', 0x4004a
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--current-base', action='store_true', help='Build the shared NOTE SETUP compatible 0.0.18 candidate')
     p.add_argument('--guards', type=Path, default=HERE / 'runtime-guards.json')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--profile', action='store_true', help='Build the persistent project-profile experiment')
@@ -28,13 +29,19 @@ def main():
     p.add_argument('--review-image', type=Path, help='Private authored image for reviewing copy-guard offsets')
     args = p.parse_args()
     if args.project_template and not args.profile:p.error('--project-template requires --profile')
+    if args.current_base and not args.project_template:p.error('--current-base requires --project-template')
     guards = json.loads(args.guards.read_text())
+    adapter=json.loads((HERE/'current-base-adapter.json').read_text())
+    if args.current_base:guards[adapter['site']]=adapter['sha256']
     spec = importlib.util.spec_from_file_location('runtime_build', ROOT / 'sdk/runtime/loader/build.py')
     builder = importlib.util.module_from_spec(spec); spec.loader.exec_module(builder)
     with tempfile.TemporaryDirectory(prefix='cc-runtime-') as folder:
         work = Path(folder)
         source = (HERE / 'slots.s').read_text()+'\n'+(HERE / ('profile_names.s' if args.profile else 'names.s')).read_text()
         if args.project_template:source+='\n'+(HERE/'template/ui.s').read_text()
+        if args.current_base:
+            source=source.replace('names_setup_draw:\n bsr names_draw_stock','names_setup_draw:\n nop\n nop')
+            source+='\n'+(HERE/'template/shared_setup.s').read_text()
         for name, _, length in [*REPLAYS, *[(n,a,l) for n,a,l,_ in NAME_REPLAYS]]:
             source = source.replace(f'.incbin "{name}.private.bin"', f'replay_{name}: .space {length}')
         source = source.replace('.incbin "\\replay"', 'replay_\\name: .space 6')
@@ -75,7 +82,8 @@ def main():
             args.review_image.parent.mkdir(parents=True,exist_ok=True)
             args.review_image.write_bytes(image)
         copies = [(sym['replay_' + ('slot_' if name.startswith('sequence_') else '') + name], address, length, bytes.fromhex(guards[hex(address)])) for name, address, length in REPLAYS]
-        copies += [(sym['replay_'+name], address, length, bytes.fromhex(guards[hex(address)])) for name,address,length,_ in NAME_REPLAYS]
+        copies += [(sym['replay_'+name], address, length, bytes.fromhex(guards[hex(address)])) for name,address,length,_ in NAME_REPLAYS if not(args.current_base and name=='names_draw')]
+        if args.current_base:copies.append((sym['replay_shared_setup_exit'],int(adapter['site'],16),adapter['length'],bytes.fromhex(adapter['sha256'])))
         if args.project_template:
             copies.append((sym['replay_template_load'],0x400905d4,8,bytes.fromhex(guards['0x400905d4'])))
         # Authored instruction runs that coincide with stock use the same hash-copy
@@ -103,7 +111,8 @@ def main():
             site(descriptor + 0xe2 + 4*index, struct.pack('>I', sym['slot_format']), (0,))
             site(descriptor + 0x112 + 4*index, struct.pack('>I', 0x400467a4))
         site(descriptor + 0x18e, struct.pack('>I', 0x11111111))
-        for _, address, length, symbol in NAME_REPLAYS:
+        for name, address, length, symbol in NAME_REPLAYS:
+            if args.current_base and name=='names_draw':continue
             if args.project_template:symbol={'names_open':'names_template_open','names_setup_draw':'names_template_draw'}.get(symbol,symbol)
             site(address, struct.pack('>HI', 0x4ef9, sym[symbol])+(b'\x4e\x71' if length == 8 else b''), (2,))
         if args.profile:
@@ -111,11 +120,19 @@ def main():
         if args.project_template:
             for address,symbol,length in [(0x40084f44,'mt_clone_start_site',6),(0x4008505c,'mt_clone_end_site',6),(0x400905d4,'mt_load_site',8)]:
                 site(address,struct.pack('>HI',0x4eb9 if length==6 else 0x4ef9,sym[symbol])+b'\x4e\x71'*((length-6)//2),(2,))
-        builder.unevented(sites, copies)
+        if args.current_base:
+            site(int(adapter['site'],16),struct.pack('>HIH',0x4ef9,sym['names_shared_setup_exit'],0x4e71),(2,))
+            builder.unevented(sites,copies)
+        else:
+            # Explicit target: the reviewed older base, never current-base ownership.
+            legacy=(HERE/'legacy-runtime-ownership.json').read_bytes()
+            pin=json.loads((HERE/'legacy-build.json').read_text())
+            if hashlib.sha256(legacy).hexdigest()!=pin['ownershipSha256']:raise ValueError('Legacy base ownership snapshot changed')
+            builder.unevented(sites,copies,registry=json.loads(legacy))
         hooks=[sym['mm_profile_tick'] if args.profile else builder.NONE]+[builder.NONE]*3
         if args.project_template:hooks[2],hooks[3]=sym['mt_runtime_key'],sym['mt_runtime_enc']
         data = builder.package(image, 0, hooks, offsets, sites, name='midi-cc-slots',
-                               hashed=True, title='MIDI CC SLOTS', copies=copies)
+                               hashed=True, title='MIDI MODE 2' if args.current_base else 'MIDI CC SLOTS', copies=copies)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_bytes(data)
         if args.receipt:

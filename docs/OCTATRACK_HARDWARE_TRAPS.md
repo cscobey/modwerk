@@ -188,15 +188,15 @@ base it is itself running (`sdk/machines/octatrack/elekloader/README.md`, "Updat
 
 **Don't check a running image against its own RAM.** Once stock has started it rewrites bytes inside its
 bootloader copy (`0x400e201e`-`0x400e2108`) and reuses the RAM after the image, where MAIN keeps the packed `.run`
-(161,328 of its 165,076 bytes changed after 20 s on ot_emu, base `d6bfff70`, 23 October 2026). The first base's
-write compared both against the running RAM and refused every container (refusal 105, "Device refused commit:
-backend" on a tester's unit). `flash.c` now compares the copy with stock's digest and the stream with a digest `.boot`
+(ot_emu, 23 October 2026). The first base's write compared both against the running RAM and refused every
+container (refusal 105 on a tester's unit). `flash.c` now compares the copy with stock's digest and the stream with a digest `.boot`
 takes before it returns to stock (`modwerk_flash_snapshot`).
 
-**Not yet seen on a unit (20 October 2026):** the USB write is host-tested against a NOR model and the stock
-routines are read, not run; the first hardware run is the owner's call, with a MIDI interface at hand. Qualify
-the written base after a sustained power-off too, not only the soft restart that follows the write (a tester reported a base stalling at the logo only after minutes
-powered off, 18 October 2026).
+**A cut write is recovered from FUNC at power-on, and nothing in NOR can block that.** The startup menu is Elektron's
+bootloader (below `0x4000`, never written); its MIDI UPGRADE takes the stock `.syx` over DIN only, no card, and checks
+the received file (checksum, version against the MK1 and downgrade flags), never NOR (1.40C bootloader read, 25
+October 2026). Qualify a written base after a sustained power-off too (a base stalled at the logo only after minutes
+off, 18 October 2026).
 
 ## Simulating the user
 
@@ -275,6 +275,25 @@ On the owner's MKII (23 October 2026, RAM-booted twin of the beta base without `
 voice limit switched off took about 34,000 DTIM3 counts (257 µs) of POLY work in one frame at six voices, and the
 frames stopped for good (stall record "frames stopped"). Bound what a module does per frame in the interrupt and
 measure it with DTCN3 (`0xfc07c00c`, 132 MHz, about 47,900 counts a frame); POLY8 0.3.1 sheds voices above 26,000.
+
+**One long frame does not stop the DSP; a frame interrupt that keeps the CPU does.** Measured on the owner's MKII
+(24 October 2026, development twins of the frame guard's branch, timing the interrupt from its entry `0x4000aad0` to
+its exit `0x4000d9a6`), in a bank of eight tracks trigged on every step:
+- **Each track renders about twice a frame:** the interrupt calls each track's renderer twice in most frames.
+- **Long frames pass.** Stock tracks alone ran frames up to 96 % of a frame; with POLY8 0.3.1 up to 107 %; with FM Synth
+  and USB recording up to 148 %, starting up to 69 % of a frame late. None of these stopped anything by itself.
+- **The share stops it.** POLY8 0.3.1 on T1, FM Synth 0.1.2 on T2 and six busy stock tracks kept the interrupt at 86.5 %
+  of the CPU (meter 94 %). Starting USB recording took it to 89.5 %, and the frames stopped within about 1,000 frames
+  (stall record "frames stopped", sequencer stuck on its first step). With the interrupt kept near a whole frame every
+  frame, the panel froze and USB disconnected too.
+- **The guard.** The base gives the interrupt 80 % of each frame, saving up to half a frame from short ones, and
+  renders stock's silent source for a machine track whose render would overdraw it (`machine_registry.c`). The same
+  load and recording then ran with the interrupt at 79.7 % and a clean recording, with POLY8 skipped on about half its
+  renders; POLY8 alone, sparse or on every step, was never skipped (the interrupt at 66 % and 70 %). Card builds have
+  no guard. On a development base `npm run device -- guard` reads the interrupt's share, its longest frame and the
+  skips, and `guard:MILLE` sets the share.
+
+**Walk the module list once, not once per question.** A lookup that reads module headers from the pool (uncached) inside a loop over every module is quadratic in what is installed. The controller tick did that once per held controller and check, and with 26 modules (Sidechain, Output Matrix, Analog BD among them) it cost 0.8 ms of every UI tick (owner's MKII, 24 October 2026). Find an owner by its record in base RAM, read the pool only for that one, and keep results while `modwerk_runtime_owner_epoch()` stands even and unchanged (`loader.h`), checking the header with `modwerk_runtime_owner_held`. `npm run device -- do 'mem:ADDR:112'` on `modwerk_cost` (development bases) shows each tick hook's µs, and the frame guard's `guard` step shows what the frame interrupt takes.
 
 **Uncached module code is slow in the interrupt, and so is its data.** Without `--cached-modules` every instruction
 and every load or store of a module goes to SDRAM. POLY8 0.3.0 cost about 13 points of CPU per voice there and about
@@ -425,6 +444,42 @@ a stale instruction cache, zeros or other bytes uncached mean the push did not h
 
 ## Patching stock code
 
+**Audio-track LFO waveforms** (OS 1.40C, measured in `ot_emu`, 24 October
+2026; background in upstream Octabam's `docs/firmware/LFO.md`):
+- Slots 19-31 of the audio waveform dispatch table `0x400d6210` are SAW
+  padding. A new wave also needs the WAVE count (`0x400d38ac`), the label
+  formatter's clamp (`moveq #19` at `0x4003be50`) and the WAVE cell drawer's
+  icon bound (`moveq #19` at `0x4004693c`: no icon is drawn above it), and
+  grows the label (`0x400be38e`) and icon (`0x400bdf36`) tables.
+- The engine calls the handler every frame in every TRIG mode. `fp` holds
+  the TRIG record `0x80006184 + 16 n`, with n the mode and 8 more on a trig
+  of the track. In HOLD the engine keeps its live value between trigs and
+  takes the handler's output only on a trig.
+- A trig is a sample trig, or a trigless trig once the track has played a
+  sample trig since PLAY (the sample need not still sound); trigless locks
+  never count.
+- The engine adds `(DEP_word << 8) * out >> 31` to the destination word in
+  EMAC fractional mode (DEP 127 counts as 128), one knob step being 256 in
+  that word. On PTCH a knob step is 1/5 semitone, and LFO pitch stops at
+  +-12 semitones.
+- The track's step counter (`0x800064d0 + t`) moves one sequencer tick
+  before the step's trig fires and shows 0 on the track's last step; its
+  tick (`0x800064f0 + t`) reaches 1 just after the trig.
+- The LFO's output is the word at its record `0x800010e8 + 28 i` + 4
+  (i = 3 t + LFO), which the handler writes every frame: reading it over USB
+  shows a wave's values (owner's MKII, development twin `7889c57a`, 24
+  October 2026).
+- The engine runs the wave handlers inside the frame interrupt, and in FREE
+  every LFO of equally fast tracks changes in the same frame, so a wave's
+  change path and any first-use set-up add to that one interrupt. Measured
+  in `ot_emu` with 24 LFOs on Deja Vu's DJQ under a MIDI flood: the frames
+  where all 24 change took 32.9 µs more than on stock RND, and the frame
+  where all 24 set up their state took 202.9 µs against 131.8 µs.
+- In `ot_emu`, writing a Part's LFO bytes into RAM after the load does not
+  reach the engine, which reads per-track page records filled when the Part
+  loads. Write them into the bank file on the card before the load
+  (`ot_project`'s offsets, checksum fixed).
+
 **A detour returns after the whole span it displaced, never into it.** The
 map's writer detour at `0x400888c8` displaced `lea` (4 bytes) and `tstl` (2)
 and jumped back to `0x400888cc`, the second half of its own `jmp`. SYNC TO
@@ -480,6 +535,15 @@ a module's site refuses that module on the base. The project map once took
 PLAY MODES' three project-file seams; it now sits beside them and SCALE
 QUANTIZER's, and the build fails when a base site meets the stock bytes any
 catalogue module patches or keeps (`catalogue_overlaps`).
+
+**Use the SDK's MCF54455 CPU target, not the emulator's MCF5475 target.** On a contributor's MKII
+(24 October 2026, base `cd39c494`, Beat Slicer private USB probe 0.1.52), an override to
+`-mcpu=5475` emitted scale-eight indexed LEA in text drawing; the unit restarted with vector 3
+at that exact instruction. MCF54455 rejects scale-eight and word-sized indexes with address
+errors ([reference manual, 3.3.4.2](https://www.nxp.com/docs/en/reference-manual/MCF54455RM.pdf)).
+The emulator accepted it. Keep the machine SDK's target flags and audit final code; emulator
+execution is not an ISA-compatibility check. Probe qualification history remains
+in [Beat Slicer's testing record](../sdk/drafts/beat-slicer/TESTING.md).
 
 **GCC 16.2 at -O2 can store one byte late.** Its late-combine pass turned
 the controller board's byte copy into `move.b (%a0)+,(0,%a0,%d0.l)`. The
@@ -543,10 +607,10 @@ loaded and the MODULES LOADED dialog appeared. The track screen's drawer is
 marks the display for the UI loop's flush (`0x46c7c72c`). It writes the screen's
 plane and globals, so call it only from the UI task (`ev_tick`, key and encoder
 handlers), never from the engine task that installs or from an interrupt. The
-base calls it on the UI tick once the live modules change (`runtime.c`). On the
-same MKII the fix base `2f575d3e` showed Output Matrix's own label right after the
-install. That build was made before a rebase onto newer main code; the same
-`runtime.c` is now in base `6650236a`. After a RAM-boot restore `2f575d3e` showed MNL with a solid bar that CUE left
+base calls it on the UI tick once the live modules change or the controller board
+writes or reverts an effect's page, then an open FX SETUP window's own draw
+(`runtime.c`, #882). On the same MKII the fix base `2f575d3e` showed Output Matrix's
+own label right after the install. After a RAM-boot restore it showed MNL with a solid bar that CUE left
 unchanged. A PROJECT menu stayed intact through an install and a removal. Flashed
 `6650236a` (same MKII, 20 October 2026): an install, the first boot's restore and a
 power cycle with six modules kept each left MNL with a solid bar, no key pressed.
@@ -556,6 +620,12 @@ dev twin (`82b9bef4`) ran for over 15 minutes (its log has loads) but never
 enumerated on the Mac: no Elektron device at all, not a dead bridge handle.
 Only a power cycle brought USB back. The same image had RAM-booted cleanly
 before and did again after.
+
+**An unused setup slot is not free storage.** MIDI NOTE SETUP shows four values, but its window binds all six
+encoders: D and F edit the two `----` slots (setup record +0x03 and +0x05) unseen, and YES commits all six staged
+values, so a byte kept there is changed by a turn nobody sees and overwritten by the next YES (owner's MKII, 21 October
+2026). The MIDI generator registry keeps its choice in the arp step mask instead (`midi_generators.c`). Before using a
+"spare" Part byte, check stock's validator range for it and every editor that can write it.
 
 ## ColdFire and DSP load
 
@@ -621,61 +691,21 @@ upgrade while the loader may still have a job open, so the next boot logs a `sta
 owner's MKII flashing `a0dd21c4` (20 October 2026) and in every tester stall of the 16-20 October pull. Until the start
 record carries the base id, read a stall followed by a start on another base as an upgrade.
 
+*A module's edit can cost milliseconds on the UI task.* Installed module code and data run uncached (the cached
+alias is `--cached-modules`, a prototype), so a loop over a pattern record costs far more than in the base. On the owner's
+MKII (21 October 2026, development twin `c2f6b65e`), VECTOR's 64-step MIDI rewrite took 3.9 ms a knob turn: about 3 ms
+in stock's lock-index rebuild `0x400339d8`, which rescans all 16 tracks' 64 x 32 lock bytes, and 0.8 ms copying the
+2,224-byte track record in and out. Setting only its own track's bit of the per-step lock index (MIDI `0x46c7d2e4`,
+audio `0x46c7d48c`, as that routine does) and writing the record in place brought it to 0.5 ms. Audio frames stayed
+at 406-417 µs apart throughout, since all of it runs on the UI task. Time a module's edits with the profile below
+(`[24]`-`[27]` are the MIDI generators'; `[18]` and `[19]` are the fx map check's).
+
 *The DSP peak meter:* a core's peak (status.c, the diag log's five-minute windows) is the busiest single frame of a
 1,024-frame receiver window. A self-test that runs DSP modules, or a sync, leaves the window at 99.7-99.8 % although
 the mean stays flat and the audio is fine; a stock effect load does not. Read the self-test's longest frame for
 overload, not the peak (finding 59 in the beta test plan).
 
 ## Cold starts and card writes
-
-**A valid saved name does not prove a project-wide channel update committed.**
-Names can save before an initialization attempt that later rolls back. Inspect
-the checked intent/terminal journal and native bank checksums before blaming a
-UI cache or retrying. Preserve a stage/bank failure code, yield between bank
-pairs, allow cancellation at safe boundaries, and restore a live failed attempt
-in place when only channel fields changed. Reserve a full native reload for
-boot recovery that may have loaded damaged unrelated bank data. A long stopped
-engine operation with every key consumed looks like a frozen instrument even
-when its storage verification is still running.
-
-For an explicit repeat, keep the previous initialized checkpoint as the
-rollback baseline; do not clear its marker to bypass a first-run guard. A
-completed old marker is not proof that the new transaction committed: compare
-the journal's target generation. Exercise interrupted repeats as well as first
-initialization, and require a fresh confirmation key press before replacing
-independent bank edits.
-
-**Valid working and stored banks can have different channel maps.** A reported
-save loop had identical non-channel bytes and valid checksums in both copies,
-but one working MIDI channel was 3 and its stored channel was OFF. Do not
-require both channel maps to equal RAM. Check the working map against the live
-project, record each disk map separately and restore each original on rollback;
-retain the checksum and non-channel fingerprint checks. Exercise real divergent
-copies, including torn-peer recovery, rather than only identical saved twins.
-
-When a journal gains recovery data old readers cannot interpret, an unknown
-tag alone may fall through their legacy path. Use a version they reject and
-retire both old journal peers before mutation. A compatible terminal record
-can permit old readers again after complete commit/rollback. Test the actual
-old reader, and require the recovery-capable module to be kept before starting.
-
-**A Save to New destination may contain only working banks.** A reported new
-project had all sixteen valid `.work` files and no `.strd` files. A copied name
-checkpoint and initialized marker did not mean the stored bank set existed.
-Native full SAVE PROJECT created all stored copies, after which initialization
-and fresh-process restoration passed. Tell the player to complete SAVE PROJECT
-in the destination after Save to New, and distinguish missing peers from channel
-mismatches before recommending another save.
-
-**Buffered write-mode close uses the logical end recorded in its file object.**
-An in-place bank edit must preserve the original logical length on every error
-path as well as success; a failed seek or partial update must not make close
-truncate the bank. Use complete aligned sectors, preserve neighboring bytes,
-and verify the full file afterward. A channel-only journal cannot recover
-unrelated data lost by a whole-bank rewrite. Keep a verified saved peer and
-fingerprints of all non-channel bytes before changing either bank copy.
-Host fault tests should model close-time truncation and torn neighboring data,
-not just a failed channel-byte write.
 
 **A cold start can stall at the logo where a quick restart does not.** An
 early-startup change passed emulator boots and quick power cycles on a
@@ -703,14 +733,18 @@ card latency.
 
 ## Octabam's register
 
-Octabam moved its trap register out of `AGENTS.md` into `docs/contributing/TRAPS.md` on 14 October 2026 and kept adding to it. Both are vendored unchanged, pinned at the revision in `sdk/imports/octabam-infrastructure-5c71bc8c.json`: [sdk/octabam/AGENTS.md](../sdk/octabam/AGENTS.md) (the register to 30 September 2026) and [sdk/octabam/docs/TRAPS.md](../sdk/octabam/docs/TRAPS.md) (the register to 23 October 2026, with anchors). Of the entries added since the snapshot, these reach Modwerk's base, loader, DSP sources and emulator work; the ones about `brclr`, descriptor names, label prefixes and `rep` are already above or in the effects guide.
+Octabam's trap register left `AGENTS.md` for `docs/contributing/TRAPS.md` on 14 October 2026. Both are vendored unchanged: [sdk/octabam/AGENTS.md](../sdk/octabam/AGENTS.md) (to 30 September 2026) and [sdk/octabam/docs/TRAPS.md](../sdk/octabam/docs/TRAPS.md) (to 26 October 2026, with anchors), with three companions: [FAILURE_MODES.md](../sdk/octabam/docs/FAILURE_MODES.md), failures seen on units and how each was found; [HARDWARE_MATRIX.md](../sdk/octabam/docs/HARDWARE_MATRIX.md), a one-cable USB test procedure and per-slot DSP costs of all fourteen stock effects measured on a unit; and [MIDI_TRACKS.md](../sdk/octabam/docs/MIDI_TRACKS.md), where a MIDI track's setup lives in the Part and how notes go out (a reading of the image, not run). `sdk/imports/octabam-docs-*.json` pins each. Entries since the snapshot that reach the base, loader, DSP sources and emulator are below; `brclr`, descriptor names, label prefixes and `rep` are above or in the effects guide.
 
-- **A zero CS1 with a valid settings tail boots stock's settings as zeros** ([trap-cs1-zero](../sdk/octabam/docs/TRAPS.md#trap-cs1-zero)). A base variant that reads run-time settings from the CS1 early block must treat an all-zero block as "no settings", not as every setting off.
-- **Same-named labels across DRAM units resolve by nm table order** ([TRAPS.md](../sdk/octabam/docs/TRAPS.md), "Same-named labels across DRAM units"). Two linked units with a local label of the same name bind a reference to whichever the symbol table lists first; octabam now resolves symbols per unit. Keep labels unique across the units one runtime links.
-- **`moveml %sp@` is the mode-2 form: it stores at sp and leaves sp unchanged** (same file). A ColdFire save sequence that means to push must use the predecrement form; the port runs the wrong one happily.
-- **A completion interrupt in the first-sector card write window polls DRQ on a count the producer has not updated yet** (same file). Card writes from an interrupt context race the PIO sector loop; octabam's ATA WRITE GUARD keeps the first sector and its pointer update atomic. Anything Modwerk writes to the card from a hook must hold the mask the same way.
-- **The emulator's bench socket is non-blocking and dropped the rest of a large reply on EAGAIN** (same file; fixed in the vendored `usb.cpp`). A bench client that read a truncated reply was seeing this, not a firmware fault.
-- **A persistent slot that init does not clear holds whatever the effect before ours left in the block** ([TRAPS.md](../sdk/octabam/docs/TRAPS.md), "A persistent slot"). Init zeroes every slot the sample loop reads before it writes; `dsp_host -dirty` and the vendored `-pword` option (a knob word with its LFO companion bits 8-15 set) reproduce both of these locally.
+- **A DSP counter past $7fffff saturates when `move a,nN` takes it to an address register** ([TRAPS.md](../sdk/octabam/docs/TRAPS.md), "A frame count past $7fffff"): A2 keeps its sign extension through `and`, so a frame-counter index stopped the frame engine 50.7 minutes after power-up. Mask the count to 23 bits, or move it through `a1` as this base's load meter does.
+- **A zero CS1 with a valid settings tail boots stock's settings as zeros** ([TRAPS.md](../sdk/octabam/docs/TRAPS.md#trap-cs1-zero)): a base variant that reads run-time settings from the CS1 early block treats an all-zero block as no settings.
+- **Same-named labels across DRAM units bind by nm table order** ([TRAPS.md](../sdk/octabam/docs/TRAPS.md), "Same-named labels across DRAM units"): keep local labels unique across the units one runtime links.
+- **`moveml %sp@` stores at sp and leaves sp unchanged** (same file): a ColdFire push needs the predecrement form; the port does not catch it.
+- **A card-write completion that runs before its bookkeeping** (same file) is the race under "Cold starts and card writes"; octabam's ATA WRITE GUARD keeps the first sector and its pointer update atomic, and a hook that writes to the card holds the mask the same way.
+- **A persistent slot that init does not clear holds the previous effect's words** ([TRAPS.md](../sdk/octabam/docs/TRAPS.md), "A persistent slot"): init zeroes every slot the sample loop reads before it writes. `dsp_host -dirty` reproduces it locally, `-pword` a knob under an LFO (companion bits 8-15 set).
+- **Window code above `0x37f00` is wiped at boot** ([TRAPS.md](../sdk/octabam/docs/TRAPS.md#trap-window-zero)): payload B's boot loop clears `Y:0x37f00..0x3ffff` after the pre-boot upload, and DARK REV on the `0x30000` slot writes up to `0x33da2`. Resident DSP code goes in `0x33da3..0x37eff`.
+- **A host write at the frame interrupt's entry is lost on every other frame** ([TRAPS.md](../sdk/octabam/docs/TRAPS.md#trap-host-mask); under the port, open on a unit): payload B rewrites the host handlers' address masks each frame. Stream words to core B on ping-0 frames only, or check that every word arrived.
+- **`dsp_asm` does not assemble a backward `bra`, or a `jmp` to a window address** ([TRAPS.md](../sdk/octabam/docs/TRAPS.md#trap-bra-back)): put a trampoline before the code it enters, or `jmp (rN)`; dispatch entries keep `init < proc <= init + 256`.
+- **A module's id is the remix's, not the manifest's** ([TRAPS.md](../sdk/octabam/docs/TRAPS.md#trap-module-id)): a tool that reads the preferred `fx2_id`, a literal id or `0x400d5fdc` is right only for the stock layout; it matters once [more than 32 effect ids](OCTATRACK_MORE_EFFECT_IDS.md) move them.
 
 ## The emulator and the tools
 
@@ -722,23 +756,16 @@ What `ot_emu` does not show:
 - It never restarts from RAM, so the park-and-upload path is not covered.
 - `--dsp` dies with a bus error in Docker unless `--shm-size=128m`;
   `--frame` is needed for the audio producer (USB audio) to run.
+- It honours one `--watch-mem`: given several, it reports only the last.
 - It boots as an MKI unless given `--mkii`, and the MKI panel has no PROJ,
   PART, AED or ARR key: remote PROJ does nothing. Card writes stay in memory
   unless given `--card-rw`. Hold remote keys for unit ticks, not wall time:
   under `--dsp` it runs far slower than the clock.
 
-**Keep one link open and drive it by name** (the full how-to: [OCTATRACK_DRIVING.md](OCTATRACK_DRIVING.md)).
-- *The session.* Each `npm run device` call opens the bridge again (one to
-  two seconds) and, after a quiet spell, brings up MODWERK CONNECTED.
-  Instead run `while :; do npm run device -- serve; sleep 1; done` in a
-  terminal. It starts the bridge, keeps the link open, sends a request every
-  4 s so the popup shows once, and comes back after a RAM boot (`boot DIR`).
-- *Sending.* `scripts/device-send.py 'part2 pick:T1:FX2:E-Verb stats'`
-  replies in well under a second: `pick` by name (scrolled with LEVEL, done
-  once the track runs it, about 1.4 s), `part1`-`part4`, `ui` (effects,
-  current track, Part, transport), `stats`, `png:FILE`, `try`/`remove`.
-- *Looking.* A screenshot at `--scale 2` (`png:FILE`) is cheaper to read
-  than the text rendering. Take one only for screens `ui` cannot name.
+**Keep one link open and drive it by name.** [OCTATRACK_DRIVING.md](OCTATRACK_DRIVING.md)
+covers the persistent session, named panel steps, state reads and screenshots.
+A single connection avoids repeated bridge startup and CONNECTED notices; use
+screenshots only for details the state reads cannot show.
 
 Tools that work on this Mac:
 - Development bases (`build_core.py --dev`): `npm run device -- key`,
@@ -749,8 +776,6 @@ Tools that work on this Mac:
   Homebrew's ffmpeg was broken (missing libx265).
 - `dsp_asm` for `--dsp-loader` builds: build `source/dsp_host/dsp_asm` from
   Octabam's vendored `dsp56300` with CMake and set `ELEKLOADER_DSP_ASM`.
-- Read device state in one USB connection when timing matters: separate
-  `npm run device` calls each take most of a second.
 
 ## How to debug on the unit
 

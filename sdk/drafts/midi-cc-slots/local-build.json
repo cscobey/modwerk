@@ -1,13 +1,15 @@
 {
-  "version": "0.0.13-experimental",
-  "sha256": "086fc3c73468bd58db823bf2857106ebe05f7d1197fd226c595d4139eeca000a",
-  "bytes": 33386,
-  "imageBytes": 28916,
+  "version": "0.0.18-experimental",
+  "sha256": "8d971baca19198b9e35d7644c7c8810f917471f980eadc2db03fab8de3668451",
+  "bytes": 33434,
+  "imageBytes": 28964,
   "abi": 8,
   "features": 3,
   "sites": 24,
   "copies": 25,
   "profile": true,
   "projectTemplate": true,
-  "fills": 0
+  "fills": 0,
+  "currentBase": true,
+  "requiredBase": "c1ae2ee92a829e06aa9398d35981b8228efdd34c578c9583ef36fba8f5bc637f"
 }

@@ -40,7 +40,7 @@ export default function CcUsbTestLab({link:supplied}:{link?:OctatrackLink}) {
     if(!review||!packages)throw new Error('Prepare and read the installed version first.')
     const fresh=await read()
     if(packageSetDigest(fresh.rows)!==packageSetDigest(review.rows))throw new Error('The reviewed package set changed. Prepare again.')
-    const before=link.getState(),why=ccTrialProblem(before,review.modules,review.base+':'+review.active)
+    const before=link.getState(),why=ccTrialProblem(before,review.modules,review.base+':'+review.active,'install',test.base)
     if(why||before.identity?.base!==review.base||before.active!==review.active)throw new Error(why??'The reviewed connection changed. Prepare again.')
     if(revision===review.revision)throw new Error('Choose the other revision for a real package replacement.')
     const rows=replaceRevision(review.rows,revision)

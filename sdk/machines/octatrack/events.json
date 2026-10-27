@@ -338,6 +338,48 @@
     "jmp 0x40004d16"
    ],
    "done": null
+  },
+  {
+   "site": "0x4009fb58",
+   "length": 6,
+   "guard": "b9fd3e826833844716d1d4904ee373c65d291047e78b9f34f8d9e3c95dac30fd",
+   "routine": "the MIDI tracks' note sender 0x4009f794 (sequencer and arpeggiator), once per note of a track's trig or arp step: d7 the track (0-7), a2 the note byte after TRAN (signed; -1 drops it), -64(%fp) KEY's root offset (0 with KEY OFF); stock then corrects the note to KEY's Major or Minor scale (0x4009fb5e) and sends it, keeping it for its note-off",
+   "head": [],
+   "tail": [
+    "tst.l -64(%fp) | stock's own test, its branch made absolute: KEY OFF sends the note as it is",
+    "bgt.s 1f",
+    "jmp 0x4009fb80",
+    "1: jmp 0x4009fb5e"
+   ],
+   "done": null
+  },
+  {
+   "site": "0x4007a2ec",
+   "length": 8,
+   "guard": "9d8b5c6fa44fca2b22f8cb24de82782737e5615dff673baad1c7423135d0d27f",
+   "routine": "MIDI ARP SETUP's encoder handler 0x4007a2ec(encoder, delta), reached through its window's records: 4(%sp) the encoder (2 LEN, 5 KEY, 6 the arp note editor), 8(%sp) the delta; KEY (0x4007a3e2) stores the track's setup byte +0x11 (0..24) in the Part, its battery-backed copy and the live copy. A held trig does not change it: the turn still edits the track's KEY",
+   "head": [],
+   "tail": [
+    {
+     "stock": 8
+    },
+    "jmp 0x4007a2f4"
+   ],
+   "done": null
+  },
+  {
+   "site": "0x4007a1ec",
+   "length": 6,
+   "guard": "5a5d9a451cef368d61badb2d5212624df56beca30e3fcaa6483f0c42a35a92ee",
+   "routine": "MIDI ARP SETUP's drawer 0x40079d48, its loop over the setup slots, about to draw a value (LEN or KEY): d3 the slot (2 LEN, 5 KEY), d4 the track's byte, a3 the slot's descriptor (a3@ its text function f(buffer, value), a3@(48) its drawer or 0 for 0x400479b4), a2 + 53 and d2 + 29 the place, d6 the surface; stock calls drawer(a2 + 53, d2 + 29, d3, d4, 0, a3@, d6) at 0x4007a1fa and goes on at 0x4007a216",
+   "head": [],
+   "tail": [
+    {
+     "stock": 6
+    },
+    "jmp 0x4007a1f2"
+   ],
+   "done": null
   }
  ],
  "events": [
@@ -1315,6 +1357,14 @@
      "what": "the machine title's right chevron for rows with a pool"
     },
     {
+     "site": "0x4007865e",
+     "length": 4,
+     "guard": "7d0c3559d87019b7bb3475f5740bad5d216041e6b6cd0f2943aa176156345398",
+     "op": "ptr",
+     "target": "mw_chooser_name",
+     "what": "machine chooser names by the list's row: its scroll offset plus the row on screen"
+    },
+    {
      "site": "0x40078678",
      "length": 2,
      "guard": "04cd1c6d463ba6752ff68f9125991b1c4af983ae355b62366122ba2d47eee3b2",
@@ -1327,7 +1377,7 @@
      "guard": "c611970befafba97f882ab297bd19f0efe0c7d927bfd6110c53f03ad4b7da1c7",
      "op": "jmp",
      "target": "mw_chooser_row",
-     "what": "machine chooser row highlight"
+     "what": "machine chooser row highlight, by the list's row"
     },
     {
      "site": "0x400786ce",
@@ -1538,6 +1588,120 @@
     }
    ],
    "orderEvidence": "Every handler acts only on a track whose FX2 runs its own effect id, so no order is needed between them."
+  },
+  {
+   "event": "ot_midi_generators",
+   "index": 31,
+   "kind": "table",
+   "site": null,
+   "length": 0,
+   "record": 36,
+   "key": null,
+   "room": 4,
+   "declaration": "struct modwerk_midi_generator {\n    uint32_t abi;                       /* MODWERK_MIDI_GENERATOR_ABI */\n    const char *label;                  /* its row in MIDI NOTE SETUP's list: up to 8 characters */\n    uint32_t id;                        /* 1-255, its own: a MIDI track running it keeps 'M' and it in its arp step mask */\n    uint32_t pages;                     /* the MIDI pages it draws, bit k for page k: 0 NOTE (SRC), 1 LFO, 2 ARP (AMP, always), 3 CTRL1 (FX1), 4 CTRL2 (FX2) */\n    void (*assign)(unsigned track, unsigned on); /* MIDI track 0-7 of the current Part becomes it (1) or leaves it (0) */\n    uint32_t (*page)(uint32_t stock, unsigned page, unsigned second); /* the descriptor to draw on page 0-4 instead of stock's; second: FUNC+AMP's second ARP page */\n    void (*knob)(unsigned page, unsigned index, int delta, unsigned second); /* encoder A-F (0-5) turned on that page */\n    void (*yes)(unsigned page);         /* YES on that page */\n    void (*ui_tick)(void);\n};\n#define MODWERK_MIDI_GENERATOR_ABI 2u",
+   "when": "MIDI NOTE SETUP (double-tap SRC, or double-tap TRACK in MIDI mode) lists OFF and the contributed generators in its empty left half; a MIDI track running one shows that generator's pages on the MIDI pages it takes (always ARP; FUNC+AMP: the ARP page's second)",
+   "context": "the UI task",
+   "contract": "Contribute one struct modwerk_midi_generator (every field but abi, label and id optional, 0). Choosing it puts 'M' and its id in the track's arp step mask (Part 0x1822 + 2 t, high byte first), which stock's validator never reads and only ARP SETUP edits; stock's default there is ffff. On every change of generator the base first puts the track's arpeggiator back to stock's defaults (MODE OFF, every note 0), then calls the old generator's assign(t, 0) and the new one's assign(t, 1). While a generator runs a track it owns that track's 16 arpeggiator note bytes (Part 0x1832 + 16 t, each -64..63, the range stock's validator keeps), so the ARP page is always its own and FUNC+AMP never opens ARP SETUP there. Its pages show while no trig or scene is held (stock's then, so locks stay stock's); the base takes encoders A-F, YES and, on the second ARP page, NO there. Values behind the pages it takes stay stock's and keep their meaning (a NOTE page's NOT2-4 still add chord notes): set or show them itself. Layout A (owner, 24 October 2026): generators take SRC and AMP; FX1 and FX2 are kept for MIDI effects. A track whose id has no installed generator reads as stock.",
+   "order": "lower first, then module id: the list's order. 30 for the first generator; others 40-90.",
+   "subscribers": [],
+   "orderEvidence": "No generator in the catalogue yet.",
+   "sites": [
+    {
+     "site": "0x40083afc",
+     "length": 10,
+     "guard": "d611d680ad5031e96fe61f954ea40fd87a76bbc961c6d2deefdfc55935dd9f1e",
+     "op": "jmp",
+     "target": "mg_tap_site",
+     "what": "double-tap TRACK: stock does nothing in MIDI mode (jsr 0x40033970; tst.l d0; bne); the base opens MIDI NOTE SETUP when a generator is installed"
+    },
+    {
+     "site": "0x4004e1ea",
+     "length": 10,
+     "guard": "b40743bf9a64ff977ac996a4a3c34f6582d8fcda08b78cf52fdf634c94c54959",
+     "op": "jmp",
+     "target": "mg_page_site",
+     "what": "the main page drawer's MIDI arm asks 0x40031ee0 for its descriptor: a generator's page on its tracks' ARP page"
+    },
+    {
+     "site": "0x40032280",
+     "length": 8,
+     "guard": "de77e904028311689866c543af3ce42a7fcfa1e3fdc531807fc98eaf0689d1cf",
+     "op": "jmp",
+     "target": "mg_setup_site",
+     "what": "the setup opener's MIDI ARP branch: on a generator's track the ARP page turns to its second page instead"
+    },
+    {
+     "site": "0x40036548",
+     "length": 8,
+     "guard": "e7935464f6aea76650f55814efc9b45785485164937f3bd5ed6f2a4d384b8d4b",
+     "op": "jmp",
+     "target": "mg_note_setup_draw",
+     "what": "MIDI NOTE SETUP's drawer (its window's and its writers' calls): stock's, then the generator list in its empty left half"
+    }
+   ]
+  },
+  {
+   "event": "ev_midi_note_key",
+   "index": 32,
+   "kind": "take",
+   "site": "0x4009fb58",
+   "length": 6,
+   "entry": "jmp",
+   "arg": "d7",
+   "room": 8,
+   "when": "a MIDI track's note, from its trig, chord or arpeggiator, is about to be corrected to the track's KEY (ARP SETUP) and sent (d7 the track)",
+   "context": "the MIDI sequencer tick 0x400a1e0c (an interrupt, vector 0x60; octabam docs/firmware/MIDI_SCENES.md section 5), once per note: a few microseconds, no firmware call, nothing that waits or allocates",
+   "contract": "The taker's entry gets every register and the stack as at the site: d7 the track, a2 the note byte (it may rewrite it, 0-127, or store -1 to drop the note), -64(%fp) stock's KEY root offset. It returns to stock by jumping to 0x4009fb80 to send the note as it is now, or by replaying the stock tail below (stock's KEY correction); it must not jump into the site's bytes. Stock keeps the note it sends for that note's note-off.",
+   "order": "10-29: a machine claiming its own tracks (claims set); 30-49: a machine's bundled feature; 50-69: a standalone feature module. The first record that claims the call takes it.",
+   "subscribers": [],
+   "orderEvidence": "No module subscribes yet. Upstream octabam's MIDI Scales (radiohagen, MIT) patches this site for its extra modes; a Modwerk port, or a module that locks KEY per step, takes it here instead."
+  },
+  {
+   "event": "ev_arp_setup_knob",
+   "index": 33,
+   "kind": "take",
+   "site": "0x4007a2ec",
+   "length": 8,
+   "entry": "jmp",
+   "arg": null,
+   "room": 8,
+   "when": "an encoder turns on MIDI ARP SETUP (FUNC+AMP on a MIDI track), before stock edits LEN, KEY or an arp note",
+   "context": "the UI task (ARP SETUP's input layer): short, no firmware call that can block",
+   "contract": "The taker's entry gets every register and the stack as at the site: (%sp) the return address, 4(%sp) the encoder (2 LEN, 5 KEY, 6 the arp note editor), 8(%sp) the delta. It takes the turn by returning to the caller with rts (stock edits nothing), or hands it to stock by replaying the stock tail below; it must not jump into the site's bytes. A taker that stores into the pattern or the Part writes the bank and its battery-backed copy and sets the edited flags as stock's writers do.",
+   "order": "10-29: a machine claiming its own tracks (claims set); 30-49: a machine's bundled feature; 50-69: a standalone feature module. The first record that claims the call takes it.",
+   "subscribers": [],
+   "orderEvidence": "No module subscribes yet. A module that locks KEY per step claims only encoder 5 while a trig is held, and leaves every other turn to stock. Upstream octabam's MIDI Scales patches KEY's branch here (0x4007a3e2) for its extra modes; a port would take this event instead."
+  },
+  {
+   "event": "ev_arp_setup_text",
+   "index": 34,
+   "kind": "take",
+   "site": "0x4007a1ec",
+   "length": 6,
+   "entry": "jmp",
+   "arg": "d3",
+   "room": 8,
+   "when": "MIDI ARP SETUP is about to draw a setup value (d3 the slot: 2 LEN, 5 KEY)",
+   "context": "the UI task (the drawer): short, no firmware call that can block",
+   "contract": "The taker's entry gets every register and the stack as at the site: d3 the slot, d4 the track's value, a3 the slot's descriptor (a3@ the text function f(buffer, value), a3@(48) the drawer or 0 for 0x400479b4), a2 and d2 the place, d6 the surface. It draws the value itself, normally by calling the slot's drawer as stock does with a text function of its own, and goes on at 0x4007a216 with every register but d0-d1/a0-a1 as it found them; or it hands the value to stock by replaying the stock tail below. It must not jump into the site's bytes.",
+   "order": "10-29: a machine claiming its own tracks (claims set); 30-49: a machine's bundled feature; 50-69: a standalone feature module. The first record that claims the call takes it.",
+   "subscribers": [],
+   "orderEvidence": "No module subscribes yet. A module that shows a held trig's KEY lock claims slot 5 only while a trig is held, and leaves every other draw to stock. Upstream octabam's MIDI Scales replaces KEY's text function (0x400d40c6) for its extra modes; a port would take this event instead."
+  },
+  {
+   "event": "ev_trig_muted",
+   "index": 35,
+   "site": null,
+   "prototype": "unsigned f(void)",
+   "args": [],
+   "results": "or",
+   "when": "a machine that starts a note from a trig itself, before stock binds the track's voice (ev_voice_bind), asks which tracks' new trigs a module drops now; no stock site: the machine calls the base's modwerk_raise_ev_trig_muted(), which returns every handler's answer OR'd, 0 with none",
+   "context": "where the machine starts its note: the frame interrupt (the renderer the packer calls at 0x4000d43e) or a task: short, no firmware call that can block",
+   "contract": "Return the tracks whose new trigs this module drops now: bit t for track t+1, bits 0-7; higher bits are ignored. Every handler runs. They are the tracks whose ev_voice_bind this module drops (1) in the same frame: muted or soloed-out tracks while one of its trig-dropping modes is on, less those whose trigs it lets through (ev_mute_keep). The asking machine starts no new note on these tracks and lets a note already sounding finish; with no answer (0) it plays every trig, as stock does. d2-d7/a2-a6 must be kept.",
+   "order": "lower first, then module id; every handler runs and the answers are OR'd, so the order does not change the answer. 10-90.",
+   "subscribers": [],
+   "raisers": [],
+   "orderEvidence": "The answer is an OR: no handler can let another's dropped trigs through. No module answers or asks it yet (issue #777): Mute Modes' answer is the test its ev_voice_bind handler makes for each track (fresh_bind, with KEYMASK), and FM Synth, which starts its note in its renderer before stock reaches ev_voice_bind, is the first machine to ask."
   }
  ]
 }

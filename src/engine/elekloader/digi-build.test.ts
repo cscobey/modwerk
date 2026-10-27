@@ -66,6 +66,13 @@ describe('the vendored elekloader catalog', () => {
       missing: [],
     })
   })
+  it('plans Loop Sync, a storage mod, from its pinned source-only package with core-ar2 0.3', () => {
+    expect(planBuild('analog-rytm-mkii', '1.74', ['loop-sync'])).toMatchObject({
+      core: { file: 'core-ar2-0.3.elemod', version: '0.3' },
+      mods: [{ id: 'loop-sync', file: 'loop-sync-0.2.0-experimental-os1.74.elemod', device: 'analog-rytm-mk2', os: '1.74', version: '0.2.0-experimental' }],
+      missing: [],
+    })
+  })
   it('keeps download approval specific to each device', () => {
     expect(DIGI_DOWNLOADS_ENABLED).toEqual({ digitakt: true, 'digitakt-ii': false, digitone: true, 'analog-rytm-mkii': false })
     expect(digiDownloadsEnabled('digitakt-ii')).toBe(false)

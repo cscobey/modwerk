@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import original from '../../sdk/drafts/midi-cc-slots/local-build.json' with { type: 'json' }
+import original from '../../sdk/drafts/midi-cc-slots/legacy-build.json' with { type: 'json' }
 import test from '../../sdk/drafts/midi-cc-slots/local-usb-test.json' with { type: 'json' }
-import installer from '../../sdk/drafts/midi-cc-slots/local-usb-installer.json' with { type: 'json' }
 import { sha } from '../../vendor/elekloader/kit/src/bytes.ts'
 import { decodeCardSeed } from '../engine/elekloader/card-seed.ts'
 import type { SavedSetSnapshot } from '../engine/elekloader/upload-wire.ts'
@@ -36,8 +35,8 @@ export function packageSetDigest(rows:readonly PackageRow[]) {
 }
 /** Published base lacks optional file export. Match exact live MWS1 against the reviewed subset pins. */
 export function reviewedRuntimePackages(modules:readonly MissingModule[],digest:string,base:string):PackageRow[] {
-  if(base!==test.base||base!==installer.base)throw new Error('The runtime package review belongs to another base.')
-  const hashes=installer.packages as Readonly<Record<string,string>>
+  if(base!==test.base)throw new Error('The runtime package review belongs to another base.')
+  const hashes=test.packages as Readonly<Record<string,string>>
   const rows=modules.map(m=>{
     if(!Object.hasOwn(hashes,m.module))throw new Error('An installed companion is outside the reviewed package list. No update was started.')
     return {module:m.module,sha256:hashes[m.module]}

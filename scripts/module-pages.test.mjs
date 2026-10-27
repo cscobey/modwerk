@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { expect, it } from 'vitest'
 import sharp from 'sharp'
 import { MODULES } from '../src/catalog/modules.ts'
-import { digiModulePageHtml, modulePageHtml, modulePages, moduleThumbnail, notFoundPageHtml } from './module-pages.ts'
+import { digiModulePageHtml, digiModuleThumbnail, modulePageHtml, modulePages, moduleThumbnail, notFoundPageHtml } from './module-pages.ts'
 import { DIGI_MODS, digiModuleDocument } from '../src/devices/digi-mods.ts'
 import { DEVICES_BY_ID } from '../src/devices/registry.ts'
 
@@ -35,7 +36,7 @@ it('keeps canonical URLs, thumbnails and app assets under a Pages project base',
 
 it('builds the FM Synth canonical page and keeps the old URL loadable', async () => {
   const plugin = modulePages()
-  plugin.configResolved({ root: new URL('../', import.meta.url).pathname, base: './' })
+  plugin.configResolved({ root: fileURLToPath(new URL('../', import.meta.url)), base: './' })
   const assets = []
   await plugin.generateBundle.call({ emitFile(asset) { assets.push(asset) } }, {}, { 'index.html': { type: 'asset', source: html } })
   const canonical = assets.find(asset => asset.fileName === 'module/fm-synth/index.html')
@@ -89,6 +90,13 @@ it.each(MODULES)('renders a usable JPEG of $name from the library thumbnail', as
   expect(image.length).toBeGreaterThan(10000)
   const statistics = await sharp(image).stats()
   expect(statistics.channels.some(channel => channel.stdev > 10)).toBe(true)
+})
+
+it.each(DIGI_MODS)('renders a usable JPEG of $device $title from its saved thumbnail', async mod => {
+  const image = await digiModuleThumbnail(mod)
+  expect(await sharp(image).metadata()).toMatchObject({ format: 'jpeg', width: 1200, height: 630 })
+  expect(image.length).toBeGreaterThan(10000)
+  expect((await sharp(image).stats()).channels.some(channel => channel.stdev > 10)).toBe(true)
 })
 
 it('uses different module artwork and responds to thumbnail palette changes', async () => {

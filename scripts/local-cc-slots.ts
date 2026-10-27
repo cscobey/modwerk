@@ -1,4 +1,5 @@
 import { makeUsbTestPackage, test as usbTestPin } from '../src/dev/cc-usb-test.ts'
+import legacyPin from '../sdk/drafts/midi-cc-slots/legacy-build.json' with { type: 'json' }
 import pin from '../sdk/drafts/midi-cc-slots/local-build.json' with { type: 'json' }
 // Development-only package compiler. No firmware inputs, device access or public assets.
 import { loadEnv, type Plugin } from 'vite'
@@ -41,7 +42,8 @@ export function localCcSlots(): Plugin {
       const work = await mkdtemp(join(tmpdir(), 'modwerk-cc-slots-'))
       try {
         const output = join(work, 'trial.mwrm')
-        await promisify(execFile)('python3', ['-B', join(server.config.root, 'sdk/drafts/midi-cc-slots/build_runtime.py'), '--output', output, ...(pin.profile ? ['--profile'] : []), ...(pin.projectTemplate ? ['--project-template'] : [])], { timeout: 30000 })
+        const legacy=path==='/usb-test.json'||path==='/card.json', selected=legacy?legacyPin:pin
+        await promisify(execFile)('python3', ['-B', join(server.config.root, 'sdk/drafts/midi-cc-slots/build_runtime.py'), '--output', output, ...(selected.profile ? ['--profile'] : []), ...(selected.projectTemplate ? ['--project-template'] : []), ...(!legacy&&pin.currentBase?['--current-base']:[])], { timeout: 30000 })
         if (path === '/card.json') {
           const card = join(work, 'card.json')
           await promisify(execFile)('python3', ['-B', join(server.config.root, 'sdk/drafts/midi-cc-slots/build_resident.py'), '--package', output, '--upstream', tools, '--output', card], { timeout: 30000 })
@@ -50,7 +52,7 @@ export function localCcSlots(): Plugin {
           res.end(data); return
         }
         const data = await readFile(output)
-        const approved = JSON.parse(await readFile(join(server.config.root, 'sdk/drafts/midi-cc-slots/local-build.json'), 'utf8')) as { version: string; sha256: string }
+        const approved = JSON.parse(await readFile(join(server.config.root, 'sdk/drafts/midi-cc-slots',legacy?'legacy-build.json':'local-build.json'), 'utf8')) as { version: string; sha256: string }
         const document = verifiedCcDocument(data, approved)
         if (path === '/usb-test.json') { res.end(JSON.stringify({ original: document, test: verifiedCcDocument(makeUsbTestPackage(data), usbTestPin) })); return }
         if (path === '/package.mwrm') { res.setHeader('Content-Type', 'application/octet-stream'); res.end(data) }

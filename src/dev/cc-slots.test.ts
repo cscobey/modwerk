@@ -3,7 +3,7 @@ import { sha } from '../../vendor/elekloader/kit/src/bytes'
 import { describe, expect, it } from 'vitest'
 import { ccPackage, ccTrialProblem, ccPersistenceProblem, parseCcInstallRecord, CC_SLOTS_ID, type CcInstallRecord } from './cc-slots'
 import type { LinkState } from '../engine/elekloader/octatrack-link'
-const base = 'a'.repeat(64)
+const base = 'c1ae2ee92a829e06aa9398d35981b8228efdd34c578c9583ef36fba8f5bc637f'
 const ready: LinkState = { status: 'ready', active: 'b'.repeat(64), identity: { base, model: 'MKII', canSubmit: true, capabilities: { abi: 8, features: 3, maxSites: 128, maxCopies: 128 } } }
 const review = base + ':' + ready.active
 
@@ -19,15 +19,15 @@ describe('local CC trial review', () => {
     expect(ccTrialProblem(ready, [], review, 'remove')).toContain('not installed')
   })
   it('refuses damaged or substituted local packages', () => {
-    expect(() => ccPackage({ version: '0.0.13-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
+    expect(() => ccPackage({ version: '0.0.18-experimental', sha256: 'a'.repeat(64), hex: '00'.repeat(100) })).toThrow('identity')
     expect(() => ccPackage({ version: 'wrong', sha256: '', hex: '' })).toThrow('Invalid')
   })
 })
 
 it('accepts the larger initialized-project package and bounds it by the reviewed size', () => {
-  const data=new Uint8Array(33386),view=new DataView(data.buffer)
+  const data=new Uint8Array(33434),view=new DataView(data.buffer)
   view.setUint32(0,0x4d57524d);view.setUint16(4,8);view.setUint32(28,parseInt(CC_SLOTS_ID,16))
-  const document={version:'0.0.13-experimental',sha256:sha(data),hex:Buffer.from(data).toString('hex')}
+  const document={version:'0.0.18-experimental',sha256:sha(data),hex:Buffer.from(data).toString('hex')}
   expect(ccPackage(document)).toEqual(data)
   expect(()=>ccPackage({...document,hex:document.hex+'00'})).toThrow('Invalid')
 })

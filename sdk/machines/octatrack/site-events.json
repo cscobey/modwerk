@@ -159,6 +159,36 @@
    "index": 30,
    "event": "ev_tail_kill",
    "kind": "call"
+  },
+  {
+   "index": 31,
+   "event": "ot_midi_generators",
+   "kind": "table",
+   "room": 4,
+   "record": 36
+  },
+  {
+   "index": 32,
+   "event": "ev_midi_note_key",
+   "kind": "take",
+   "room": 8
+  },
+  {
+   "index": 33,
+   "event": "ev_arp_setup_knob",
+   "kind": "take",
+   "room": 8
+  },
+  {
+   "index": 34,
+   "event": "ev_arp_setup_text",
+   "kind": "take",
+   "room": 8
+  },
+  {
+   "index": 35,
+   "event": "ev_trig_muted",
+   "kind": "raise"
   }
  ]
 }

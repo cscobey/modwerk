@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.resetModules() })
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.resetModules(); vi.doUnmock('./local-cc-card-baseline') })
 async function local(enabled = true, dev = true) {
   vi.resetModules(); vi.stubEnv('DEV', dev); vi.stubEnv('MODE', 'development'); vi.stubEnv('VITE_LOCAL_CC_SLOTS', enabled ? '1' : '')
   return import('./local-cc-module')
@@ -10,7 +10,7 @@ async function local(enabled = true, dev = true) {
 it('requires both an explicit local opt-in and a development build', async () => {
   expect((await local(false)).localCcDocuments).toEqual([])
   expect((await local(true, false)).localCcPackages).toEqual([])
-  expect((await local()).localCcPackages[0]).toMatchObject({ id: 'midi-cc-slots', name: 'Midi Mode 2', bytes: 33386, abi: 8, sites: 24, copies: 25 })
+  expect((await local()).localCcPackages[0]).toMatchObject({ id: 'midi-cc-slots', name: 'Midi Mode 2', bytes: 33434, abi: 8, sites: 24, copies: 25 })
 })
 it('registers the local listing, source, artwork, real screenshots and installed runtime identity together', async () => {
   await local()
@@ -32,7 +32,7 @@ it('registers the local listing, source, artwork, real screenshots and installed
   expect(inventory.moduleIds).toEqual([module.id])
   const grid=renderToStaticMarkup(createElement(ModuleGrid,{ids:[module.id],inventory,describe:()=>module.detail,onOpen(){},onRemove(){},onKeep(){},onSaveUnit(){}}))
   expect(grid).toContain('Midi Mode 2');expect(grid).not.toContain('Not in the library')
-  expect(grid).toContain('module-media/midi-cc-slots/0.0.13-experimental/presentation/thumbnail.svg')
+  expect(grid).toContain('module-media/midi-cc-slots/0.0.18-experimental/presentation/thumbnail.svg')
   const access=renderToStaticMarkup(createElement(ModuleAccess,{id:module.id}))
   expect(access).toContain('media/03-control-1.png');expect(access).toContain('media/07-name-editor.png');expect(access).toContain('LEAD')
   const { moduleMediaGuide }=await import('../catalog/module-media-guides')
@@ -72,19 +72,22 @@ it('checks only reviewed local card companions and keeps the published compiler 
 
 it('refuses missing or substituted card responses and permits retry after a fetch failure',async()=>{
   await local()
+  vi.doMock('./local-cc-card-baseline',()=>({localCcCardBaselineProblem:()=>'',localCcInstallerBaselineProblem:()=>''}))
   const {localCcCard}=await import('./local-cc-card')
   const fetched=vi.fn().mockResolvedValueOnce(new Response(null,{status:500})).mockResolvedValueOnce(new Response('{}'))
   vi.stubGlobal('fetch',fetched)
   await expect(localCcCard()).rejects.toThrow('did not compile')
   await expect(localCcCard()).rejects.toThrow('differs from the reviewed build')
   expect(fetched).toHaveBeenCalledTimes(2)
+  vi.doUnmock('./local-cc-card-baseline')
 })
 
 it('requires renewed local review when the companion source or version changes',async()=>{
   await local()
-  const {localCcCardBaselineProblem}=await import('./local-cc-card-baseline')
+  const {localCcCardBaselineProblem,localCcInstallerBaselineProblem}=await import('./local-cc-card-baseline')
   const {default:compiled}=await import('../engine/assets/module-build.json')
-  expect(localCcCardBaselineProblem()).toBe('')
-  expect(localCcCardBaselineProblem({...compiled,sourceTreeSha256:'0'.repeat(64)})).toContain('Recheck')
-  expect(localCcCardBaselineProblem({...compiled,moduleVersions:{...compiled.moduleVersions,playmodes:'changed'}})).toContain('Recheck')
+  expect(localCcCardBaselineProblem()).toContain('Recheck')
+  expect(localCcInstallerBaselineProblem()).toBe('')
+  expect(localCcInstallerBaselineProblem({...compiled,sourceTreeSha256:'0'.repeat(64)})).toContain('Recheck')
+  expect(localCcInstallerBaselineProblem({...compiled,moduleVersions:{...compiled.moduleVersions,playmodes:'changed'}})).toContain('Recheck')
 })

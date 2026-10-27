@@ -121,34 +121,6 @@ npm run dev:community
 
 In a second terminal, run `npm run dev` and open http://127.0.0.1:5173. Vite proxies /api to the local Cloudflare runtime on port 8788, with D1 emulated locally. `.dev.vars` (ignored) sets the local `APP_URL` and overrides the production values in `wrangler.worker.jsonc`. Without the API, local configuration and firmware storage still work; community actions explain their unavailable state.
 
-For the private MIDI CC Slots development draft, use
-`http://127.0.0.1:5173/?preview=midi-cc-slots` with Python and `m68k-elf`
-binutils on the development server's PATH. Its local-only compiler makes a
-stock-free trial package and refuses a package digest that differs from the
-software-verified local-build.json; the page reviews the connected base and installed
-set before an explicit temporary USB trial, with Undo, Keep, removal and
-restart verification. Keep saves the whole running set on the installed base.
-A resolved Keep call is not proof of persistence: legacy diagnostics may be
-missing, and a failed save can leave the module running only until power-off.
-Require a completed self-test report before Keep, explicit saved-set diagnostics
-and matching module IDs/layouts; require
-the startup-restored result separately after reboot. This is not package-byte
-readback or saved-project qualification. The page never flashes firmware.
-It is outside the public catalogue. See [the draft's instructions and limits](../sdk/drafts/midi-cc-slots/README.md#local-app-installation-and-removal).
-
-The opt-in local draft also has a checked card adapter: the ordinary configuration
-builder accepts its reviewed companions and now downloads a USB-capable installer
-ZIP: the unchanged standard base plus both initial saved module-set files. The
-MIDI USB package stays independently pinned. Its local compiler needs Python and
-the reviewed ColdFire tools. Historical C15 resident builds also require the
-pinned Elekloader checkout through `MODWERK_ELEKLOADER`. See
-[the USB-capable installer guide](../sdk/drafts/midi-cc-slots/USB_CARD_INSTALLER.md).
-
-The unit can report private or newer modules absent from this checkout’s catalogue.
-Keep those inventory IDs visible and use a neutral preview when their
-documentation/artwork is missing; never dereference catalogue metadata just
-because the unit reported a module, or discard unknown entries to render it.
-
 ## Search indexing
 
 The production build includes HTML summaries: the homepage links to available modules on all three supported machines, module pages use their current catalogue documentation, and `/submit/` describes the shared developer workflow. Public forum pages include their existing public excerpt. A small same-origin, parser-blocking script in the head hides these summaries before the body can paint, preventing a text flash while React loads. React replaces them with the interactive app. With JavaScript disabled, or if the app script fails to load or execute before mounting, the summaries remain readable. Firmware and private account/report data are never prerender inputs.
@@ -272,7 +244,7 @@ Accept only disclosed numeric USB readings, fixed event/result codes, hashes, pa
 
 Bind collection to both the captured bearer session and the authenticated `accountId` returned with consent. Ignore late replies after account changes or collector remounts. Site events have no history or replay; drop failures from operations started before consent or under a previous account. An older enable request must not overwrite a later withdrawal, including across tabs. Consent lasts 90 days; detailed records last 30 days, with at most the latest 1,000 per account. Stop sharing blocks local collection immediately; confirmed server withdrawal deletes records. Keep the local block if that request fails. Account deletion removes consent and records. Removing beta access does not revoke diagnostics eligibility or erase a regular member's consent. Hourly cleanup enforces expiry and removes records for unverified or suspended accounts; account exports include retained records, and private review remains limited to the account owner and site administrators.
 
-To read shared diagnostics, run `npm run diagnostics:pull`; agents working for the owner use it too. It pages through every retained record with `GET /api/admin/octatrack/diagnostics?since=<ISO time>` (up to 500 a page, oldest first; without `since`, the admin page's newest 100). It writes them to `~/.cache/modwerk-local/diagnostics/latest.json` (owner-only permissions, replaced on each pull, so the copy holds nothing the server has expired or a member withdrew) and prints, in local time, each member's bases (named against `main`'s `sdk/machines/octatrack/base-binding.json`, read with `git show origin/main:`, so fetch first; the checkout's own copy only without a remote), their site reports (GitHub `issue-report` issues whose body links their profile, through `gh`), restarts, what each boot's set reload did, the last self-test and the highest self-test peaks, then the failures and the daily sync counts. Restarts are the unit's own count: the start records its log still holds. A connection's first reading says what the boot's restore did (`RESTORED` with modules live of saved, nothing saved, skipped with FUNC held, another base's set, damaged, refused), until a save replaces it; the running set's identity (`active`) can't tell a restart, because the base reports its bare identity after a restore until the next sync. Refused selections from the card build's check (`build_failed` with `selection`, sent on every module change on the configuration page) are counted per member outside the failures. The CPU and DSP figures in the records are self-test peaks, measured only while DSP modules run, never the live load. Account → Diagnostics and the Octatrack page's Setup tell a sharing member the username their records reach the owner under, and ask a member with a generated `member_…` name to choose one, so testers can use the same name on Discord. It authenticates with a read-only key in the `X-Modwerk-Diagnostics` header that opens this route alone. The key lives in the macOS Keychain (`modwerk-diagnostics-read`), or in `MODWERK_DIAGNOSTICS_KEY`; the Worker holds only its SHA-256 as the secret `DIAGNOSTICS_READ_KEY_SHA256`. `npm run diagnostics:pull -- --init` creates the key and prints that hash. To rotate, delete the Keychain item, run `--init` again and replace the secret; leave the secret empty to turn the key off. Never put the key in the repository, a PR or chat. The browser's CORS allow-list leaves the header out, so the site never sends it.
+To read shared diagnostics, run `npm run diagnostics:pull`; agents working for the owner use it too. It pages through every retained record with `GET /api/admin/octatrack/diagnostics?since=<ISO time>` (up to 500 a page, oldest first; without `since`, the admin page's newest 100). It writes them to `~/.cache/modwerk-local/diagnostics/latest.json` (owner-only permissions, replaced on each pull, so the copy holds nothing the server has expired or a member withdrew) and prints, in local time, each member's bases (named against `main`'s `sdk/machines/octatrack/base-binding.json`, read with `git show origin/main:`, so fetch first; the checkout's own copy only without a remote), their site reports (GitHub `issue-report` issues whose body links their profile, through `gh`), restarts, what each boot's set reload did, the last self-test and the highest self-test peaks, then the failures and the daily sync counts. Restarts are the unit's own count, per log: the start records each log still holds (a new log starts at 1). A connection's first reading says what the boot's restore did (`RESTORED` with modules live of saved, nothing saved, skipped with FUNC held, another base's set, damaged, refused), until a save replaces it; the running set's identity (`active`) can't tell a restart, because the base reports its bare identity after a restore until the next sync. Refused selections from the card build's check (`build_failed` with `selection`, sent on every module change on the configuration page) are counted per member outside the failures. Self-test CPU and DSP figures are peaks, measured only while DSP modules run. Account → Diagnostics and the Octatrack page's Setup tell a sharing member the username their records reach the owner under, and ask a member with a generated `member_…` name to choose one, so testers can use the same name on Discord. It authenticates with a read-only key in the `X-Modwerk-Diagnostics` header that opens this route alone. The key lives in the macOS Keychain (`modwerk-diagnostics-read`), or in `MODWERK_DIAGNOSTICS_KEY`; the Worker holds only its SHA-256 as the secret `DIAGNOSTICS_READ_KEY_SHA256`. `npm run diagnostics:pull -- --init` creates the key and prints that hash. To rotate, delete the Keychain item, run `--init` again and replace the secret; leave the secret empty to turn the key off. Never put the key in the repository, a PR or chat. The browser's CORS allow-list leaves the header out, so the site never sends it.
 
 Additional idle `health()` reads require current opt-in. Refresh consent before polling; skip a pending refresh, cancel queued reads on withdrawal and recheck consent after acquiring the USB interface, immediately before transfer. Simulated previews never upload diagnostics. Fixed daily sync-action totals use the separate identifier-free count path, follow the existing count preference and browser privacy signals, and expire after 30 days; do not attach account, device, module or session identifiers.
 
@@ -514,7 +486,7 @@ sdk/              pinned native source, eleven module folders, internal dependen
 
 ## Testing
 
-`npm run check` runs lint, small domain / API tests, type checks and a production build. API tests use an in-memory SQLite database and synthetic media, never real firmware. Native emulator, stress and audio-render checks require separate qualification and are not part of this command or the configuration flow.
+`npm run check` runs lint, small domain / API tests, type checks and a production build. API tests use an in-memory SQLite database and synthetic media, never real firmware. D1 refuses a query with more than 100 bound values, and the test database refuses it too: never bind one value per module or per row of a list that grows (two per module broke the library's counts at 51 modules); pass the list as one JSON value through `json_each(?)` instead. Native emulator, stress and audio-render checks require separate qualification and are not part of this command or the configuration flow.
 
 Checks first validate licence-notice and catalog freshness, then finish notice/catalog/media generation before readers start. SDK checks, lint, tests and the production build run concurrently, and every stage must pass; type errors prevent bundling. Vitest discovers `src/**/*.test.ts` and `scripts/**/*.test.mjs`; `.test.tsx` is not included. Use `.test.ts` with `createElement` for React regressions and confirm the expected cases ran. Proof builds with a localhost API need a separate build after the normal full check; production CSP/header parity deliberately rejects that override. Test files retain isolation and use up to four workers, including the release tests under `scripts/`. ESLint caches results by file contents and configuration under `node_modules/.cache/eslint/`; TypeScript keeps incremental app, tooling and server state under `node_modules/.tmp/`. Licence and catalog/qualification validation, SDK checks, all tests and production bundling still run every time. `npm run typecheck` checks all three TypeScript projects, and `npm run lint -- --no-cache` performs an uncached lint run.
 
@@ -547,7 +519,7 @@ Record real device outcomes against the exact source, base, package hashes and v
 
 ## Documentation validation and deployment scope
 
-Run `npm run check -- --base origin/main` before committing. The shared `scripts/change-scope.mjs` compares actual changes, including manifest prose and generated catalogues. Documentation-only edits validate licences, catalogue freshness, module contracts, tutorials and capture provenance, then run the catalogue tests (some check that the guides link to files that exist), without the full application suite, lint, typecheck, bundle or native compilation. Unknown paths and source/behaviour changes retain the full app checks.
+Run `npm run check -- --base origin/main` before committing. `scripts/change-scope.mjs` compares actual changes, manifest prose and generated catalogues included. Documentation-only edits check licences, catalogue freshness, module contracts, tutorials, capture provenance and the catalogue tests, skipping the app suite, lint, typecheck, bundle and native builds. Locally, a change only to site UI, the Worker or release notes also skips the SDK suite (`sdk:check`, minutes); CI always runs it. Other paths keep every check.
 
 PR and Pages firmware builds follow firmware source and build identities rather than broad SDK directory changes. Digi documentation/version labels do not rebuild Octatrack packages. Source pins, build recipes, toolchains, code, linking metadata and package changes retain their native gates. Pages still bundles the site to publish updated documentation. Generated catalogue edits only redeploy the Worker when its consumed module fields change; a manual Worker dispatch still deploys.
 
@@ -572,30 +544,3 @@ Routine registered-author updates retain CI-gated automatic merge/publication af
 Developer public work stays in GitHub. The former workspace is **Creator settings**, retaining module claims, per-module Ko-fi links and direct consent-controlled private report links. It no longer fetches or shows a duplicate public report/activity inbox. Private replies/logs remain private. Report bell/email links open the user's report on Modwerk; frontend public replies go to the same GitHub conversation.
 
 New GitHub issue descriptions explain maintainer triage/closure commands, including `/modwerk needs-info <question>`, `/modwerk confirm <affected-version|unknown> <evidence>`, `/modwerk close configuration|duplicate|not_reproducible|insufficient_information|withdrawn <explanation>`, `/modwerk reopen <explanation>` and registered-author version-bound `/modwerk resolve <version> verified-download`. Signed newly created comments only, no PRs, exact numeric identity and current reviewed module ownership. Commands do not grant general repository access or weaken release/hardware gates. Migration **0063_github_actions.sql** adds content-bound receipts and write leases; the existing Worker deployment applies it before code deployment. It stores hashes and identities, never private report text or credentials.
-
-
-## Opt-in local module drafts
-
-Unqualified experiments can use a development-only catalogue overlay without
-editing generated public catalogues or putting them in release module folders.
-Midi Mode 2 uses `VITE_LOCAL_CC_SLOTS=1` in ignored `.env.local`, with metadata
-in `sdk/drafts/midi-cc-slots/local-module.json` and gating in
-`src/dev/local-cc-module.ts`. It preserves the installed runtime ID so inventories
-and saved configurations resolve through the normal catalogue.
-
-The Vite development plugin compiles the original source on demand and checks
-the pinned package digest before normal Sync preparation checks its header,
-capabilities and contents. Serve media through an explicit allowlist. Never
-commit packages or firmware inputs. Keep opt-in drafts excluded from production
-and default test catalogues, and test the enabled path explicitly. Until a draft
-has a native card adapter, reject card builds clearly rather than omitting it.
-Catalogue helpers also reach backend code: include shared source and independent
-data in `LICENSES/platform.json` under the existing contribution terms.
-This local workflow does not satisfy public release or hardware qualification.
-
-Local draft flags in `.env.local` belong to each checkout and do not travel
-with Git. When moving a development server to the fork's main checkout, use
-the checked feature branch, install its locked dependencies and enable the same
-opt-in there. Verify the server's working directory, module metadata/package
-digest and media responses after switching, keeping the existing localhost
-origin so saved browser configurations remain available.

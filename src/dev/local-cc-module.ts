@@ -10,7 +10,7 @@ export const LOCAL_CC_ID = 'midi-cc-slots'
 if (LOCAL_CC_ENABLED && (document.id !== LOCAL_CC_ID || document.version !== pin.version)) throw new Error('The local Midi Mode 2 listing does not match its verified package version.')
 export const isLocalCcModule = (id: string) => LOCAL_CC_ENABLED && id === LOCAL_CC_ID
 export const localCcDocuments = LOCAL_CC_ENABLED ? [document] : []
-export const localCcPackages = LOCAL_CC_ENABLED ? [{ id: LOCAL_CC_ID, name: 'Midi Mode 2', version: pin.version, path: '__local/midi-cc-slots/package.mwrm', sha256: pin.sha256, bytes: pin.bytes, abi: pin.abi, features: pin.features, sites: pin.sites, copies: pin.copies, fills: pin.fills }] : []
+export const localCcPackages = LOCAL_CC_ENABLED ? [{ id: LOCAL_CC_ID, name: 'Midi Mode 2', version: pin.version, path: '__local/midi-cc-slots/package.mwrm', sha256: pin.sha256, bytes: pin.bytes, abi: pin.abi, features: pin.features, sites: pin.sites, copies: pin.copies, fills: pin.fills, requiredBase: pin.requiredBase }] : []
 
 // Keep the local walkthrough short; remaining CC pages stay under More screenshots.
 export const localCcMediaGuide = LOCAL_CC_ENABLED ? { version: document.version, screenshots: document.media.map((item,index) => ({ path:item.path,caption:item.caption,alt:item.alt,additional:index>=5 })) } : undefined

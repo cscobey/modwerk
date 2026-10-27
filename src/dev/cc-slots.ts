@@ -11,8 +11,9 @@ export function ccPackage(document: LocalCcPackage): Uint8Array {
   if (data.length < 72 || view.getUint32(0) !== 0x4d57524d || view.getUint16(4) !== pin.abi || view.getUint32(28).toString(16).padStart(8, '0') !== CC_SLOTS_ID || sha(data) !== document.sha256) throw new Error('The local CC package failed its identity check.')
   return data
 }
-export function ccTrialProblem(state: LinkState, inventory: readonly MissingModule[] | undefined, reviewed: string | undefined, action: 'install' | 'remove' = 'install'): string | undefined {
+export function ccTrialProblem(state: LinkState, inventory: readonly MissingModule[] | undefined, reviewed: string | undefined, action: 'install' | 'remove' = 'install', expectedBase:string|undefined=pin.requiredBase): string | undefined {
   if (state.status !== 'ready' || !state.identity?.canSubmit) return 'Connect to a Modwerk base that supports module trials.'
+  if(expectedBase&&state.identity.base!==expectedBase)return 'This candidate needs the current Modwerk base '+expectedBase.slice(0,8)+'. Use the separate legacy test page for the older tested base.'
   const caps = state.identity.capabilities
   if (!caps || caps.abi < pin.abi || (caps.features & pin.features) !== pin.features || caps.maxSites < pin.sites || caps.maxCopies < pin.copies) return 'This base does not report the capabilities this draft needs.'
   if (!reviewed || reviewed !== state.identity.base + ':' + state.active || !inventory) return 'Read the installed modules before starting the trial.'
