@@ -1,6 +1,6 @@
 # Midi Mode 2 — USB-capable card installer candidate
 
-Version 0.0.16-experimental packages the **unchanged published Modwerk USB
+Version 0.0.18-experimental packages the **unchanged published Modwerk USB
 base** with the original USB-managed module packages. The local configuration
 page's Build firmware action now produces an **installer ZIP**, containing:
 
@@ -12,7 +12,9 @@ The reviewed selections contain Midi Mode 2 alone or with any subset of
 Sidechain Compressor, Play Modes and Mute Modes. Module code is not baked into
 a second runtime; first boot uses the same loader path as a previously kept
 USB set. Future updates, self-test, Keep, Undo and removal use the normal USB
-workflow. The MIDI implementation remains exact 0.0.13. This is a private
+workflow. The current-base MIDI package is 0.0.18: the same controls/storage logic, with
+the NOTE SETUP label hook moved to a private drawer epilogue. The base now owns
+the original entry for its generator registry. This is a private
 installer candidate, not a production catalogue release or hardware qualification.
 
 ## Install the test candidate
@@ -58,7 +60,10 @@ resolved by the existing loader after boot. They are validated through the same
 `prepareModuleSet` path used by Sync, with exact package/base pins. A new base
 or package requires renewed review. Do not copy a saved set between base identities.
 
-No base, loader, controller, DSP or shared site-owner source changes are needed.
+No published base, loader, controller, DSP or shared site-owner source is modified
+by the local adapter. The earlier 0.0.13 package targets its older base and is
+kept separately for the completed lifecycle test; it must not patch the current
+base’s owned NOTE SETUP entry.
 The current Sidechain package retains the published base's existing bound
 controller/engine limitations; this work does not claim the pending package-carried
 engine migration is released. First public release still needs the lifecycle,
@@ -81,3 +86,17 @@ validation do not imply native or physical restoration. See TESTING.md for actua
 observations. Firmware, seed sets, ZIPs, project/card data, maps and raw logs stay
 outside Git. Original authors and full licence texts remain in the source and
 installer notices; underlying Elektron firmware stays private.
+
+## Upstream integration identity
+
+The current installer targets published base
+`c1ae2ee92a829e06aa9398d35981b8228efdd34c578c9583ef36fba8f5bc637f`.
+Its MIDI package SHA is
+`8d971baca19198b9e35d7644c7c8810f917471f980eadc2db03fab8de3668451`;
+the 33,434-byte package retains 24 sites, 25 copies and 533 relocations.
+It leaves the base-owned 0x40036548 entry intact and uses a guarded private
+0x4003678a epilogue. Controls and project format are unchanged. The current
+Sidechain controller package is pinned to this new base too. Physical/native UI
+qualification of this combination is pending. Do not reuse the earlier C16 saved
+sets on this different base; the builder produces a new matching pair.
+The original C14/C16 artifacts and old-base USB test remain private/unchanged.

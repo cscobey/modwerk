@@ -95,7 +95,7 @@ def main():
     if device.key!='octatrack' or release.version!='1.40C' or sha(original)!=release.main_sha256:p.error('Original Octatrack OS 1.40C required')
     out.mkdir(mode=0o700);runtime=out/'trial.mwrm'
     subprocess.run([sys.executable,'-B',str(HERE/'build_runtime.py'),'--profile','--project-template','--output',str(runtime),'--receipt',str(out/'runtime-symbols.json')],check=True)
-    data=runtime.read_bytes();review=json.loads((HERE/'local-build.json').read_text())
+    data=runtime.read_bytes();review=json.loads((HERE/'legacy-build.json').read_text())
     if sha(data)!=review['sha256'] or len(data)!=review['bytes']:raise ValueError('Runtime differs from the reviewed USB implementation')
     document,copies=card_document(data,devices.target_of(device,release))
     for _,address,n,digest in copies:

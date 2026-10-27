@@ -8,7 +8,8 @@ USB base plus saved sets; build_resident.py remains the historical C15 adapter.
 
 MODULE_ID = 'midi-cc-slots'
 VERSION = '0.0.18-experimental'
-USB_TRIAL_VERSION = '0.0.13-experimental'
+USB_TRIAL_VERSION = '0.0.18-experimental'
+LEGACY_USB_TRIAL_VERSION = '0.0.13-experimental'
 RUNTIME_BUILDER = 'build_runtime.py'
 CARD_BUILDER = 'build_usb_installer.mjs'
 STANDALONE_CARD_BUILDER = 'build_card.py'

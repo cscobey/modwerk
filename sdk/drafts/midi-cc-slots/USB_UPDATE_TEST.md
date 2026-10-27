@@ -83,3 +83,12 @@ package pins and requires the device's complete MWS1 digest to match original or
 test plus every companion. Both revisions and all eight companion subsets are
 covered. An unsupported export is different from a failed/corrupt export; the
 latter still stops. No base, firmware, package or project-file changes are needed.
+
+## After syncing the fork with upstream
+
+This page deliberately retains base 0c5934e1… and legacy 0.0.13/0.0.17 package
+hashes. Their exact bytes still reproduce under the updated SDK using the pinned
+ownership snapshot for that older base. The normal module listing now offers
+0.0.18 for base c1ae2ee9…, whose generator registry owns the former NOTE SETUP
+entry; it is a separate candidate with a private exit hook. The legacy page
+refuses the newer base. Its completed results do not qualify the new hook/base.

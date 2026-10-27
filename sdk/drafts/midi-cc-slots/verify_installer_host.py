@@ -10,10 +10,11 @@ def main():
  a=p.parse_args()
  source='#define MODWERK_RUNTIME_EVENTS\n#define RUNTIME_MODULES 128\n#define RUNTIME_POOL_BYTES (768*1024)\n'+fixture_source(a.main)
  identity=__import__('json').loads((a.installer/'installer-receipt.json').read_text())['base']
- source+='\nconst unsigned char modwerk_raise_ev_mute_keep[]={0};\nconst uint8_t modwerk_base_digest[32]={'+','.join('0x'+identity[i:i+2] for i in range(0,64,2))+'};\n'
+ source+='\nconst unsigned char modwerk_raise_ev_mute_keep[]={0},modwerk_raise_ev_trig_muted[]={0};\nconst uint8_t modwerk_base_digest[32]={'+','.join('0x'+identity[i:i+2] for i in range(0,64,2))+'};\n'
  source+=r'''
 const uint8_t modwerk_events_code[1]={0},modwerk_events_code_end[1]={0};
 void modwerk_diag_set(void){}
+void modwerk_diag_refused(uint32_t module,uint32_t refusal){(void)module;(void)refusal;}
 extern uint32_t modwerk_test_ticks;
 extern uint8_t modwerk_test_held;
 extern volatile uint32_t modwerk_modset_count,modwerk_modset_result,modwerk_modset_generation;

@@ -1,5 +1,14 @@
 # Midi Mode 2 — local development draft
 
+**Current local candidate: 0.0.18-experimental.** Upstream now owns MIDI NOTE
+SETUP's entry. The adapter draws the same NAME/INIT labels from a private stock
+exit hook, preserving the shared generator drawer and project format. The current
+published base/companion packages have new exact pins. Software checks pass;
+full native UI and physical qualification of this new combination remain pending.
+The earlier 0.0.13 / label-only 0.0.17 lifecycle test retains its older base,
+compiler ownership snapshot and exact package hashes independently. Historical
+results below do not qualify the new base. See USB_CARD_INSTALLER.md.
+
 Unqualified development draft. A stock-free USB trial package can be compiled
 by the local app; no public catalogue entry or release is added. Hardware and
 saved-project persistence are not qualified. Use only a disposable test project
@@ -423,8 +432,8 @@ not a new MIDI behavior release.
 ## Current upstream integration
 
 The 0.0.18 installer candidate uses the current published USB base; its review
-is independent of historical C15 native composition. The exact 0.0.13 MIDI
-package and the 0.0.17 lifecycle test remain pinned. The test page retains the
+is independent of historical C15 native composition. The older 0.0.13 MIDI
+package and the 0.0.17 lifecycle test remain pinned separately. The test page retains the
 older tested base and companion hashes; it does not silently upgrade hardware.
 See [local site setup](LOCAL_SITE.md), [storage lessons](HARDWARE_NOTES.md) and
 [installer instructions](USB_CARD_INSTALLER.md). The working C14/C16 files remain

@@ -48,4 +48,3 @@ unrelated data lost by a whole-bank rewrite. Keep a verified saved peer and
 fingerprints of all non-channel bytes before changing either bank copy.
 Host fault tests should model close-time truncation and torn neighboring data,
 not just a failed channel-byte write.
-

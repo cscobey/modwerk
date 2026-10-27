@@ -52,10 +52,11 @@ it('reviews a single local add or removal, preserving companions and requiring t
   await local()
   const { moduleSetReview } = await import('../engine/elekloader/module-set')
   const current={moduleIds:['miniverb'],removedStockFx:[]}, target={name:'Local',moduleIds:['miniverb','midi-cc-slots']}
-  const caps={abi:8,features:3,maxSites:24,maxCopies:25}
-  expect(moduleSetReview(target,current,caps).changes).toMatchObject({add:['midi-cc-slots'],remove:[]})
-  expect(moduleSetReview(target,current,caps).problem).toBeUndefined()
-  expect(moduleSetReview(target,current,{...caps,maxCopies:7}).problem).toBeTruthy()
+  const caps={abi:8,features:3,maxSites:24,maxCopies:25},base='c1ae2ee92a829e06aa9398d35981b8228efdd34c578c9583ef36fba8f5bc637f'
+  expect(moduleSetReview(target,current,caps,base).changes).toMatchObject({add:['midi-cc-slots'],remove:[]})
+  expect(moduleSetReview(target,current,caps,base).problem).toBeUndefined()
+  expect(moduleSetReview(target,current,caps,'0c5934e1bea411fc43143a75ee2a0fcf1c09a71b8c386732ed7526517d3b0846').problem).toBeTruthy()
+  expect(moduleSetReview(target,current,{...caps,maxCopies:7},base).problem).toBeTruthy()
   expect(moduleSetReview({name:'Remove CC',moduleIds:['miniverb']},{...current,moduleIds:target.moduleIds},caps).changes).toMatchObject({add:[],remove:['midi-cc-slots']})
 })
 

@@ -965,3 +965,73 @@ Domain regressions cover both revisions across all eight reviewed companion
 subsets, mismatched digests, duplicates, wrong base and unknown companions.
 DOM regressions cover no-export preparation, Undo, Keep/restart in both directions
 and mismatched-digest refusal. The corrected hardware run is still pending.
+
+## Upstream merge and current-base 0.0.18 — 26 October 2026
+
+Merged upstream main 1d61937a into the MIDI branch (merge d58e2b8b). The fork's
+main was 264 commits behind; its own MIDI work was retained without rebasing.
+There were no textual conflicts. A semantic conflict was reproduced: the current
+compiler refused 0x40036548 because the newer base owns NOTE SETUP's entry for
+`ot_midi_generators`. Old source cannot be offered on that new base unchanged.
+
+Current candidate 0.0.18 leaves that entry and its stock-copy span out of the
+package. The module instead takes the private epilogue at 0x4003678a, guarded by
+SHA-256 47052304944b9cfc9cfc341c0fc61d2b8bc4e9bcd990d9608a46aef99cde5bda,
+then returns at 0x40036792. Original MAIN disassembly shows the null-window
+branch and ordinary path both enter the epilogue start; no observed branch enters
+its displaced interior. The wrapper preserves volatile registers while the
+stock 52-byte save frame remains intact, draws the same right-hand NAME/INIT
+labels without calling stock's entry recursively, then replays the epilogue.
+The base remains responsible for the entry and generator list. Project code,
+controls and storage formats are unchanged. This is a source/disassembly proof;
+full native UI execution and physical behavior of the new hook remain untested.
+
+Exact current package: 8d971baca19198b9e35d7644c7c8810f917471f980eadc2db03fab8de3668451,
+33,434 bytes / 28,964-byte image, 533 relocations, 24 sites and 25 checked copies.
+Both authored image placements reconstruct with stock and installed-base guards;
+the strict 16-byte literal stock scan passes with no direct current-base site
+overlap. The real C loader passes install/publish/Undo/repeat/removal and full
+memory reclamation against the new base MAIN (host glue, not CPU execution).
+
+Published base c1ae2ee92a829e06aa9398d35981b8228efdd34c578c9583ef36fba8f5bc637f;
+BIN SHA 9ce0529941588b06536d4caeeb724ad7f7e38a986b2daf10642a23f6318ab19e,
+766,636 bytes. Actual runtime 299,748 bytes; reservation 4,644,864 bytes.
+The current Sidechain package changes to
+ed2431f0ffe91e3def6a0101441ed650cab1db9a25a6bf83bff2dc2555b8cd0e;
+Play Modes and Mute Modes retain the hashes recorded for C16.
+
+All eight subsets of the three reviewed companions plus MIDI build through the
+actual local session. Independent ZIP/CRC decoding, saved-set identities/counts,
+standard Download base byte identity, classic-startup refusal and unchanged
+original firmware checks pass. The real C loader + modset reader restores all
+four exact packages, falls back from a corrupted newer peer, refuses foreign
+base/FUNC startup, and removes/undoes MIDI while preserving companions. The
+harness adds stubs for the newer base's trig-muted raiser and refusal diagnostics;
+these synthetic host tests do not execute DSP, USB, CF or ColdFire instructions.
+
+Four-module ZIP SHA:
+787c07d3c743f8c361cd5cc53fd69ddd54db8cf448dde6250807cd8408a549e9.
+Initial saved sets (52,736 bytes each):
+- MODWERK0.SET: 198b0c1d9ce879a2755b62894e262b50219d72883f1cde6d7ff5a745b86257b6.
+- MODWERK1.SET: 23c3aa7c5d15178731aa87747b5bc16ae73777c30a01220b699f6d30fbf7a669.
+Private outputs: usb-card18-upstream, usb-card18-session,
+usb-card18-reconstruction. No physical card/device was modified by this merge.
+
+The legacy compiler explicitly targets a hash-pinned ownership snapshot of the
+older base; it still reproduces the exact original 0.0.13 package and label-only
+0.0.17 package through the actual local endpoint after the merge. The old test
+pins are independent of the current installer's new base/Sidechain/MIDI pins.
+The normal new listing and trial refuse the older base rather than installing
+new or old code on an unreviewed base. Historical C15 remains fingerprint-blocked
+on this updated source and can be reproduced only at its recorded revision.
+
+Cooper pasted the old-base test page's “Undo verified: MIDI CC SLOTS returned
+with every original companion package. Nothing was kept.” and “Restart verified:
+MIDI2 TEST 17 and every exact companion package restored.” After instructions to
+return to the original and restart-check it, Cooper replied “yep”; the final
+original restart message was not pasted separately. These are reported hardware
+results for the exact legacy fixture, not independent device captures or evidence
+for 0.0.18. Host/model/maximum load/elapsed time and receiver measurements remain
+unrecorded. C18 needs fresh native UI and hardware install/self-test/Keep/Undo,
+removal/reinstall/restart, names/channels/CC and companion audio/load checks.
+Production qualification and owner first-release review remain open.

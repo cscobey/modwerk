@@ -7,7 +7,7 @@
   "category": "midi-usb",
   "source": {
     "repository": "https://github.com/cscobey/modwerk",
-    "revision": "75baff51e8ea2ee42af2e848b4cf774a476a96b6",
+    "revision": "d58e2b8b03a2d5b95499b556230fb41104d68b5f",
     "path": "sdk/drafts/midi-cc-slots"
   },
   "author": {
@@ -159,7 +159,7 @@
     "recorded": "25 October 2026: exact experimental package footprint; physical timing unmeasured",
     "storage": {
       "label": "Runtime package",
-      "display": "33,386 bytes · 28,916-byte image",
+      "display": "33,434 bytes · 28,964-byte image",
       "value": 33386,
       "unit": "bytes",
       "method": "static",
@@ -199,13 +199,15 @@
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "Current-base 0.0.18 moves the NOTE SETUP label hook away from the base-owned entry to its private stock epilogue. The legacy 0.0.13 package remains reproducible for its tested base. New-base hardware qualification is pending; older results remain version-bound.",
+    "summary": "Current-base 0.0.18 moves the NOTE SETUP label hook away from the base-owned entry to its private stock epilogue. All eight installer subsets, original guards, stock-free scan, relocation reconstruction and host loader/seed checks pass. Full native UI and physical current-base tests are pending; older results remain version-bound.",
     "hardwareStatus": "untested",
-    "evidenceRevision": "75baff51e8ea2ee42af2e848b4cf774a476a96b6",
+    "evidenceRevision": "d58e2b8b03a2d5b95499b556230fb41104d68b5f",
     "gates": [
-      "The current runtime compiles with current base ownership checks; no shared site is replaced.",
-      "The exact legacy package still reproduces its reviewed SHA-256.",
-      "New-base installer, full native UI and hardware qualification are pending."
+      "All eight reviewed companion subsets build through the actual local session; unchanged standard base output and ZIP/seed integrity checks pass.",
+      "Strict 16-byte stock-free scan, both relocation placements and original/current-base guards pass with no direct base-site overlap.",
+      "Host C loader install/Undo/removal/memory reclamation and full four-package seed restoration/fallback/refusal/Undo pass; synthetic host glue only.",
+      "Exact legacy 0.0.13 and label-only 0.0.17 packages reproduce their original SHA-256; their hardware reports remain separate.",
+      "Full native UI execution and physical current-base qualification remain untested."
     ]
   },
   "license": {

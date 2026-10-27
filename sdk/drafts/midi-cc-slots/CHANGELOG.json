@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.0.18-experimental",
+    "date": "2026-10-26",
+    "changes": [
+      "Integrate the current upstream base and refreshed local site.",
+      "Keep the shared MIDI generator drawer entry and draw NAME/INIT at a private exit hook.",
+      "Build current-base installers with newly pinned companion packages.",
+      "Preserve the older tested USB lifecycle packages separately; new-base hardware tests remain pending."
+    ]
+  },
+  {
     "version": "0.0.17-usb-test",
     "date": "2026-10-26",
     "changes": [
