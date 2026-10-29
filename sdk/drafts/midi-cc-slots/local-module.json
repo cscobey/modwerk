@@ -156,7 +156,7 @@
     ]
   },
   "resources": {
-    "recorded": "29 October 2026: reproduced package and target-ABI pool layout; physical timing unmeasured",
+    "recorded": "29 October 2026: measured pool delta; exact package/ABI; worst-case timing unmeasured",
     "storage": {
       "label": "Runtime package",
       "display": "33,434 bytes · 28,964-byte image",
@@ -176,11 +176,11 @@
       "source": "TESTING.md"
     },
     "impact": {
-      "conditions": "Source estimates for a small MIDI/UI adapter; no physical worst-case timing or load measurement.",
+      "conditions": "Source estimates, matched physical pool readings and public load observations; no complete worst-case chip-cycle, stack or maximum-load qualification.",
       "cpu": {
         "level": "minimal",
         "basis": "source-estimate",
-        "rationale": "Apply and rollback yield between bank pairs. Bank CRC verification uses one table lookup per byte instead of two; all original file checks remain. Bare page browsing and NO are allowed. Physical elapsed time and chip load remain unmeasured.",
+        "rationale": "Apply/rollback yield between bank pairs. Stopped and reported eight-track playback observations are recorded, but public meter samples do not bound the module’s worst-case chip cost.",
         "source": "TESTING.md"
       },
       "dsp": {
@@ -191,15 +191,15 @@
       },
       "memory": {
         "level": "minimal",
-        "basis": "source-estimate",
-        "rationale": "The 28,964-byte image occupies a calculated 31,216-byte loader pool extent on the current base; same-size replacement plus Undo retains 62,432 bytes. Compiler frames are recorded; complete stack and whole-system peaks remain unbounded. Four 4,096-byte project sidecars are card storage.",
-        "source": "evidence/memory-layout-0.0.18.json"
+        "basis": "measured-comparison",
+        "rationale": "The 28,964-byte image uses 31,216 bytes of the runtime pool, confirmed by matched physical trials on a development twin and exact Undo reclamation. Two same-size retained revisions are calculated at 62,432 bytes. Complete stack and whole-system peaks remain unbounded; four 4,096-byte sidecars are card storage.",
+        "source": "evidence/hardware-pool-2026-10-29.json"
       }
     }
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "Cooper reported that the current local 0.0.18 candidate works after upstream integration. The 29 October running whole-set digest matches the reproduced package plus all four exact companions, and temporary removal/Undo restored it. Target-ABI pool accounting passes; stopped load observations are recorded. Disk-mode exit/playback recovery, worst-case timing, complete stack bounds and full qualification remain pending.",
+    "summary": "The connected normal-base whole-set digest matched the reproduced 0.0.18 and all four companions; temporary MIDI removal/Undo restored it. Cooper reported eight tracks at 240 BPM with no issues. Development-twin trials measured a 31,216-byte MIDI pool delta and full Undo reclamation; the original flashed base and five exact packages were verified after power cycle. Disk-mode exit/playback recovery, worst-case cycles, complete stack bounds and full qualification remain pending.",
     "hardwareStatus": "reported",
     "evidenceRevision": "d58e2b8b03a2d5b95499b556230fb41104d68b5f",
     "gates": [
@@ -207,7 +207,8 @@
       "Strict 16-byte stock-free scan, both relocation placements and original/current-base guards pass with no direct base-site overlap.",
       "Host C loader install/Undo/removal/memory reclamation and full four-package seed restoration/fallback/refusal/Undo pass; synthetic host glue only.",
       "Exact legacy 0.0.13 and label-only 0.0.17 packages reproduce their original SHA-256; their hardware reports remain separate.",
-      "Functional hardware operation reported by Cooper; exact-package physical qualification and full native UI execution remain unverified."
+      "Functional hardware operation reported by Cooper; exact-package physical qualification and full native UI execution remain unverified.",
+      "Matched physical development-twin trials measured the 31,216-byte MIDI pool extent, full free/largest-run reclamation, and exact original-base/package restoration after user power cycle; full stack and worst-case cycle gates remain open."
     ]
   },
   "license": {

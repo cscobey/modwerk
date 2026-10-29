@@ -1071,3 +1071,14 @@ functional report and captured traffic, not a wire-rate/drop-count, worst-case
 cycle or stack qualification. No Keep or project write was sent by the tools.
 All 26 pinned published runtime packages also had no patch/copy intersection
 with this candidate in a static scan; no full coexistence pass is inferred.
+
+The approved development-twin RAM session measured a 31,216-byte MIDI pool
+delta: 77,168 bytes for all five packages versus 45,952 for the same four
+companions. Eight readings per trial were stable. Each Undo restored all
+786,432 free bytes and the largest free run. An initial probe returned
+needs-recovery before automatic recovery completed; readback verified normal
+and the empty set, and the repeat used the standard bounded recovery wait.
+No Keep/accept or flash was sent. After the operator's normal power cycle,
+the original flashed base and exact five-package digest were verified again.
+See `evidence/hardware-pool-2026-10-29.json`. Stack, whole-system peak and
+worst-case timing qualification remain incomplete.

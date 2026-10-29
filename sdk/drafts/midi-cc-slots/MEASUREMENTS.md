@@ -43,14 +43,52 @@ base/stock system. Four 4,096-byte MIDI4 sidecars are project card storage.
 The pool calculation uses target-compiled `sizeof` from the current loader and
 Octatrack event header, then follows `loader.c`'s admission formula. It excludes
 the base's preallocated upload staging, ownership ledger and event tables.
-It is not a whole-system peak or a measured pool delta on the physical unit.
-Different bases require a new target ABI probe.
+The calculation alone is not a whole-system peak or a physical reading.
+The development-twin measurement below confirms its pool delta. Different
+bases require a new target ABI probe.
 
 Compiler `-fstack-usage` reports a largest individual C frame of 1,440 bytes in
 `persist_bank`. This is **not** the stack peak: caller frames, assembly wrappers,
 stock file calls and interrupt/task context must still be bounded. There are no
 unbounded compiler frame records; `dynamic,bounded` describes bounded outgoing
 call arguments too. Hardware stack canaries have not been measured.
+
+## Physical pool comparison and return to the installed base
+
+The operator saved their disposable project, stopped it and approved the RAM
+restart. A private development twin of source `8fbd3beb`, base
+`8472238a4d448bf8d4be8077a831eb5d549036d490bf26c365ead6cfd7862544`,
+was built with the beta features and development requests. Sidechain and
+Analog BD were rebuilt against its exact symbols/trust rows; Analog BD's hash
+recipe was recaptured only in a private scratch source tree. The other three
+packages, including MIDI2, were unchanged. Guards, link/container checks,
+two MIDI image reconstructions, strict stock-free scan and actual C loader
+host tests passed before the RAM boot. No full emulator execution was claimed.
+
+Physical development request 24 returned these stable free/largest runs across
+eight readings per temporary whole-set trial:
+
+| State | Free bytes | Largest free run | Pool use |
+| --- | ---: | ---: | ---: |
+| Empty development base | 786,432 | 786,432 | 0 |
+| All five packages | 709,264 | 709,264 | 77,168 |
+| Four companions, without MIDI2 | 740,480 | 740,480 | 45,952 |
+| After each Undo | 786,432 | 786,432 | 0 |
+
+The matched difference is **31,216 bytes**, equal to the target ABI calculation.
+Both trials verified the original empty inventory and whole-set digest after
+Undo. This proves the measured extent/reclamation, not stack bounds, canaries,
+shared base buffers or the two-revision replacement peak.
+
+The first probe's initial Undo returned `needs-recovery`. A fresh connection
+subsequently found `normal` and verified the exact empty baseline: automatic
+recovery had completed. The repeat allowed the normal bounded recovery wait,
+then verified both Undo operations and full free/largest-run reclamation.
+No Keep/accept or flash was requested. After the bridge was released, Cooper
+power-cycled and reported MODULES LOADED. Readback verified the original
+`c1ae2ee9…` flashed base and exact five-package digest `6b9b601b…` above.
+The bridge was released again. See
+[physical pool evidence](evidence/hardware-pool-2026-10-29.json).
 
 ## Read-only hardware meter capture
 
@@ -168,12 +206,12 @@ with every module. Full composition/qualification remains pending.
 
 1. Reproduce disk-mode exit/playback recovery. Public meters returned after a
    power cycle; the preceding stalled snapshots remain invalid load evidence.
-2. Review a temporary development-base session separately, including exact
-   symbols, complete companion packages and recovery back to the existing kept
-   set. Do not Keep on a temporary base: its identity differs from the flashed
-   base and can replace both saved-set peers. Do not flash for measurements.
-3. Measure pool free/largest run before, during replacement, after Undo and
-   after temporary removal/reinstall; verify the exact original runtime set.
+2. Measure the two-revision replacement peak if claiming it as physical evidence;
+   the 62,432-byte value remains calculated. Future development sessions must
+   retain exact symbols, companion packages and return-to-normal verification.
+   Never Keep a temporary-base set or flash for measurements.
+3. Complete the public-base lifecycle matrix beyond the recorded removal/Undo,
+   power-cycle and exact original-set checks; keep older version reports separate.
 4. Bound assembly and nested C/stock stack use, staging lifetimes and transient
    allocations. Reconcile these with task stack capacity and hardware guards.
 5. Run matched baseline and module tests with unchanged companions/project:
