@@ -2,6 +2,8 @@
 // Read-only public meters. No keys, trials, Keep, project writes or memory reads.
 import { writeFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
+import console from 'node:console'
+import { setTimeout as delay } from 'node:timers/promises'
 import { Bench, device, enumerate } from '../../../scripts/usb-bench.mjs'
 import { UsbVendorTransport, findVendorInterface } from '../../../src/engine/elekloader/upload-usb.ts'
 
@@ -20,13 +22,12 @@ try {
   const identity = await transport.identify(), inventory = await transport.inventory()
   const setDigest = await transport.setIdentity(), started = new Date().toISOString()
   const samples = [], start = Date.now()
-  do {
+  for (let sample = 0; sample <= seconds; sample++) {
     const load = await transport.load()
     if (!load) throw new Error('This base does not expose the public load meter')
     samples.push({ elapsedMs: Date.now() - start, ...load })
-    if (Date.now() - start >= seconds * 1000) break
-    await new Promise(resolve => setTimeout(resolve, 1000))
-  } while (true)
+    if (sample < seconds) await delay(1000)
+  }
   if (await transport.setIdentity() !== setDigest) throw new Error('Installed set changed during capture')
   const fields = ['cpu', 'tracks1to4', 'tracks5to8', 'peak1to4', 'peak5to8']
   const maximaPermille = Object.fromEntries(fields.map(field => {

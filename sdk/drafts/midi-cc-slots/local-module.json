@@ -163,7 +163,7 @@
       "value": 33434,
       "unit": "bytes",
       "method": "static",
-      "conditions": "Package bytes and image size measured from the verified relocatable package. Runtime loader metadata and copied stock spans add allocation overhead.",
+      "conditions": "Package bytes and image size measured from the verified relocatable package. Loader metadata and alignment add resident pool overhead; checked stock copies fill existing image placeholders.",
       "source": "TESTING.md"
     },
     "processing": {

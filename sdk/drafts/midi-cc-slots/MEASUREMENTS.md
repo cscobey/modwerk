@@ -83,12 +83,58 @@ worked again. Cause and module attribution are unestablished. Disk-mode exit
 and playback recovery need reproduction before release; do not characterize the
 initial captures as a normal stopped baseline.
 Raw readings remain private; no firmware, RAM or project contents are included
-in this report. No install, removal, Keep, project save or flash was performed.
+in this report. No install, removal, Keep, project save or flash was performed
+in those first two captures.
+
+After that power cycle the public meter worked. A fresh 20-second stopped
+capture had sampled maxima of 55.8% CPU, 50.9% / 41.9% DSP mean (tracks 1–4 /
+5–8) and 51.8% / 42.7% DSP peak. These are full-device windows, including all
+five modules, not attributed MIDI2 processing times.
+
+A subsequent stopped comparison used `UploadSession` to stage only the empty
+removal package for module `f36a496d`, activate it in a temporary trial, then
+rollback and leave without accepting. Each phase captured 16 public readings
+one second apart. All four companions remained present during removal. The
+original five-item inventory and full whole-set digest above matched after
+Undo. No Keep, project write or saved-set update was requested.
+
+| Stopped phase | CPU max | DSP mean max T1–4 / T5–8 | DSP peak max T1–4 / T5–8 |
+| --- | ---: | ---: | ---: |
+| Installed before | 55.8% | 50.9% / 41.9% | 51.8% / 42.0% |
+| Temporary removal | 55.5% | 50.9% / 41.9% | 51.8% / 42.7% |
+| Restored after Undo | 55.5% | 50.9% / 41.9% | 51.8% / 42.0% |
+
+The 0.3 percentage-point variation does not establish an attributable module
+cost: the restored phase equals the removal phase. Project content/model were
+not recorded, and this was neither a playing workload nor worst-case timing.
+Private local reproduction command: `node compare-stopped-load.mjs`; source
+SHA-256 `284b1014f14101946efa44bd63cc5faeafe3f163de94b54e26a044bd9bc5eaa5`.
+The script and full numeric captures are retained privately with this run.
+
+## Passive MIDI input capture
+
+The macOS-only `capture_midi.c` creates input ports and listens to existing
+sources. It never sends MIDI, starts playback or edits the instrument. Compile:
+
+```sh
+clang -Wall -Wextra sdk/drafts/midi-cc-slots/capture_midi.c -framework CoreMIDI -framework CoreFoundation -o /private/local/capture-midi
+/private/local/capture-midi /private/local/new-packets.jsonl 90 > /private/local/new-summary.json
+```
+
+Raw timestamped packet bytes remain private. Summary counts include channel
+messages, CC assignments, clocks, notes and final active-key flags. They do not
+measure dropped messages without a known transmitted sequence; final active-key
+flags do not prove audible stuck notes or distinguish overlapping same-pitch
+voices. A local synthetic parser check passed running status, realtime clock
+between data bytes, CC0/127, channel 6, both forms of note-off, SysEx and CC123.
+Host compilation passed `-Wall -Wextra`. MIDI sources enumerated on this Mac:
+Scarlett 18i20 USB and Elektron Octatrack DPS-1. No hardware MIDI capture result
+is claimed yet.
 
 ## Remaining measurements
 
-1. Resolve disk-mode exit/playback recovery and unavailable public meters before
-   using any load percentages.
+1. Reproduce disk-mode exit/playback recovery. Public meters returned after a
+   power cycle; the preceding stalled snapshots remain invalid load evidence.
 2. Review a temporary development-base session separately, including exact
    symbols, complete companion packages and recovery back to the existing kept
    set. Do not Keep on a temporary base: its identity differs from the flashed

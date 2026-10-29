@@ -1055,3 +1055,8 @@ No device mutation was performed during these captures.
 Cooper reported playback did not start after leaving disk mode; after the USB
 bridge was released and Cooper power-cycled, playback worked again. Attribution
 and reproduction remain open; this is not a timing or recovery qualification.
+After restart a stopped public-meter comparison briefly removed only MIDI2 in
+a RAM trial and then verified Undo by the exact original whole-set digest and
+five-item inventory. CPU sampled maximum was 55.8% before, 55.5% without MIDI2
+and 55.5% restored; DSP mean maxima stayed 50.9% / 41.9%. This is whole-device
+stopped observation, not module worst-case timing. No Keep or project write.
