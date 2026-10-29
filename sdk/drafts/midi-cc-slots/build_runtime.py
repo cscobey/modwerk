@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import shutil
 from pathlib import Path
 import struct
 import subprocess
@@ -27,7 +28,11 @@ def main():
     p.add_argument('--project-template', action='store_true', help='Build the one-time native bank setup experiment (requires --profile)')
     p.add_argument('--receipt', type=Path)
     p.add_argument('--review-image', type=Path, help='Private authored image for reviewing copy-guard offsets')
+    p.add_argument('--audit-dir', type=Path, help='New private directory for ELF, map and compiler stack reports; never commit its contents')
     args = p.parse_args()
+    if args.audit_dir and args.audit_dir.exists():p.error('--audit-dir must be a new private directory')
+    if args.audit_dir and any((path/'.git').exists() for path in (args.audit_dir.resolve(),*args.audit_dir.resolve().parents)):
+        p.error('--audit-dir must stay outside Git')
     if args.project_template and not args.profile:p.error('--project-template requires --profile')
     if args.current_base and not args.project_template:p.error('--current-base requires --project-template')
     guards = json.loads(args.guards.read_text())
@@ -54,7 +59,8 @@ def main():
             for file in (['template/profile.c','template/platform.c','template/banks.c'] if args.project_template else ['profile.c', 'profile_140c.c']):
                 obj = file+'.o'
                 (work/obj).parent.mkdir(parents=True,exist_ok=True)
-                run('m68k-elf-gcc','-Os','-mcpu=54455','-msoft-float','-fno-builtin','-fno-common','-fno-late-combine-instructions','-ffreestanding','-c',str(HERE/file),'-o',obj)
+                audit_flags=['-fstack-usage','-fcallgraph-info=su'] if args.audit_dir else []
+                run('m68k-elf-gcc','-Os','-mcpu=54455','-msoft-float','-fno-builtin','-fno-common','-fno-late-combine-instructions','-ffreestanding',*audit_flags,'-c',str(HERE/file),'-o',obj)
                 units.append(obj)
             guard_spec = importlib.util.spec_from_file_location('codegen_guard', ROOT / 'sdk/runtime/m68k_codegen.py')
             codegen = importlib.util.module_from_spec(guard_spec); guard_spec.loader.exec_module(codegen)
@@ -63,7 +69,7 @@ def main():
         for index, origin in enumerate((0, builder.SHIFT)):
             if args.profile:
                 (work/'dense.ld').write_text('SECTIONS { . = '+hex(origin)+'; .text : { *(.text*) *(.rodata*) *(.data*) *(.bss*) *(COMMON) BYTE(0) . = ALIGN(4); } }')
-                run('m68k-elf-ld','-e','slot_dispatch','-T','dense.ld','-o',f'{index}.elf',*units)
+                run('m68k-elf-ld','-e','slot_dispatch','-T','dense.ld',f'-Map={index}.map','-o',f'{index}.elf',*units)
             else:
                 run('m68k-elf-ld', '-e', 'slot_dispatch', '-Ttext', hex(origin), '-o', f'{index}.elf', 'slots.o')
             run('m68k-elf-objcopy', '-O', 'binary', f'{index}.elf', f'{index}.bin')
@@ -137,6 +143,8 @@ def main():
         args.output.write_bytes(data)
         if args.receipt:
             args.receipt.write_text(json.dumps({'symbols':sym,'imageBytes':len(image),'profile':args.profile,'projectTemplate':args.project_template,'packageSha256':hashlib.sha256(data).hexdigest()},indent=2)+'\n')
+        if args.audit_dir:
+            shutil.copytree(work,args.audit_dir)
         print(json.dumps({'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(), 'relocations': len(offsets), 'sites': len(sites), 'copies': len(copies)}))
 
 if __name__ == '__main__':

@@ -1035,3 +1035,56 @@ for 0.0.18. Host/model/maximum load/elapsed time and receiver measurements remai
 unrecorded. C18 needs fresh native UI and hardware install/self-test/Keep/Undo,
 removal/reinstall/restart, names/channels/CC and companion audio/load checks.
 Production qualification and owner first-release review remain open.
+
+### Release measurement preparation — 29 October 2026
+
+After the upstream integration, Cooper reported “it works” for the current
+local candidate. This is a functional report, without a separately captured
+individual package digest, model, duration or detailed coverage. It does not
+upgrade the earlier version-bound lifecycle reports to 0.0.18 measured passes.
+The local draft now marks hardware operation as reported, with these limits.
+
+The memory audit reproduces the exact current package with compiler stack
+reporting enabled. Its target-ABI allocation is 31,216 bytes, or 62,432 bytes for
+two same-size revisions retained during replacement/Undo. Largest individual C
+frame is 1,440 bytes; complete stack/stock-call and whole-system lifetime bounds
+remain open. See [MEASUREMENTS.md](MEASUREMENTS.md) and its sanitized layout.
+Public meter reads on the connected base returned unavailable values before
+and after leaving disk mode. Those are incomplete observations, not zero load.
+No device mutation was performed during these captures.
+Cooper reported playback did not start after leaving disk mode; after the USB
+bridge was released and Cooper power-cycled, playback worked again. Attribution
+and reproduction remain open; this is not a timing or recovery qualification.
+After restart a stopped public-meter comparison briefly removed only MIDI2 in
+a RAM trial and then verified Undo by the exact original whole-set digest and
+five-item inventory. CPU sampled maximum was 55.8% before, 55.5% without MIDI2
+and 55.5% restored; DSP mean maxima stayed 50.9% / 41.9%. This is whole-device
+stopped observation, not module worst-case timing. No Keep or project write.
+The device's running MWS1 digest also matches an independent reconstruction
+from the four published companion hashes and reproduced 0.0.18 MIDI2 hash.
+See `evidence/runtime-identity-2026-10-29.json`; exact running package identity
+and post-Undo restoration are established for this measurement session.
+Cooper then confirmed “Eight tracks at 240; no issues” after a requested
+65-second playback, Part change and STOP test. Passive MIDI and public load
+observations are in `evidence/hardware-observations-2026-10-29.json`. This is a
+functional report and captured traffic, not a wire-rate/drop-count, worst-case
+cycle or stack qualification. No Keep or project write was sent by the tools.
+All 26 pinned published runtime packages also had no patch/copy intersection
+with this candidate in a static scan; no full coexistence pass is inferred.
+
+The approved development-twin RAM session measured a 31,216-byte MIDI pool
+delta: 77,168 bytes for all five packages versus 45,952 for the same four
+companions. Eight readings per trial were stable. Each Undo restored all
+786,432 free bytes and the largest free run. An initial probe returned
+needs-recovery before automatic recovery completed; readback verified normal
+and the empty set, and the repeat used the standard bounded recovery wait.
+No Keep/accept or flash was sent. After the operator's normal power cycle,
+the original flashed base and exact five-package digest were verified again.
+See `evidence/hardware-pool-2026-10-29.json`. Stack, whole-system peak and
+worst-case timing qualification remain incomplete.
+The optional compiler call graph reproduces identical package bytes and prices
+the known direct C chain at a conservative 1,932 bytes, with explicit return
+allowances. This excludes indirect stock calls, assembly/reentry and task/IRQ
+context, so it does not close the complete stack gate.
+The three INIT screenshot records/captions were corrected to 0.0.13, matching
+their existing capture provenance. No fresh 0.0.18 UI capture is inferred.
