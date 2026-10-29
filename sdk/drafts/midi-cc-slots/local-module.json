@@ -208,7 +208,8 @@
       "Host C loader install/Undo/removal/memory reclamation and full four-package seed restoration/fallback/refusal/Undo pass; synthetic host glue only.",
       "Exact legacy 0.0.13 and label-only 0.0.17 packages reproduce their original SHA-256; their hardware reports remain separate.",
       "Functional hardware operation reported by Cooper; exact-package physical qualification and full native UI execution remain unverified.",
-      "Matched physical development-twin trials measured the 31,216-byte MIDI pool extent, full free/largest-run reclamation, and exact original-base/package restoration after user power cycle; full stack and worst-case cycle gates remain open."
+      "Matched physical development-twin trials measured the 31,216-byte MIDI pool extent, full free/largest-run reclamation, and exact original-base/package restoration after user power cycle; full stack and worst-case cycle gates remain open.",
+      "Retained INIT illustrations are correctly bound to their 0.0.13 capture record; fresh current-base 0.0.18 UI captures remain pending."
     ]
   },
   "license": {
@@ -219,7 +220,7 @@
   "media": [
     {
       "path": "media/21-map-init.png",
-      "caption": "Save normally, then hold FUNC and click D at INIT. FN+ / PUSH shows the gesture. The first setup retains legacy overrides; a saved setup asks for YES before replacement. F opens NAME/PUSH.",
+      "caption": "Earlier 0.0.13 capture (controls retained in 0.0.18): Save normally, then hold FUNC and click D at INIT. FN+ / PUSH shows the gesture. The first setup retains legacy overrides; a saved setup asks for YES before replacement. F opens NAME/PUSH.",
       "alt": "MIDI NOTE SETUP with INIT centered beneath CHAN, FN+ and PUSH underneath, and NAME/PUSH at encoder F.",
       "credit": "Cooper Scobey — local ot_emu framebuffer capture",
       "source": "original",
@@ -229,14 +230,14 @@
         "page": "MIDI NOTE SETUP",
         "shows": "location-and-controls",
         "firmware": "1.40C",
-        "moduleVersion": "0.0.18-experimental",
+        "moduleVersion": "0.0.13-experimental",
         "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
         "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-bank-map-fix.json; native 128×64 LCD at integer scale 6."
       }
     },
     {
       "path": "media/23-map-confirm.png",
-      "caption": "On a saved setup, REPLACE ALL? YES/NO appears before any replacement. YES copies Bank A / Part 1 names and channels into every bank and Part, including empty names and OFF. NO keeps the previous setup.",
+      "caption": "Earlier 0.0.13 capture (controls retained in 0.0.18): On a saved setup, REPLACE ALL? YES/NO appears before any replacement. YES copies Bank A / Part 1 names and channels into every bank and Part, including empty names and OFF. NO keeps the previous setup.",
       "alt": "MIDI NOTE SETUP with a REPLACE ALL? YES/NO confirmation popup.",
       "credit": "Cooper Scobey — local ot_emu framebuffer capture",
       "source": "original",
@@ -246,14 +247,14 @@
         "page": "MIDI setup replacement confirmation",
         "shows": "controls",
         "firmware": "1.40C",
-        "moduleVersion": "0.0.18-experimental",
+        "moduleVersion": "0.0.13-experimental",
         "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
         "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-bank-map-fix.json; native 128×64 LCD at integer scale 6."
       }
     },
     {
       "path": "media/22-map-progress.png",
-      "caption": "Progress identifies the bank being checked or written. NO cancels safely and restores the previous snapshot; wait for MIDI SETUP SAVED before using bank edits.",
+      "caption": "Earlier 0.0.13 capture (controls retained in 0.0.18): Progress identifies the bank being checked or written. NO cancels safely and restores the previous snapshot; wait for MIDI SETUP SAVED before using bank edits.",
       "alt": "Native MIDI setup screen with an APPLY MIDI 02/16 progress popup.",
       "credit": "Cooper Scobey — local ot_emu framebuffer capture",
       "source": "original",
@@ -263,7 +264,7 @@
         "page": "MIDI setup progress",
         "shows": "controls",
         "firmware": "1.40C",
-        "moduleVersion": "0.0.18-experimental",
+        "moduleVersion": "0.0.13-experimental",
         "imageSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
         "setup": "MKII stopped; exact guarded runtime publication, UI tick and separate first-sector IRQ fixture. See media/capture-bank-map-fix.json; native 128×64 LCD at integer scale 6."
       }

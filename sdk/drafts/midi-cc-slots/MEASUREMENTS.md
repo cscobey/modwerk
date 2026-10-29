@@ -236,3 +236,9 @@ with every module. Full composition/qualification remains pending.
 7. Finish `tests.qualification` and the performance record only with the actual
    numbers, then prepare public catalogue integration and owner review. The
    current local draft remains opt-in.
+
+The three retained INIT illustrations were mistakenly labelled 0.0.18 in the
+local document. Their existing `media/capture-bank-map-fix.json` binds them to
+0.0.13; metadata and captions now agree with that record. They remain examples
+of unchanged controls, not current-base UI execution proof. Fresh 0.0.18
+captures are still needed before public submission.

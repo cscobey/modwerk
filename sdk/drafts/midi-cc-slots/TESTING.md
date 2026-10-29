@@ -1086,3 +1086,5 @@ The optional compiler call graph reproduces identical package bytes and prices
 the known direct C chain at a conservative 1,932 bytes, with explicit return
 allowances. This excludes indirect stock calls, assembly/reentry and task/IRQ
 context, so it does not close the complete stack gate.
+The three INIT screenshot records/captions were corrected to 0.0.13, matching
+their existing capture provenance. No fresh 0.0.18 UI capture is inferred.
