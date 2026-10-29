@@ -435,6 +435,6 @@ The 0.0.18 installer candidate uses the current published USB base; its review
 is independent of historical C15 native composition. The older 0.0.13 MIDI
 package and the 0.0.17 lifecycle test remain pinned separately. The test page retains the
 older tested base and companion hashes; it does not silently upgrade hardware.
-See [local site setup](LOCAL_SITE.md), [storage lessons](HARDWARE_NOTES.md) and
+See [release measurements](MEASUREMENTS.md), [local site setup](LOCAL_SITE.md), [storage lessons](HARDWARE_NOTES.md) and
 [installer instructions](USB_CARD_INSTALLER.md). The working C14/C16 files remain
 private and unchanged. New-base hardware qualification remains pending.

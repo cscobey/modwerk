@@ -1035,3 +1035,23 @@ for 0.0.18. Host/model/maximum load/elapsed time and receiver measurements remai
 unrecorded. C18 needs fresh native UI and hardware install/self-test/Keep/Undo,
 removal/reinstall/restart, names/channels/CC and companion audio/load checks.
 Production qualification and owner first-release review remain open.
+
+### Release measurement preparation — 29 October 2026
+
+After the upstream integration, Cooper reported “it works” for the current
+local candidate. This is a functional report, without a separately captured
+individual package digest, model, duration or detailed coverage. It does not
+upgrade the earlier version-bound lifecycle reports to 0.0.18 measured passes.
+The local draft now marks hardware operation as reported, with these limits.
+
+The memory audit reproduces the exact current package with compiler stack
+reporting enabled. Its target-ABI allocation is 31,216 bytes, or 62,432 bytes for
+two same-size revisions retained during replacement/Undo. Largest individual C
+frame is 1,440 bytes; complete stack/stock-call and whole-system lifetime bounds
+remain open. See [MEASUREMENTS.md](MEASUREMENTS.md) and its sanitized layout.
+Public meter reads on the connected base returned unavailable values before
+and after leaving disk mode. Those are incomplete observations, not zero load.
+No device mutation was performed during these captures.
+Cooper reported playback did not start after leaving disk mode; after the USB
+bridge was released and Cooper power-cycled, playback worked again. Attribution
+and reproduction remain open; this is not a timing or recovery qualification.
