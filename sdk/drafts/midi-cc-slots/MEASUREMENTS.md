@@ -134,8 +134,35 @@ flags do not prove audible stuck notes or distinguish overlapping same-pitch
 voices. A local synthetic parser check passed running status, realtime clock
 between data bytes, CC0/127, channel 6, both forms of note-off, SysEx and CC123.
 Host compilation passed `-Wall -Wextra`. MIDI sources enumerated on this Mac:
-Scarlett 18i20 USB and Elektron Octatrack DPS-1. No hardware MIDI capture result
-is claimed yet.
+Scarlett 18i20 USB and Elektron Octatrack DPS-1.
+
+### Observed playback run
+
+Cooper confirmed “Eight tracks at 240; no issues” after the requested 65-second
+playback, Part change and STOP test. The passive recording lasted 90.033 seconds,
+including its manual start/stop margins; log writes succeeded. USB input counted
+934 note-ons, 932 note-offs and 1,348 CC messages; Scarlett counted 855 note-ons,
+866 note-offs and 1,297 CC messages. These are different input paths, not an
+expected/received comparison. No clock-derived tempo or wire-rate pass is
+established. Raw final active-key flags were 2 on USB and 28 on Scarlett; the
+capture may have ended before the final manual STOP. These flags cannot be
+upgraded to a stuck-note verdict; Cooper reported no audible issues.
+
+The simultaneous 60.115-second public capture had 61 samples. Sampled maxima
+were 45.7% CPU, DSP mean 36.7% / 41.9% and DSP peak 37.7% / 42.7%. The exposed
+frame counter advanced and the exact module set remained unchanged. This
+project was prepared after the earlier stopped comparison, so the two runs
+are not matched baselines. See the sanitized
+[hardware observations](evidence/hardware-observations-2026-10-29.json).
+No incoming flood, deterministic receiver comparison or complete worst-case
+qualification is claimed.
+
+The exact candidate's sites and checked stock-copy ranges were also compared
+against all 26 published package files in `octatrack-module-packages.json`,
+after verifying every pinned file hash. All three intersections (patch/patch,
+candidate-copy/other-patch, candidate-patch/other-copy) were empty. This is a
+static byte-ownership check; it does not prove UI, semantic or runtime coexistence
+with every module. Full composition/qualification remains pending.
 
 ## Remaining measurements
 

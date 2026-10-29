@@ -1064,3 +1064,10 @@ The device's running MWS1 digest also matches an independent reconstruction
 from the four published companion hashes and reproduced 0.0.18 MIDI2 hash.
 See `evidence/runtime-identity-2026-10-29.json`; exact running package identity
 and post-Undo restoration are established for this measurement session.
+Cooper then confirmed “Eight tracks at 240; no issues” after a requested
+65-second playback, Part change and STOP test. Passive MIDI and public load
+observations are in `evidence/hardware-observations-2026-10-29.json`. This is a
+functional report and captured traffic, not a wire-rate/drop-count, worst-case
+cycle or stack qualification. No Keep or project write was sent by the tools.
+All 26 pinned published runtime packages also had no patch/copy intersection
+with this candidate in a static scan; no full coexistence pass is inferred.
