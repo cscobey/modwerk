@@ -1060,3 +1060,7 @@ a RAM trial and then verified Undo by the exact original whole-set digest and
 five-item inventory. CPU sampled maximum was 55.8% before, 55.5% without MIDI2
 and 55.5% restored; DSP mean maxima stayed 50.9% / 41.9%. This is whole-device
 stopped observation, not module worst-case timing. No Keep or project write.
+The device's running MWS1 digest also matches an independent reconstruction
+from the four published companion hashes and reproduced 0.0.18 MIDI2 hash.
+See `evidence/runtime-identity-2026-10-29.json`; exact running package identity
+and post-Undo restoration are established for this measurement session.

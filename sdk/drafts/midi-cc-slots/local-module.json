@@ -199,7 +199,7 @@
   },
   "tests": {
     "report": "TESTING.md",
-    "summary": "Cooper reported that the current local 0.0.18 candidate works after upstream integration; individual running package hashes and detailed coverage were not captured. Reproduction, target-ABI pool accounting and host loader checks pass. Physical timing, complete stack bounds and full qualification remain pending.",
+    "summary": "Cooper reported that the current local 0.0.18 candidate works after upstream integration. The 29 October running whole-set digest matches the reproduced package plus all four exact companions, and temporary removal/Undo restored it. Target-ABI pool accounting passes; stopped load observations are recorded. Disk-mode exit/playback recovery, worst-case timing, complete stack bounds and full qualification remain pending.",
     "hardwareStatus": "reported",
     "evidenceRevision": "d58e2b8b03a2d5b95499b556230fb41104d68b5f",
     "gates": [

@@ -72,7 +72,12 @@ On 29 October the connected unit identified base
 Inventory listed SIDECHAIN COMP, Play Modes, Mute Modes, MIDI MODE 2 and Analog
 BD. Its whole-set digest was
 `6b9b601b7df88a41b46bd1299397ece3b42d0a825989da3edcd0b06c3fc02e64`.
-This does not independently resolve each package's hash. Initial 20-second
+Inventory names alone do not resolve package hashes. The later offline
+reconstruction of this MWS1 digest from the four published package pins and the
+reproduced MIDI2 pin matched exactly; see
+[runtime identity](evidence/runtime-identity-2026-10-29.json). This establishes
+that the running MIDI2 package was the pinned 0.0.18, with all four exact
+companions. Initial 20-second
 capture was in disk mode, confirmed by Cooper; a second was after Cooper
 reported returning to the normal stopped project screen. Both returned null
 CPU/DSP meters and a nonadvancing cached frame counter. Neither provides a load
@@ -118,6 +123,7 @@ sources. It never sends MIDI, starts playback or edits the instrument. Compile:
 
 ```sh
 clang -Wall -Wextra sdk/drafts/midi-cc-slots/capture_midi.c -framework CoreMIDI -framework CoreFoundation -o /private/local/capture-midi
+/private/local/capture-midi --selftest
 /private/local/capture-midi /private/local/new-packets.jsonl 90 > /private/local/new-summary.json
 ```
 

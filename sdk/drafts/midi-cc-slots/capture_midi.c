@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
+#include <sys/stat.h>
 
 struct source {
     char name[256];
@@ -79,7 +81,21 @@ static void json_string(const char *p) {
     }
     putchar('"');
 }
+static int selftest(void) {
+    struct source s = {0};
+    unsigned char sequence[] = {0x95,60,100,0xf8,61,100,0xb5,0,0,127,127,0x95,60,0,0x85,61,0};
+    for (unsigned i = 0; i < sizeof sequence; i++) byte(&s, sequence[i]);
+    assert(s.notes_on == 2 && s.notes_off == 2 && s.clocks == 1 && s.cc == 2);
+    assert(s.controllers[0] == 1 && s.controllers[127] == 1 && s.channels[5] == 6);
+    assert(!s.active[5][60] && !s.active[5][61]);
+    unsigned char sysex[] = {0xf0,1,2,0xf8,3,0xf7,0x90,64,100,0xb0,123,0};
+    for (unsigned i = 0; i < sizeof sysex; i++) byte(&s, sysex[i]);
+    assert(s.clocks == 2 && s.notes_on == 3 && !s.active[0][64]);
+    puts("Running status, interleaved clock, CC endpoints, channel 6, note-off/zero velocity, SysEx and all-notes-off passed.");
+    return 0;
+}
 int main(int argc, char **argv) {
+    if (argc == 2 && !strcmp(argv[1], "--selftest")) return selftest();
     if (argc != 3) { fputs("Usage: capture-midi NEW-PRIVATE.jsonl SECONDS (1-120)\n", stderr); return 2; }
     char *end;
     long seconds = strtol(argv[2], &end, 10);
@@ -88,6 +104,7 @@ int main(int argc, char **argv) {
     if (!count || count > 16) { fputs("No MIDI inputs, or more than 16: select ports explicitly.\n", stderr); return 2; }
     raw = fopen(argv[1], "wx");
     if (!raw) { perror("New private packet log"); return 2; }
+    if (fchmod(fileno(raw), S_IRUSR | S_IWUSR)) { fclose(raw); return 2; }
     MIDIClientRef client = 0; MIDIPortRef input = 0;
     if (MIDIClientCreate(CFSTR("Midi Mode 2 passive measurement"), NULL, NULL, &client) ||
         MIDIInputPortCreate(client, CFSTR("Read only"), receive, NULL, &input)) return 1;
