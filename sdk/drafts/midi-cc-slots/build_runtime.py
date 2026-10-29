@@ -59,7 +59,7 @@ def main():
             for file in (['template/profile.c','template/platform.c','template/banks.c'] if args.project_template else ['profile.c', 'profile_140c.c']):
                 obj = file+'.o'
                 (work/obj).parent.mkdir(parents=True,exist_ok=True)
-                audit_flags=['-fstack-usage'] if args.audit_dir else []
+                audit_flags=['-fstack-usage','-fcallgraph-info=su'] if args.audit_dir else []
                 run('m68k-elf-gcc','-Os','-mcpu=54455','-msoft-float','-fno-builtin','-fno-common','-fno-late-combine-instructions','-ffreestanding',*audit_flags,'-c',str(HERE/file),'-o',obj)
                 units.append(obj)
             guard_spec = importlib.util.spec_from_file_location('codegen_guard', ROOT / 'sdk/runtime/m68k_codegen.py')

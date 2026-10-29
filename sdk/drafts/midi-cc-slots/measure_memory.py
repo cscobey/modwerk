@@ -21,6 +21,47 @@ def run(*args):
     return subprocess.check_output(args, text=True)
 
 
+def direct_c_stack(build):
+    """Conservative known-C chain only: stock/assembly reentry is not modeled."""
+    nodes, edges, targets = {}, {}, set()
+    for path in build.rglob('*.ci'):
+        for line in path.read_text().splitlines():
+            node = re.match(r'node: \{ title: "([^"]+)" label: "(.*)"', line)
+            if node:
+                name, label = node.groups()
+                frame = re.search(r'\\n(\d+) bytes \(([^)]+)\)', label)
+                if frame:
+                    nodes[name] = int(frame[1])
+            edge = re.match(r'edge: \{ sourcename: "([^"]+)" targetname: "([^"]+)"', line)
+            if edge:
+                caller, callee = edge.groups()
+                edges.setdefault(caller, set()).add(callee)
+                targets.add(callee)
+    if not nodes:
+        raise ValueError('Missing compiler call graph')
+    memo = {}
+
+    def chain(name, seen=()):
+        if name in seen:
+            raise ValueError('Recursive direct C graph: no finite bound established')
+        if name not in memo:
+            options = [(0, [])]
+            for callee in sorted(edges.get(name, ())):
+                if callee in nodes:
+                    size, path = chain(callee, seen + (name,))
+                    options.append((size + 4, path))
+            size, path = max(options, key=lambda item: item[0])
+            memo[name] = (nodes[name] + size, [name] + path)
+        return memo[name]
+
+    size, path = max((chain(name) for name in sorted(nodes)), key=lambda item: item[0])
+    return {'scope': 'Known direct C calls only; excludes assembly, stock callees, reentry and task/interrupt context.',
+            'frames': len(nodes), 'conservativeBytes': size + 4,
+            'path': [name.rsplit('/', 1)[-1] for name in path],
+            'unknownTargets': sorted(name.rsplit('/', 1)[-1] for name in targets - nodes.keys()),
+            'method': 'Compiler frame sizes plus four bytes per direct call and entry for return addresses; may double-count outgoing reserves. No direct C graph cycle observed.'}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', required=True, type=Path)
@@ -96,8 +137,9 @@ def main():
                  'scope': 'Incremental loader pool extent only; two revisions coexist during replacement/Undo. Base upload buffers, fixed ownership ledgers and stacks excluded.'},
         'compilerStackFrames': frames,
         'largestSingleCFrameBytes': max(f['bytes'] for f in frames),
+        'partialDirectCStack': direct_c_stack(build),
         'completeStackPeakBytes': None, 'hardwarePoolDeltaBytes': None,
-        'limitations': ['Compiler frames are individual frames, not a call-chain bound.',
+        'limitations': ['Compiler frames and the partial direct C graph do not establish the complete task-stack bound.',
                         'Assembly wrappers, stock callees, interrupts and engine/UI task stack headroom remain unbounded here.',
                         'Pool formula follows loader.c with current Octatrack event header; a different base requires a new ABI probe.',
                         'Shared base staging buffers and fixed ledgers already exist; their whole-system lifetime peak remains unaudited.',

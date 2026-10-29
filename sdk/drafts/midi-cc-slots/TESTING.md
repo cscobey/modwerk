@@ -1082,3 +1082,7 @@ No Keep/accept or flash was sent. After the operator's normal power cycle,
 the original flashed base and exact five-package digest were verified again.
 See `evidence/hardware-pool-2026-10-29.json`. Stack, whole-system peak and
 worst-case timing qualification remain incomplete.
+The optional compiler call graph reproduces identical package bytes and prices
+the known direct C chain at a conservative 1,932 bytes, with explicit return
+allowances. This excludes indirect stock calls, assembly/reentry and task/IRQ
+context, so it does not close the complete stack gate.

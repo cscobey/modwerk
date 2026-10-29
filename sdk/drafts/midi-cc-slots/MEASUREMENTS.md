@@ -53,6 +53,14 @@ stock file calls and interrupt/task context must still be bounded. There are no
 unbounded compiler frame records; `dynamic,bounded` describes bounded outgoing
 call arguments too. Hardware stack canaries have not been measured.
 
+Compiler call graphs also reproduce identical code. The known direct C chain
+has a conservative 1,932-byte bound, including four extra bytes per call/entry
+for return addresses (which can double-count outgoing reserves). One longest
+chain is `mt_clone_begin → mm_profile_service → mt_persist_bank → persist_bank
+→ inspect_bank → mt_bank_open`. All 72 C frames are represented and no direct
+C cycle appears. Indirect stock calls, assembly wrappers, reentry and task/IRQ
+context remain outside this partial bound; complete stack qualification is open.
+
 ## Physical pool comparison and return to the installed base
 
 The operator saved their disposable project, stopped it and approved the RAM

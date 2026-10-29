@@ -532,10 +532,27 @@
     }
   ],
   "largestSingleCFrameBytes": 1440,
+  "partialDirectCStack": {
+    "scope": "Known direct C calls only; excludes assembly, stock callees, reentry and task/interrupt context.",
+    "frames": 72,
+    "conservativeBytes": 1932,
+    "path": [
+      "mt_clone_begin",
+      "mm_profile_service",
+      "mt_persist_bank",
+      "banks.c:persist_bank",
+      "banks.c:inspect_bank",
+      "mt_bank_open"
+    ],
+    "unknownTargets": [
+      "__indirect_call"
+    ],
+    "method": "Compiler frame sizes plus four bytes per direct call and entry for return addresses; may double-count outgoing reserves. No direct C graph cycle observed."
+  },
   "completeStackPeakBytes": null,
   "hardwarePoolDeltaBytes": null,
   "limitations": [
-    "Compiler frames are individual frames, not a call-chain bound.",
+    "Compiler frames and the partial direct C graph do not establish the complete task-stack bound.",
     "Assembly wrappers, stock callees, interrupts and engine/UI task stack headroom remain unbounded here.",
     "Pool formula follows loader.c with current Octatrack event header; a different base requires a new ABI probe.",
     "Shared base staging buffers and fixed ledgers already exist; their whole-system lifetime peak remains unaudited.",
