@@ -1,0 +1,121 @@
+{
+  "scope": "Matched static and post-startup dynamic byte comparisons; no hardware qualification",
+  "staticComparisons": [
+    {
+      "currentReport": "ramp-final-wet.json",
+      "baselineReport": "native-pipeline-wet",
+      "baselineCommit": "3c354667261c96eb22a92ce70c5b572d1f4a5ee9",
+      "baselineSourceHashes": {
+        "generate_native_src.py": "dcba13abc55e19ddf696e72b74ca3d6a88e21462283504dfecad584d9cc23425",
+        "native_src.asm": "56b28592bf2afedaa7913becc9d4b18665063cc59a82e1b88f5c3bbab6eb3cdf",
+        "native_src_tables.json": "9cb2cba95ee090947d90058a79ccf427fc9e6f1a270c6c1b217ba1200d170dab",
+        "rational_src.h": "e9ce0d2fdf01e9891a2af7ee6961991e5ade630dbd9e5e329cbf7413f3966aaf",
+        "core44100.asm": "b7284ee2cc821c6cf25671eb8214fa369b3c6b3dd7e2461f84742840a60fcb6c",
+        "core32.asm": "e5c266e68c170f39638c3ff2d4c5688b5d05d81d45e1d271220100da9e90638c"
+      },
+      "beforeInstructionsPer16Frames": [
+        42769,
+        42769
+      ],
+      "afterInstructionsPer16Frames": [
+        31139,
+        31139
+      ],
+      "inputAndBothCoreAudioBitExact": true,
+      "outputSha256": "67a1c1f4a94c845791e64f41ba40a4b863fcfb74a61fdccea7e3a4e746a6177e"
+    },
+    {
+      "currentReport": "ramp-final-extreme.json",
+      "baselineReport": "native-pipeline-extreme",
+      "baselineCommit": "3c354667261c96eb22a92ce70c5b572d1f4a5ee9",
+      "baselineSourceHashes": {
+        "generate_native_src.py": "dcba13abc55e19ddf696e72b74ca3d6a88e21462283504dfecad584d9cc23425",
+        "native_src.asm": "56b28592bf2afedaa7913becc9d4b18665063cc59a82e1b88f5c3bbab6eb3cdf",
+        "native_src_tables.json": "9cb2cba95ee090947d90058a79ccf427fc9e6f1a270c6c1b217ba1200d170dab",
+        "rational_src.h": "e9ce0d2fdf01e9891a2af7ee6961991e5ade630dbd9e5e329cbf7413f3966aaf",
+        "core44100.asm": "b7284ee2cc821c6cf25671eb8214fa369b3c6b3dd7e2461f84742840a60fcb6c",
+        "core32.asm": "e5c266e68c170f39638c3ff2d4c5688b5d05d81d45e1d271220100da9e90638c"
+      },
+      "beforeInstructionsPer16Frames": [
+        42971,
+        42971
+      ],
+      "afterInstructionsPer16Frames": [
+        31407,
+        31407
+      ],
+      "inputAndBothCoreAudioBitExact": true,
+      "outputSha256": "7775cafa53bac9de5b506b5aa1d8dea7ce17742a2ba28a41bd1c544e509d64ef"
+    },
+    {
+      "currentReport": "ramp-final-dry.json",
+      "baselineReport": "native-pipeline-dry",
+      "baselineCommit": "3c354667261c96eb22a92ce70c5b572d1f4a5ee9",
+      "baselineSourceHashes": {
+        "generate_native_src.py": "dcba13abc55e19ddf696e72b74ca3d6a88e21462283504dfecad584d9cc23425",
+        "native_src.asm": "56b28592bf2afedaa7913becc9d4b18665063cc59a82e1b88f5c3bbab6eb3cdf",
+        "native_src_tables.json": "9cb2cba95ee090947d90058a79ccf427fc9e6f1a270c6c1b217ba1200d170dab",
+        "rational_src.h": "e9ce0d2fdf01e9891a2af7ee6961991e5ade630dbd9e5e329cbf7413f3966aaf",
+        "core44100.asm": "b7284ee2cc821c6cf25671eb8214fa369b3c6b3dd7e2461f84742840a60fcb6c",
+        "core32.asm": "e5c266e68c170f39638c3ff2d4c5688b5d05d81d45e1d271220100da9e90638c"
+      },
+      "beforeInstructionsPer16Frames": [
+        42741,
+        42741
+      ],
+      "afterInstructionsPer16Frames": [
+        31187,
+        31187
+      ],
+      "inputAndBothCoreAudioBitExact": true,
+      "outputSha256": "2a43783046e201dcd33e31ecfa6311f7150296d95aca5bbc85e72ce068fd38ed"
+    },
+    {
+      "currentReport": "ramp-final-src-stress.json",
+      "baselineReport": "native-src-stress",
+      "baselineCommit": "3c354667261c96eb22a92ce70c5b572d1f4a5ee9",
+      "baselineSourceHashes": {
+        "generate_native_src.py": "dcba13abc55e19ddf696e72b74ca3d6a88e21462283504dfecad584d9cc23425",
+        "native_src.asm": "56b28592bf2afedaa7913becc9d4b18665063cc59a82e1b88f5c3bbab6eb3cdf",
+        "native_src_tables.json": "9cb2cba95ee090947d90058a79ccf427fc9e6f1a270c6c1b217ba1200d170dab",
+        "rational_src.h": "e9ce0d2fdf01e9891a2af7ee6961991e5ade630dbd9e5e329cbf7413f3966aaf",
+        "core44100.asm": "b7284ee2cc821c6cf25671eb8214fa369b3c6b3dd7e2461f84742840a60fcb6c",
+        "core32.asm": "e5c266e68c170f39638c3ff2d4c5688b5d05d81d45e1d271220100da9e90638c"
+      },
+      "beforeInstructionsPer16Frames": [
+        29133,
+        29133
+      ],
+      "afterInstructionsPer16Frames": [
+        17683,
+        17683
+      ],
+      "inputAndBothCoreAudioBitExact": true,
+      "outputSha256": "1945cb6f9fbf654507ed77707f4ab5266c4168118a4df2d97986b5b3abfcb299"
+    }
+  ],
+  "dynamicSplitComparison": {
+    "splits": [
+      0,
+      1,
+      15
+    ],
+    "startupFrames": {
+      "0": 1632,
+      "1": 816,
+      "15": 816
+    },
+    "alignedFrames": 7056,
+    "bothCoreAudioBitExact": true,
+    "alignedOutputSha256": "5000c61ad5d5721d8e2a2f2decc2a20db037c10a5a6329a7de08404df21051a0"
+  },
+  "sourceHashes": {
+    "generate_native_src.py": "ce822a1ca080f310256b4d8485ee9bc2528d4286e1660f9e8eec54b6bfe92627",
+    "native_src.asm": "d6453a3335f2c8f0340727bff83486e475b73095a1343de27b5772a86f6aff2a",
+    "native_src_tables.json": "9cb2cba95ee090947d90058a79ccf427fc9e6f1a270c6c1b217ba1200d170dab",
+    "rational_src.h": "e9ce0d2fdf01e9891a2af7ee6961991e5ade630dbd9e5e329cbf7413f3966aaf",
+    "core44100.asm": "8487be78265457338e629e0f51b3620632043240728b6412090235140a74335f",
+    "core32.asm": "e5c266e68c170f39638c3ff2d4c5688b5d05d81d45e1d271220100da9e90638c",
+    "control_reference.py": "b37132c4b59c80d3fdf3e95b0ca32a5d7ad6ac04d79d935c51f72d11a8e4fd7b"
+  }
+}

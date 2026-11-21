@@ -1,0 +1,223 @@
+{
+  "scope": "Finite native emulator before/after optimization; no sound or hardware qualification",
+  "baselineCommit": "0019226e178f2acd81d4851aabe8e76d1ab3041b",
+  "cases": [
+    {
+      "case": "wet",
+      "audioByteIdenticalBothCores": true,
+      "audioSha256": "67a1c1f4a94c845791e64f41ba40a4b863fcfb74a61fdccea7e3a4e746a6177e",
+      "beforePeak": [
+        28046,
+        28046
+      ],
+      "afterPeak": [
+        25888,
+        25888
+      ]
+    },
+    {
+      "case": "high",
+      "audioByteIdenticalBothCores": true,
+      "audioSha256": "5de302dadd4bdb432d28c2bc142b88a348480061e522255617f4fa75335b211b",
+      "beforePeak": [
+        28300,
+        28300
+      ],
+      "afterPeak": [
+        26147,
+        26147
+      ]
+    },
+    {
+      "case": "dry",
+      "audioByteIdenticalBothCores": true,
+      "audioSha256": "2a43783046e201dcd33e31ecfa6311f7150296d95aca5bbc85e72ce068fd38ed",
+      "beforePeak": [
+        28085,
+        28085
+      ],
+      "afterPeak": [
+        25926,
+        25926
+      ]
+    },
+    {
+      "case": "controls0",
+      "audioByteIdenticalBothCores": true,
+      "audioSha256": "c39aaf7064b6c9abde4e4b04c1db5f1aef37487884d5dd528268402974cf9107",
+      "beforePeak": [
+        28964,
+        28964
+      ],
+      "afterPeak": [
+        26808,
+        26808
+      ]
+    },
+    {
+      "case": "controls1",
+      "audioByteIdenticalBothCores": true,
+      "audioSha256": "f5ca1b4ba7814e2f464dc18808c5dcd4b730d07da8bdb640ee078dc6b4343b3b",
+      "beforePeak": [
+        29042,
+        29042
+      ],
+      "afterPeak": [
+        26890,
+        26890
+      ]
+    },
+    {
+      "case": "controls15",
+      "audioByteIdenticalBothCores": true,
+      "audioSha256": "f5ca1b4ba7814e2f464dc18808c5dcd4b730d07da8bdb640ee078dc6b4343b3b",
+      "beforePeak": [
+        29042,
+        29042
+      ],
+      "afterPeak": [
+        26890,
+        26890
+      ]
+    },
+    {
+      "case": "silence",
+      "audioByteIdenticalBothCores": true,
+      "audioSha256": "bc9ed4858a12f29b83d80015f097d9340288adef71be2ca35d9dd02779c9812f",
+      "beforePeak": [
+        28899,
+        28899
+      ],
+      "afterPeak": [
+        26740,
+        26740
+      ]
+    },
+    {
+      "case": "src-stress",
+      "audioByteIdenticalBothCores": true,
+      "audioSha256": "6f5d206a6086a7f88136886e0db1dc9633c742b344369cc9b34d1ce0bc0de037",
+      "beforePeak": [
+        17681,
+        17681
+      ],
+      "afterPeak": [
+        17745,
+        17745
+      ]
+    }
+  ],
+  "movingControlBenchmarkComparisons": [
+    {
+      "split": 0,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "3722f78478548fe173f45791dd8913dc86cd8b16d0465717b06e0576c13f07c9"
+    },
+    {
+      "split": 1,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 2,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 3,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 4,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 5,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 6,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 7,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 8,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 9,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 10,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 11,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 12,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 13,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 14,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    },
+    {
+      "split": 15,
+      "bothCoresByteIdentical": true,
+      "audioSha256": "cbb3c8f8c535e4658b362b8c802dcb570648d7a174bcebb540bb9fba4e5be128"
+    }
+  ],
+  "tankCodeWordsBeforeAfter": [
+    1109,
+    1098
+  ],
+  "joinedCodeWordsBeforeAfter": [
+    2135,
+    2252
+  ],
+  "srcTableWordsBeforeAfter": [
+    6274,
+    4146
+  ],
+  "totalPWordsBeforeAfter": [
+    8537,
+    6526
+  ],
+  "tankYWordsBeforeAfter": [
+    13432,
+    15238
+  ],
+  "joinedYExtentBeforeAfter": [
+    13808,
+    15728
+  ],
+  "remainingWordsBeforeReservedKeyWindow": 142,
+  "clearWordsPerCallBeforeAfter": [
+    132,
+    150
+  ],
+  "clearCallsUnchanged": 102,
+  "installedFitProven": false
+}

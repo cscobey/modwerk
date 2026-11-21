@@ -1,0 +1,125 @@
+{
+  "scope": "Three 32 kHz standalone-core render comparisons; one instance per core, five-second signal plus pre-roll. Executed instructions, not hardware cycles. No firmware integration or supported instance count.",
+  "baselineCommit": "66129855628c66590bb1a534285f04616224ae4d",
+  "baselineCoreSha256": "fef8aa78503f35388ea432fb7e1efff4a50258bb8c471070ca6df24e0549bc3f",
+  "optimizedCoreSha256": "98279306edcf9ddac19179367af55985ff54187d8037e0dbe5fd034fbb34e361",
+  "programWords": {
+    "before": 1257,
+    "after": 1857
+  },
+  "scalarWords": {
+    "before": 80,
+    "after": 120
+  },
+  "bufferWords": 12972,
+  "cases": [
+    {
+      "name": "nominal",
+      "params": [
+        110,
+        64,
+        94,
+        0,
+        83,
+        127,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "split": 0,
+      "beforePeakInstructionsPer16Frames": [
+        22330,
+        22330
+      ],
+      "afterPeakInstructionsPer16Frames": [
+        18908,
+        18908
+      ],
+      "beforeReferenceErrorDb": -29.00736495339924,
+      "afterReferenceErrorDb": -29.00736495339924,
+      "bothCoreWetAndDryBitExact": true,
+      "identicalRawSha256": {
+        "input.raw": "c839ee5e33dde5fc3dd5e505f5509405648c3658ffe7c1c06f7943641cf567af",
+        "wet.raw": "b18386a9e271a59fcbc448ff23d0f2fecd05e6591d4d1422ecd547c942131168",
+        "wet.raw.i1": "b18386a9e271a59fcbc448ff23d0f2fecd05e6591d4d1422ecd547c942131168",
+        "dry.raw": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d",
+        "dry.raw.i1": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d"
+      }
+    },
+    {
+      "name": "smear-split-1",
+      "params": [
+        70,
+        100,
+        60,
+        127,
+        100,
+        127,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "split": 1,
+      "beforePeakInstructionsPer16Frames": [
+        22394,
+        22394
+      ],
+      "afterPeakInstructionsPer16Frames": [
+        18970,
+        18970
+      ],
+      "beforeReferenceErrorDb": -29.036440493121496,
+      "afterReferenceErrorDb": -29.036440493121496,
+      "bothCoreWetAndDryBitExact": true,
+      "identicalRawSha256": {
+        "input.raw": "c839ee5e33dde5fc3dd5e505f5509405648c3658ffe7c1c06f7943641cf567af",
+        "wet.raw": "6534facecb8a0b428b83727e19e65b7c86fbf4e7736a0d46aaa7766a315037fe",
+        "wet.raw.i1": "6534facecb8a0b428b83727e19e65b7c86fbf4e7736a0d46aaa7766a315037fe",
+        "dry.raw": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d",
+        "dry.raw.i1": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d"
+      }
+    },
+    {
+      "name": "maximum-split-15",
+      "params": [
+        127,
+        0,
+        127,
+        127,
+        127,
+        127,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "split": 15,
+      "beforePeakInstructionsPer16Frames": [
+        22381,
+        22381
+      ],
+      "afterPeakInstructionsPer16Frames": [
+        18963,
+        18963
+      ],
+      "beforeReferenceErrorDb": -23.578571469590194,
+      "afterReferenceErrorDb": -23.578571469590194,
+      "bothCoreWetAndDryBitExact": true,
+      "identicalRawSha256": {
+        "input.raw": "c839ee5e33dde5fc3dd5e505f5509405648c3658ffe7c1c06f7943641cf567af",
+        "wet.raw": "85c3334ab04b31d1afdaf409e491bc302f24a6467af453833a372e6ad4eb0842",
+        "wet.raw.i1": "85c3334ab04b31d1afdaf409e491bc302f24a6467af453833a372e6ad4eb0842",
+        "dry.raw": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d",
+        "dry.raw.i1": "71a2cc922758a41f168c3d4c283126f2c97ff8eeba4b15a416b04bf4d1cc416d"
+      }
+    }
+  ]
+}

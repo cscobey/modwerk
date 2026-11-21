@@ -1,0 +1,49 @@
+{
+  "controlTrace": {
+    "sampleRampLength": 256,
+    "tankRampMs": 8,
+    "mixRampMs": 5.804988662131519,
+    "blocksChecked": 441,
+    "coefficientFractionCounterAndTargetTraceExact": true,
+    "rapidRetargeting": true
+  },
+  "peakInstructionsPer16Frames": [
+    26740,
+    26740
+  ],
+  "fifoOccupancyRange": [
+    2,
+    4
+  ],
+  "yExtentWords": 15728,
+  "scope": "Native 44.1 kHz experiment; no installed effect or hardware qualification",
+  "controls": [
+    110,
+    64,
+    94,
+    83
+  ],
+  "signal": "silence",
+  "mix": 127,
+  "fullScaleInput": false,
+  "reverb": true,
+  "frames": 7872,
+  "split": 1,
+  "programWords": 2252,
+  "tableWords": 4146,
+  "startupFifoFrames": 2,
+  "coreOutputsIdentical": true,
+  "exactHostParity": null,
+  "maxErrorLsb": 0,
+  "firstMismatch": null,
+  "sourceHashes": {
+    "generate_native_src.py": "0196ea2e2d882b7bd73615e532af5611c7299a82f7e5ff93c49f15d0e1a13d26",
+    "native_src.asm": "d6932cad997037c0f8ed651a86aa3d6346f572041787c86925dd3ca89e9bad19",
+    "native_src_tables.json": "91119375a0727112749a3dfd434c20f529ab2a8cafe5b983733a89582ee44b11",
+    "rational_src.h": "e9ce0d2fdf01e9891a2af7ee6961991e5ade630dbd9e5e329cbf7413f3966aaf",
+    "src_layout.py": "eacb904ab1be7373f63695891dcc660e7f22f861caac0140cf134d2563451774",
+    "core44100.asm": "46409112abef17bbf5a91c09e630876e14d50d07996ccdaedfc33d74a9144eb4",
+    "core32.asm": "5dc69f1e40e857bdbab35bf7b2820cfdecc19da4f4fb18c85a66734fc925a9e4",
+    "control_reference.py": "0246664e40eaee11bfc68313562def71e21389865fff69d68cc268cbf235523a"
+  }
+}

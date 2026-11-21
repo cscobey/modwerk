@@ -1,0 +1,58 @@
+{
+  "scope": "Host integer SRC reference only; not DSP timing, native SRC or firmware qualification",
+  "sampleRates": [
+    44100,
+    32000
+  ],
+  "fractionalPhases": 32,
+  "taps": {
+    "down": 96,
+    "up": 48
+  },
+  "cutoffHz": 14500,
+  "coefficientWords": 4752,
+  "coefficientFormat": "signed Q23",
+  "activeHistoryWordsPerStereoInstance": 288,
+  "allocatedHostHistoryWords": 384,
+  "undefinedBehaviorSanitizer": true,
+  "metrics": {
+    "down_alias_db_16000": -89.5845259328,
+    "down_alias_db_17000": -98.1617338072,
+    "down_alias_db_18000": -93.895538966,
+    "down_alias_db_20000": -114.132901621,
+    "down_alias_db_21000": -101.576182323,
+    "down_chunk_bit_exact": 1,
+    "down_dc_exact": 1,
+    "down_delay_seconds": 0.00107709750567,
+    "down_gain_db_100": -1.57333332891e-05,
+    "down_gain_db_1000": -2.27615979408e-05,
+    "down_gain_db_10000": -0.00140309300479,
+    "down_gain_db_13000": -0.00266828278367,
+    "down_residual_db_100": -112.133096885,
+    "down_residual_db_1000": -113.923637378,
+    "down_residual_db_10000": -82.2011273325,
+    "down_residual_db_13000": -77.6612595627,
+    "down_twenty_second_output_frames": 640000,
+    "up_chunk_bit_exact": 1,
+    "up_dc_exact": 1,
+    "up_delay_seconds": 0.000734375,
+    "up_gain_db_100": -1.05965903667e-05,
+    "up_gain_db_1000": -0.00013588978981,
+    "up_gain_db_10000": -0.00303228195912,
+    "up_gain_db_13000": -0.0455270502437,
+    "up_image_db_10000": -104.610461227,
+    "up_image_db_13000": -92.776521429,
+    "up_residual_db_100": -106.572680731,
+    "up_residual_db_1000": -99.3385827083,
+    "up_residual_db_10000": -77.0325073785,
+    "up_residual_db_13000": -72.4977233138,
+    "up_twenty_second_output_frames": 882000
+  },
+  "sourceHashes": {
+    "generate_src.py": "cbb9d17d699c11a00b01223ddd824ca1e4dfd4ca79a9b200012b5222224b64a9",
+    "src_coefficients.h": "e2ca98cc4053ab64978853682e6b5cde103d2480e2df8899d95aec62c9813c83",
+    "rational_src.h": "e9ce0d2fdf01e9891a2af7ee6961991e5ade630dbd9e5e329cbf7413f3966aaf",
+    "src_verify.cpp": "1989d370433772368dd0067eafb92400631315594162d8de818848d9a973843c",
+    "src_convert.cpp": "750ab1e029e403ffd4caaa7d1d385924bd26aabb3add75c7501502d439c7ec77"
+  }
+}

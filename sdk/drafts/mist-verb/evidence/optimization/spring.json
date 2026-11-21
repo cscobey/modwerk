@@ -1,0 +1,951 @@
+{
+  "scope": "Finite matched standalone emulator workload, one instance/core; not hardware cycles or release qualification",
+  "units": "executed instructions/core/16 input frames",
+  "sampleRate": 44100,
+  "blocks": 1024,
+  "instancesPerCore": 1,
+  "cores": [
+    0,
+    1
+  ],
+  "splits": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "springTypes": [
+    0,
+    1,
+    2
+  ],
+  "movingControls": true,
+  "inputSha256": "995e5e43fa9364857bd62d070ab598ffbd33888df4cce24fe42f7fe88d7837e0",
+  "stockSha256": "164f31224bf61181e3f50e7dec40df9afcae5b16dbf6e4c0d0cc5e986af0a84e",
+  "peak": {
+    "spring": 5094,
+    "mist": 26916
+  },
+  "mistToSpringPeakRatio": 5.283863368669023,
+  "sourceHashes": {
+    "benchmark_spring.py": "f9ba370858a55171d8f02640a6679f6478e61ac3f176006d51fdcda45df6783d",
+    "generate_native_src.py": "0196ea2e2d882b7bd73615e532af5611c7299a82f7e5ff93c49f15d0e1a13d26",
+    "native_src.asm": "d6932cad997037c0f8ed651a86aa3d6346f572041787c86925dd3ca89e9bad19",
+    "native_src_tables.json": "91119375a0727112749a3dfd434c20f529ab2a8cafe5b983733a89582ee44b11",
+    "rational_src.h": "e9ce0d2fdf01e9891a2af7ee6961991e5ade630dbd9e5e329cbf7413f3966aaf",
+    "src_layout.py": "eacb904ab1be7373f63695891dcc660e7f22f861caac0140cf134d2563451774",
+    "core44100.asm": "46409112abef17bbf5a91c09e630876e14d50d07996ccdaedfc33d74a9144eb4",
+    "core32.asm": "5dc69f1e40e857bdbab35bf7b2820cfdecc19da4f4fb18c85a66734fc925a9e4",
+    "control_reference.py": "0246664e40eaee11bfc68313562def71e21389865fff69d68cc268cbf235523a"
+  },
+  "results": [
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 0,
+      "peakInstructionsPer16Frames": [
+        4187,
+        4187
+      ],
+      "meanAfter256Blocks": [
+        4186.8359375,
+        4186.8359375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 1,
+      "peakInstructionsPer16Frames": [
+        4525,
+        4525
+      ],
+      "meanAfter256Blocks": [
+        4523.873697916667,
+        4523.873697916667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 2,
+      "peakInstructionsPer16Frames": [
+        4524,
+        4524
+      ],
+      "meanAfter256Blocks": [
+        4523.872395833333,
+        4523.872395833333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 3,
+      "peakInstructionsPer16Frames": [
+        4524,
+        4524
+      ],
+      "meanAfter256Blocks": [
+        4523.87109375,
+        4523.87109375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 4,
+      "peakInstructionsPer16Frames": [
+        5094,
+        5094
+      ],
+      "meanAfter256Blocks": [
+        5092.928385416667,
+        5092.928385416667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 5,
+      "peakInstructionsPer16Frames": [
+        5094,
+        5094
+      ],
+      "meanAfter256Blocks": [
+        5093.927083333333,
+        5093.927083333333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 6,
+      "peakInstructionsPer16Frames": [
+        5094,
+        5094
+      ],
+      "meanAfter256Blocks": [
+        5093.92578125,
+        5093.92578125
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 7,
+      "peakInstructionsPer16Frames": [
+        5094,
+        5094
+      ],
+      "meanAfter256Blocks": [
+        5093.924479166667,
+        5093.924479166667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 8,
+      "peakInstructionsPer16Frames": [
+        4968,
+        4968
+      ],
+      "meanAfter256Blocks": [
+        4967.923177083333,
+        4967.923177083333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 9,
+      "peakInstructionsPer16Frames": [
+        4969,
+        4969
+      ],
+      "meanAfter256Blocks": [
+        4968.921875,
+        4968.921875
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 10,
+      "peakInstructionsPer16Frames": [
+        4969,
+        4969
+      ],
+      "meanAfter256Blocks": [
+        4968.920572916667,
+        4968.920572916667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 11,
+      "peakInstructionsPer16Frames": [
+        4969,
+        4969
+      ],
+      "meanAfter256Blocks": [
+        4968.919270833333,
+        4968.919270833333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 12,
+      "peakInstructionsPer16Frames": [
+        5093,
+        5093
+      ],
+      "meanAfter256Blocks": [
+        5092.91796875,
+        5092.91796875
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 13,
+      "peakInstructionsPer16Frames": [
+        5094,
+        5094
+      ],
+      "meanAfter256Blocks": [
+        5093.916666666667,
+        5093.916666666667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 14,
+      "peakInstructionsPer16Frames": [
+        5094,
+        5094
+      ],
+      "meanAfter256Blocks": [
+        5093.915364583333,
+        5093.915364583333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 0,
+      "split": 15,
+      "peakInstructionsPer16Frames": [
+        5094,
+        5094
+      ],
+      "meanAfter256Blocks": [
+        5093.9140625,
+        5093.9140625
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 0,
+      "peakInstructionsPer16Frames": [
+        4186,
+        4186
+      ],
+      "meanAfter256Blocks": [
+        4185.8359375,
+        4185.8359375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 1,
+      "peakInstructionsPer16Frames": [
+        4524,
+        4524
+      ],
+      "meanAfter256Blocks": [
+        4522.873697916667,
+        4522.873697916667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 2,
+      "peakInstructionsPer16Frames": [
+        4523,
+        4523
+      ],
+      "meanAfter256Blocks": [
+        4522.872395833333,
+        4522.872395833333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 3,
+      "peakInstructionsPer16Frames": [
+        4523,
+        4523
+      ],
+      "meanAfter256Blocks": [
+        4522.87109375,
+        4522.87109375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 4,
+      "peakInstructionsPer16Frames": [
+        5092,
+        5092
+      ],
+      "meanAfter256Blocks": [
+        5090.928385416667,
+        5090.928385416667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 5,
+      "peakInstructionsPer16Frames": [
+        5092,
+        5092
+      ],
+      "meanAfter256Blocks": [
+        5091.927083333333,
+        5091.927083333333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 6,
+      "peakInstructionsPer16Frames": [
+        5092,
+        5092
+      ],
+      "meanAfter256Blocks": [
+        5091.92578125,
+        5091.92578125
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 7,
+      "peakInstructionsPer16Frames": [
+        5092,
+        5092
+      ],
+      "meanAfter256Blocks": [
+        5091.924479166667,
+        5091.924479166667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 8,
+      "peakInstructionsPer16Frames": [
+        4966,
+        4966
+      ],
+      "meanAfter256Blocks": [
+        4965.923177083333,
+        4965.923177083333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 9,
+      "peakInstructionsPer16Frames": [
+        4967,
+        4967
+      ],
+      "meanAfter256Blocks": [
+        4966.921875,
+        4966.921875
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 10,
+      "peakInstructionsPer16Frames": [
+        4967,
+        4967
+      ],
+      "meanAfter256Blocks": [
+        4966.920572916667,
+        4966.920572916667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 11,
+      "peakInstructionsPer16Frames": [
+        4967,
+        4967
+      ],
+      "meanAfter256Blocks": [
+        4966.919270833333,
+        4966.919270833333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 12,
+      "peakInstructionsPer16Frames": [
+        5091,
+        5091
+      ],
+      "meanAfter256Blocks": [
+        5090.91796875,
+        5090.91796875
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 13,
+      "peakInstructionsPer16Frames": [
+        5092,
+        5092
+      ],
+      "meanAfter256Blocks": [
+        5091.916666666667,
+        5091.916666666667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 14,
+      "peakInstructionsPer16Frames": [
+        5092,
+        5092
+      ],
+      "meanAfter256Blocks": [
+        5091.915364583333,
+        5091.915364583333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 1,
+      "split": 15,
+      "peakInstructionsPer16Frames": [
+        5092,
+        5092
+      ],
+      "meanAfter256Blocks": [
+        5091.9140625,
+        5091.9140625
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 0,
+      "peakInstructionsPer16Frames": [
+        4183,
+        4183
+      ],
+      "meanAfter256Blocks": [
+        4182.8359375,
+        4182.8359375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 1,
+      "peakInstructionsPer16Frames": [
+        4521,
+        4521
+      ],
+      "meanAfter256Blocks": [
+        4519.873697916667,
+        4519.873697916667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 2,
+      "peakInstructionsPer16Frames": [
+        4520,
+        4520
+      ],
+      "meanAfter256Blocks": [
+        4519.872395833333,
+        4519.872395833333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 3,
+      "peakInstructionsPer16Frames": [
+        4520,
+        4520
+      ],
+      "meanAfter256Blocks": [
+        4519.87109375,
+        4519.87109375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 4,
+      "peakInstructionsPer16Frames": [
+        5086,
+        5086
+      ],
+      "meanAfter256Blocks": [
+        5084.928385416667,
+        5084.928385416667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 5,
+      "peakInstructionsPer16Frames": [
+        5086,
+        5086
+      ],
+      "meanAfter256Blocks": [
+        5085.927083333333,
+        5085.927083333333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 6,
+      "peakInstructionsPer16Frames": [
+        5086,
+        5086
+      ],
+      "meanAfter256Blocks": [
+        5085.92578125,
+        5085.92578125
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 7,
+      "peakInstructionsPer16Frames": [
+        5086,
+        5086
+      ],
+      "meanAfter256Blocks": [
+        5085.924479166667,
+        5085.924479166667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 8,
+      "peakInstructionsPer16Frames": [
+        4960,
+        4960
+      ],
+      "meanAfter256Blocks": [
+        4959.923177083333,
+        4959.923177083333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 9,
+      "peakInstructionsPer16Frames": [
+        4961,
+        4961
+      ],
+      "meanAfter256Blocks": [
+        4960.921875,
+        4960.921875
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 10,
+      "peakInstructionsPer16Frames": [
+        4961,
+        4961
+      ],
+      "meanAfter256Blocks": [
+        4960.920572916667,
+        4960.920572916667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 11,
+      "peakInstructionsPer16Frames": [
+        4961,
+        4961
+      ],
+      "meanAfter256Blocks": [
+        4960.919270833333,
+        4960.919270833333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 12,
+      "peakInstructionsPer16Frames": [
+        5085,
+        5085
+      ],
+      "meanAfter256Blocks": [
+        5084.91796875,
+        5084.91796875
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 13,
+      "peakInstructionsPer16Frames": [
+        5086,
+        5086
+      ],
+      "meanAfter256Blocks": [
+        5085.916666666667,
+        5085.916666666667
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 14,
+      "peakInstructionsPer16Frames": [
+        5086,
+        5086
+      ],
+      "meanAfter256Blocks": [
+        5085.915364583333,
+        5085.915364583333
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "spring",
+      "springType": 2,
+      "split": 15,
+      "peakInstructionsPer16Frames": [
+        5086,
+        5086
+      ],
+      "meanAfter256Blocks": [
+        5085.9140625,
+        5085.9140625
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 0,
+      "peakInstructionsPer16Frames": [
+        26846,
+        26846
+      ],
+      "meanAfter256Blocks": [
+        25450.529947916668,
+        25450.529947916668
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 1,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 2,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 3,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 4,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 5,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 6,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 7,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 8,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 9,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 10,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 11,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 12,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 13,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 14,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    },
+    {
+      "effect": "mist",
+      "springType": null,
+      "split": 15,
+      "peakInstructionsPer16Frames": [
+        26916,
+        26916
+      ],
+      "meanAfter256Blocks": [
+        25529.83984375,
+        25529.83984375
+      ],
+      "coreOutputsIdentical": true
+    }
+  ]
+}
